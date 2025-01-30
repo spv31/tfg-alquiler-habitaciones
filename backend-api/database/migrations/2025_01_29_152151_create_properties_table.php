@@ -14,7 +14,10 @@ return new class extends Migration
     {
         Schema::create('properties', function (Blueprint $table) {
             $table->id();
+            // Relación
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            
+            // Datos obligatorios propiedad / inmueble
             $table->string('address');
             $table->string('cadastral_reference')->unique();
             $table->text('description');
