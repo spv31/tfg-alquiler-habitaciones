@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedBigInteger('rentable_id');
             $table->string('rentable_type');
 
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(User::class, 'owner_id')->constrained('users')->cascadeOnDelete();
 
             $table->enum('status', ['pending', 'accepted', 'expired'])->default('pending');
             $table->timestamps();
