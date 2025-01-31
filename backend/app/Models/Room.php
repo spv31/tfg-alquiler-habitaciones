@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Room extends Model
 {
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($room) {
+            $room->images()->delete();
+            $room->tenant()->delete();
+            $room->invitations()->delete();
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *

@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Property extends Model
 {
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($property) {
+            $property->images()->delete();
+            $property->tenants()->delete();
+            $property->invitations()->delete();
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *
