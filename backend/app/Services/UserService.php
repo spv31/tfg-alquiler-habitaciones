@@ -11,9 +11,14 @@ class UserService
     protected UploadFilesService $uploadFilesService,
   ) {}
 
+  public function findUserByEmail(string $email)
+  {
+    return User::where('email', $email)->first();
+  }
+
   public function registerUser(array $validatedData)
   {
-    $existingUser = User::where('email', $validatedData['email'])->first();
+    $existingUser = $this->findUserByEmail($validatedData['email']);
 
     if ($existingUser) {
       // Invitation
