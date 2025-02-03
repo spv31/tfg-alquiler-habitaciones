@@ -1,7 +1,7 @@
 <template>
   <div class="py-10">
     <div class="px-2">
-    <form class="flex flex-col gap-5 p-8 px-4 max-w-2xl mx-auto bg-gray-700 shadow-lg rounded-lg text-white"
+    <form class="flex flex-col gap-5 p-8 px-4 max-w-2xl mx-auto bg-gray-700 shadow-lg rounded-lg text-white font-medium"
       @submit.prevent="validateForm">
 
       <Alert v-if="alertMessage" :message="alertMessage" :type="alertType" @close="alertMessage = ''" />
@@ -22,7 +22,7 @@
           </label>
         </div>
         <button @click.prevent="nextStep"
-          class="bg-slate-800 font-semibold text-white p-2 rounded hover:bg-slate-900 mt-4">
+          class="bg-slate-800 font-semibold text-white font-medium p-2 rounded hover:bg-slate-900 mt-4">
           {{ $t('register.continue') }}
         </button>
       </div>
@@ -36,68 +36,68 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-col">
-              <label class="mb-1 font-medium">{{ $t(userData.user_type === 'individual' ? 'register.full_name' :
+              <label class="mb-1 font-medium text-lg">{{ $t(userData.user_type === 'individual' ? 'register.full_name' :
                 'register.company_name') }}</label>
               <input v-model="userData.name" type="text"
-                class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none"
+                class="p-2 rounded bg-gray-800 text-white font-medium border-none focus:ring-gray-600 outline-none"
                 @input="validateField('name')" />
-              <span class="text-red-500 text-sm">{{ errors.name }}</span>
+              <span class="text-red-600 font-medium text-m">{{ errors.name }}</span>
             </div>
 
             <div class="flex flex-col">
-              <label class="mb-1 font-medium">{{ $t('register.email') }}</label>
+              <label class="mb-1 font-medium text-lg">{{ $t('register.email') }}</label>
               <input v-model="userData.email" type="email"
-                class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none"
+                class="p-2 rounded bg-gray-800 text-white font-medium border-none focus:ring-gray-600 outline-none"
                 @input="validateField('email')" />
-              <span class="text-red-500 text-sm">{{ errors.email }}</span>
+              <span class="text-red-600 font-medium text-m">{{ errors.email }}</span>
             </div>
 
             <div class="flex flex-col relative">
-              <label class="mb-1 font-medium">{{ $t('register.password') }}</label>
+              <label class="mb-1 font-medium text-lg">{{ $t('register.password') }}</label>
               <div class="relative">
                 <input :type="showPassword ? 'text' : 'password'" v-model="userData.password"
-                  class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none w-full pr-10"
+                  class="p-2 rounded bg-gray-800 text-white font-medium border-none focus:ring-gray-600 outline-none w-full pr-10"
                   @input="validateField('password')" />
                 <button type="button" @click="togglePasswordVisibility"
-                  class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white focus:outline-none">
+                  class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white font-medium focus:outline-none">
                   <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
                 </button>
               </div>
-              <span class="text-red-500 text-sm">{{ errors.password }}</span>
+              <span class="text-red-600 font-medium text-m">{{ errors.password }}</span>
             </div>
 
             <div class="flex flex-col">
-              <label class="mb-1 font-medium">{{ $t(userData.user_type === 'individual' ? 'register.id_card' :
+              <label class="mb-1 font-medium text-lg">{{ $t(userData.user_type === 'individual' ? 'register.id_card' :
                 'register.tax_id') }}</label>
               <input v-model="userData.identifier" type="text"
-                class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none"
+                class="p-2 rounded bg-gray-800 text-white font-medium border-none focus:ring-gray-600 outline-none"
                 @input="validateField('identifier')" />
-              <span class="text-red-500 text-sm">{{ errors.identifier }}</span>
+              <span class="text-red-600 font-medium text-m">{{ errors.identifier }}</span>
             </div>
 
             <div class="flex flex-col">
-              <label class="mb-1 font-medium">{{ $t('register.phone') }}</label>
+              <label class="mb-1 font-medium text-lg">{{ $t('register.phone') }}</label>
               <input v-model="userData.phone_number" type="text"
-                class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none"
+                class="p-2 rounded bg-gray-800 text-white font-medium border-none focus:ring-gray-600 outline-none"
                 @input="validateField('phone_number')" />
-              <span class="text-red-500 text-sm">{{ errors.phone_number }}</span>
+              <span class="text-red-600 font-medium text-m">{{ errors.phone_number }}</span>
             </div>
 
             <div class="flex flex-col">
-              <label class="mb-1 font-medium">{{ $t('register.address') }}</label>
+              <label class="mb-1 font-medium text-lg">{{ $t('register.address') }}</label>
               <input v-model="userData.address" type="text"
-                class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none"
+                class="p-2 rounded bg-gray-800 text-white font-medium border-none focus:ring-gray-600 outline-none"
                 @input="validateField('address')" />
-              <span class="text-red-500 text-sm">{{ errors.address }}</span>
+              <span class="text-red-600 font-medium text-m">{{ errors.address }}</span>
             </div>
           </div>
 
           <div class="flex justify-between mt-4">
             <button @click.prevent="prevStep"
-              class="bg-gray-500 font-semibold text-white p-2 rounded hover:bg-gray-600 px-3">
+              class="bg-gray-500 font-semibold text-white font-medium p-2 rounded hover:bg-gray-600 px-3">
               {{ $t('register.go_back') }}
             </button>
-            <button type="submit" class="bg-slate-900 font-semibold text-white p-2 rounded hover:bg-gray-900 px-3">
+            <button type="submit" class="bg-slate-800 font-semibold text-white font-medium p-2 rounded hover:bg-gray-900 px-3">
               {{ $t('register.sign_up') }}
             </button>
           </div>

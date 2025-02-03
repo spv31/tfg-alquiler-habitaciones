@@ -8,6 +8,7 @@ use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -18,6 +19,8 @@ class AuthController extends Controller
 
   public function register(Request $request)
   {
+    Log::info('Datos recibidos en register:', $request->all()); // DEBUG
+    
     $validatedData = $request->validate([
       'name' => 'required|string|max:255',
       'email' => 'required|email|unique:users',

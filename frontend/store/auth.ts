@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { useSanctumAuth } from "#imports";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import type { RegisterUser } from "~/types/auth";
+import { getCsrfToken } from "~/utils/auth";
 
 export const useAuthStore = defineStore(
   "auth",
@@ -21,10 +22,24 @@ export const useAuthStore = defineStore(
 
     const register = async (userData: RegisterUser) => {
       try {
-        await $fetch("/register", {
+        
+        const csrfToken = await getCsrfToken();
+
+        if (!csrfToken) {
+          throw new Error('Error');
+        }
+
+        await $fetch("http://localhost:8000/api/register", {
           method: "POST",
           body: userData,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken, 
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          }
         });
+
         await login({ email: userData.email, password: userData.password });
       } catch (error) {
         console.error(error);
@@ -53,7 +68,7 @@ export const useAuthStore = defineStore(
       user,
       isAuthenticated,
       getUser,
-			register,
+      register,
       signIn,
       signOut,
     };

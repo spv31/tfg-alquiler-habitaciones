@@ -42,8 +42,9 @@ export default defineNuxtConfig({
         mode: "cookie",
         endpoints: {
           csrf: "/sanctum/csrf-cookie",
-          login: "/login",
-          logout: "/logout",
+          register: "/api/register",
+          login: "/api/login",
+          logout: "/api/logout",
           user: "/api/user",
         },
         redirect: {
