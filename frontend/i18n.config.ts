@@ -21,31 +21,31 @@ export default defineI18nConfig(() => ({
         },
       },
       dashboard: {
-        "title": "Bienvenido al Dashboard",
-        "properties": {
-          "title": "Mis Propiedades",
-          "description": "Administra todas tus propiedades aquí."
+        title: "Bienvenido al Dashboard",
+        properties: {
+          title: "Mis Propiedades",
+          description: "Administra todas tus propiedades aquí.",
         },
-        "add_property": {
-          "title": "Añadir Propiedad",
-          "description": "Agrega una nueva propiedad a tu lista."
+        add_property: {
+          title: "Añadir Propiedad",
+          description: "Agrega una nueva propiedad a tu lista.",
         },
-        "profile": {
-          "title": "Mi Perfil",
-          "description": "Consulta y actualiza tu información personal."
+        profile: {
+          title: "Mi Perfil",
+          description: "Consulta y actualiza tu información personal.",
         },
-        "statistics": {
-          "title": "Estadísticas",
-          "description": "Revisa el rendimiento de tus propiedades."
+        statistics: {
+          title: "Estadísticas",
+          description: "Revisa el rendimiento de tus propiedades.",
         },
-        "contracts": {
-          "title": "Contratos",
-          "description": "Gestión y creación de contratos personalizados."
+        contracts: {
+          title: "Contratos",
+          description: "Gestión y creación de contratos personalizados.",
         },
-        "chats": {
-          "title": "Chats",
-          "description": "Comunícate con tus inquilinos fácilmente."
-        }
+        chats: {
+          title: "Chats",
+          description: "Comunícate con tus inquilinos fácilmente.",
+        },
       },
       register: {
         title: "Forma parte de MyRentHub",
@@ -98,6 +98,33 @@ export default defineI18nConfig(() => ({
             "No se pudo enviar el enlace de recuperación. Inténtalo de nuevo.",
         },
       },
+      properties: {
+        add_title: "Añadir Propiedad",
+        add_rooms: "Añadir Habitaciones",
+        optional_stats: "Estadísticas Opcionales",
+        address: "Dirección",
+        cadastral_reference: "Referencia Catastral",
+        description: "Descripción",
+        per_room: "Alquiler por Habitaciones",
+        total_rooms: "Número de Habitaciones",
+        address_placeholder: "Introduce la dirección de la propiedad",
+        reference_placeholder: "Introduce la referencia catastral",
+        description_placeholder: "Introduce una descripción para la propiedad",
+        total_rooms_placeholder: "Número total de habitaciones",
+        add_rooms_title: "Añade las Habitaciones",
+        add_rooms_description:
+          "Especifica las características de cada habitación.",
+        room: "Habitación",
+        room_price: "Precio por habitación",
+        optional_title: "Completa los datos opcionales",
+        optional_description:
+          "Estos datos son opcionales pero pueden ayudarte a gestionar mejor tu propiedad.",
+        register_property: "Registrar Propiedad",
+      },
+      common: {
+        back: "Volver",
+        continue: "Continuar",
+      },
     },
     en: {
       navbar: {
@@ -120,31 +147,31 @@ export default defineI18nConfig(() => ({
         },
       },
       dashboard: {
-        "title": "Welcome to the Dashboard",
-        "properties": {
-          "title": "My Properties",
-          "description": "Manage all your properties here."
+        title: "Welcome to the Dashboard",
+        properties: {
+          title: "My Properties",
+          description: "Manage all your properties here.",
         },
-        "add_property": {
-          "title": "Add Property",
-          "description": "Add a new property to your list."
+        add_property: {
+          title: "Add Property",
+          description: "Add a new property to your list.",
         },
-        "profile": {
-          "title": "My Profile",
-          "description": "View and update your personal information."
+        profile: {
+          title: "My Profile",
+          description: "View and update your personal information.",
         },
-        "statistics": {
-          "title": "Statistics",
-          "description": "Review the performance of your properties."
+        statistics: {
+          title: "Statistics",
+          description: "Review the performance of your properties.",
         },
-        "contracts": {
-          "title": "Contracts",
-          "description": "Manage and create custom contracts."
+        contracts: {
+          title: "Contracts",
+          description: "Manage and create custom contracts.",
         },
-        "chats": {
-          "title": "Chats",
-          "description": "Communicate with your tenants easily."
-        }
+        chats: {
+          title: "Chats",
+          description: "Communicate with your tenants easily.",
+        },
       },
       register: {
         title: "Join MyRentHub",
@@ -195,6 +222,32 @@ export default defineI18nConfig(() => ({
           email_required: "Email is required.",
           failed: "Failed to send the recovery link. Please try again.",
         },
+      },
+      properties: {
+        add_title: "Add Property",
+        add_rooms: "Add Rooms",
+        optional_stats: "Optional Statistics",
+        address: "Address",
+        cadastral_reference: "Cadastral Reference",
+        description: "Description",
+        per_room: "Rent by Rooms",
+        total_rooms: "Number of Rooms",
+        address_placeholder: "Enter the property's address",
+        reference_placeholder: "Enter the cadastral reference",
+        description_placeholder: "Enter a description for the property",
+        total_rooms_placeholder: "Total number of rooms",
+        add_rooms_title: "Add the Rooms",
+        add_rooms_description: "Specify the details for each room.",
+        room: "Room",
+        room_price: "Room Price",
+        optional_title: "Complete the optional data",
+        optional_description:
+          "These data are optional but can help you better manage your property.",
+        register_property: "Register Property",
+      },
+      common: {
+        back: "Back",
+        continue: "Continue",
       },
     },
   },

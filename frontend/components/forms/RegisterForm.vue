@@ -12,7 +12,7 @@
         <div class="flex items-center justify-center gap-4">
           <label class="flex items-center text-lg">
             <input type="radio" v-model="userData.user_type" value="individual"
-              class="w-6 h-6 bg-gray-800 text-gray-300 mr-2" />
+              class="w-6 h-6 bg-gray-800 text-gray-300  mr-2" />
             {{ $t('register.individual') }}
           </label>
           <label class="flex items-center text-lg">

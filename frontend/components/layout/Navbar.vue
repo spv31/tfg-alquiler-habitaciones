@@ -8,7 +8,6 @@
 				</NuxtLink>
 			</div>
 
-			<!-- Navbar (visible en pantallas grandes) -->
 			<div class="hidden lg:flex flex-grow items-center justify-between space-x-6">
 				<!-- Opciones de navegación -->
 				<template v-if="!authStore.isAuthenticated">
