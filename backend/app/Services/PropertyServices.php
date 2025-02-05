@@ -6,6 +6,7 @@ use App\Models\Property;
 use App\Models\PropertyDetail;
 use App\Models\Room;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PropertyServices
 {
@@ -38,6 +39,9 @@ class PropertyServices
 
 	public function createProperty(array $validatedData)
 	{
+    Log::info('Datos para crear propiedad:', $validatedData);
+		$validatedData['status'] = 'available';
+
 		$property = Property::create([
 			'user_id' => Auth::id(),
 			'address' => $validatedData['address'],

@@ -11,7 +11,7 @@ class StorePropertyRequest extends FormRequest
    */
   public function authorize(): bool
   {
-    return false;
+    return true;
   }
 
   /**
@@ -26,7 +26,6 @@ class StorePropertyRequest extends FormRequest
       'cadastral_reference' => 'required|string|max:255|unique:properties,cadastral_reference',
       'description' => 'required|string',
       'rental_type' => 'required|in:full,per_room',
-      'status' => 'required|in:available,unavailable,occupied,partially_occupied',
       'total_rooms' => 'required|integer|min:1',
       // Optional
       'purchase_price' => 'nullable|numeric|min:0',

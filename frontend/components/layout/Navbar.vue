@@ -11,12 +11,14 @@
 			<div class="hidden lg:flex flex-grow items-center justify-between space-x-6">
 				<!-- Opciones de navegación -->
 				<template v-if="!authStore.isAuthenticated">
+					<div class="flex space-x-6 ml-auto">
 					<NuxtLink to="/login" class="text-white font-semibold text-lg hover:text-gray-300">
 						{{ $t('navbar.login') }}
 					</NuxtLink>
 					<NuxtLink to="/register" class="text-white font-semibold text-lg hover:text-gray-300">
 						{{ $t('navbar.register') }}
 					</NuxtLink>
+					</div>
 				</template>
 
 				<template v-else>
@@ -150,8 +152,6 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "~/store/auth";
-import { useI18n } from "vue-i18n";
-import { ref } from "vue";
 
 const authStore = useAuthStore();
 const { t: $t } = useI18n();

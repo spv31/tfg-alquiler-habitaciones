@@ -10,6 +10,17 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Routes for properties (GET, POST, PUT, DELETE)
+    Route::apiResource('properties', PropertyController::class);
+
+    Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);
+
+    Route::put('/properties/{id}/details', [PropertyDetailController::class, 'updateOrCreate']);
+});
+
+
 // Auth Routes for login, register and logout
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -19,8 +30,7 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-// Routes for properties (GET, POST, PUT, DELETE)
-Route::apiResource('properties', PropertyController::class);
+// Route::apiResource('properties', PropertyController::class);
 
-Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);
-Route::put('/properties/{id}/details', [PropertyDetailController::class, 'updateOrCreate']);
+// Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);
+// Route::put('/properties/{id}/details', [PropertyDetailController::class, 'updateOrCreate']);

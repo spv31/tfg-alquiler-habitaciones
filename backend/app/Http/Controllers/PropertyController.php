@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class PropertyController extends Controller
@@ -49,6 +50,8 @@ class PropertyController extends Controller
   public function store(StorePropertyRequest $request)
   {
     try {
+
+      Log::info('Usuario autenticado:', ['user' => auth()->user()]);
       $property = $this->propertyServices->createProperty($request->validated());
 
       return response()->json([
@@ -56,6 +59,10 @@ class PropertyController extends Controller
         'property' => new PropertyResource($property)
       ], 201);
     } catch (Throwable $e) {
+      Log::error('Error al crear la propiedad:', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+      ]);
       return response()->json([
         'error' => 'Error al crear la propiedad',
         'message' => $e->getMessage()
