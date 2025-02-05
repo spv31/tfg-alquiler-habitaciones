@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserService
 {
@@ -44,7 +46,7 @@ class UserService
 
     // Register tenant
     if (!empty($validatedData['token'])) {
-      
+
       $validatedData['role'] = 'tenant';
       $user = $this->createUser($validatedData);
       $this->invitationService->acceptInvitation($validatedData['token'], $user);
@@ -88,5 +90,39 @@ class UserService
     $user->save();
 
     return $user;
+  }
+
+  public function sendPasswordResetLink(string $email)
+  {
+    $status = Password::sendResetLink(['email' => $email]);
+
+    if ($status !== Password::RESET_LINK_SENT) {
+      throw ValidationException::withMessages(['email' => __($status)]);
+    }
+
+    return ['message' => 'Correo de restablecimiento enviado'];
+  }
+
+  public function resetPassword(array $validatedData)
+  {
+    $status = Password::reset(
+      [
+        'email' => $validatedData['email'],
+        'token' => $validatedData['token'],
+        'password' => $validatedData['password'],
+        'password_confirmation' => $validatedData['password_confirmation']
+      ],
+      function (User $user, string $password) {
+        $user->forceFill([
+          'password' => bcrypt($password),
+        ])->save();
+      }
+    );
+
+    if ($status !== Password::PASSWORD_RESET) {
+      throw ValidationException::withMessages(['email' => __($status)]);
+    }
+
+    return ['message' => 'Contraseña restablecida correctamente'];
   }
 }

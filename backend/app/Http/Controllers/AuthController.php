@@ -9,6 +9,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -18,7 +20,7 @@ class AuthController extends Controller
   ) {}
 
   public function register(Request $request)
-  {    
+  {
     $validatedData = $request->validate([
       'name' => 'required|string|max:255',
       'email' => 'required|email|unique:users',
@@ -65,5 +67,33 @@ class AuthController extends Controller
     $request->session()->regenerateToken();
 
     return response()->json(['message' => 'Logged out'], 200);
+  }
+
+  public function sendResetLink(Request $request)
+  {
+    $validatedData = $request->validate(['email' => 'required|email|exists:users,email']);
+
+    try {
+      $response = $this->userService->sendPasswordResetLink($validatedData['email']);
+      return response()->json($response);
+    } catch (ValidationException $e) {
+      return response()->json(['error' => 'Error al enviar el correo'], 400);
+    }
+  }
+
+  public function resetPassword(Request $request)
+  {
+    $validatedData = $request->validate([
+      'email' => 'required|email|exists:users,email',
+      'token' => 'required',
+      'password' => 'required|min:8|confirmed',
+    ]);
+
+    try {
+      $response = $this->userService->resetPassword($validatedData);
+      return response()->json($response);
+    } catch (ValidationException $e) {
+      return response()->json(['error' => 'Error al restablecer la contraseña'], 400);
+    }
   }
 }

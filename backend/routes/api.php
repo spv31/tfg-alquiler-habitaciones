@@ -15,6 +15,10 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
+// Routes por resetting password
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
 // Routes for properties (GET, POST, PUT, DELETE)
 Route::apiResource('properties', PropertyController::class);
 
