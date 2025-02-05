@@ -98,6 +98,18 @@ export default defineI18nConfig(() => ({
             "No se pudo enviar el enlace de recuperación. Inténtalo de nuevo.",
         },
       },
+      "reset_password": {
+        title: "Restablecer contraseña",
+        new_password: "Nueva contraseña",
+        confirm_password: "Confirmar contraseña",
+        submit: "Restablecer contraseña",
+        success: "¡Contraseña restablecida con éxito! Redirigiendo a login...",
+        errors: {
+          "fields_required": "Todos los campos son obligatorios.",
+          "password_mismatch": "Las contraseñas no coinciden.",
+          "failed": "No se pudo restablecer la contraseña. Inténtalo de nuevo."
+        }
+      },
       properties: {
         success_message: "¡Propiedad registrada con éxito!",
         error_message: "Hubo un error al registrar la propiedad. Por favor, inténtalo de nuevo.",
@@ -251,6 +263,18 @@ export default defineI18nConfig(() => ({
           email_required: "Email is required.",
           failed: "Failed to send the recovery link. Please try again.",
         },
+      },
+      reset_password: {
+        title: "Reset Password",
+        new_password: "New Password",
+        confirm_password: "Confirm Password",
+        submit: "Reset Password",
+        success: "Password successfully reset! Redirecting to login...",
+        errors: {
+          "fields_required": "All fields are required.",
+          "password_mismatch": "Passwords do not match.",
+          "failed": "Failed to reset password. Please try again."
+        }
       },
       properties: {
         success_message: "Property registered successfully!",

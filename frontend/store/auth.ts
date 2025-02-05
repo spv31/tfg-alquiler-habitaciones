@@ -22,11 +22,10 @@ export const useAuthStore = defineStore(
 
     const register = async (userData: RegisterUser) => {
       try {
-        
         const csrfToken = await getCsrfToken();
 
         if (!csrfToken) {
-          throw new Error('Error');
+          throw new Error("Error");
         }
 
         await $fetch("http://localhost:8000/api/register", {
@@ -34,10 +33,10 @@ export const useAuthStore = defineStore(
           body: userData,
           credentials: "include",
           headers: {
-            "X-XSRF-TOKEN": csrfToken, 
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          }
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
         });
 
         await login({ email: userData.email, password: userData.password });
@@ -56,6 +55,54 @@ export const useAuthStore = defineStore(
       }
     };
 
+    const forgotPassword = async (email: string) => {
+      try {
+        const csrfToken = await getCsrfToken();
+
+        if (!csrfToken) {
+          throw new Error("No se pudo obtener el token CSRF.");
+        }
+
+        await $fetch("http://localhost:8000/api/forgot-password", {
+          method: "POST",
+          body: { email },
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+      } catch (error) {
+        console.error("Error al enviar el correo de restablecimiento:", error);
+        throw error;
+      }
+    };
+
+    const resetPassword = async (data: { token: string; password: string }) => {
+      try {
+        const csrfToken = await getCsrfToken();
+
+        if (!csrfToken) {
+          throw new Error("No se pudo obtener el token CSRF.");
+        }
+
+        await $fetch("http://localhost:8000/api/reset-password", {
+          method: "POST",
+          body: data,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+      } catch (error) {
+        console.error("Error al restablecer la contraseña:", error);
+        throw error;
+      }
+    };
+
     const signOut = async () => {
       try {
         await logout();
@@ -70,6 +117,8 @@ export const useAuthStore = defineStore(
       getUser,
       register,
       signIn,
+      forgotPassword, 
+      resetPassword,
       signOut,
     };
   },
