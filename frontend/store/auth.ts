@@ -79,7 +79,7 @@ export const useAuthStore = defineStore(
       }
     };
 
-    const resetPassword = async (data: { token: string; password: string }) => {
+    const resetPassword = async (data: { token: string; password: string, email: string }) => {
       try {
         const csrfToken = await getCsrfToken();
 
@@ -89,8 +89,11 @@ export const useAuthStore = defineStore(
 
         await $fetch("http://localhost:8000/api/reset-password", {
           method: "POST",
-          body: data,
-          credentials: "include",
+          body: {
+            email: data.email, 
+            token: data.token,
+            password: data.password,
+          },          credentials: "include",
           headers: {
             "X-XSRF-TOKEN": csrfToken,
             Accept: "application/json",

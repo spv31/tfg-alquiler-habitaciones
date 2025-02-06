@@ -83,10 +83,15 @@ class AuthController extends Controller
 
   public function resetPassword(Request $request)
   {
+    Log::info('Solicitud recibida para restablecer contraseña', [
+      'email' => $request->input('email'),
+      'token' => $request->input('token'),
+      'password' => $request->input('password'),
+    ]);
     $validatedData = $request->validate([
       'email' => 'required|email|exists:users,email',
       'token' => 'required',
-      'password' => 'required|min:8|confirmed',
+      'password' => 'required|min:6',
     ]);
 
     try {

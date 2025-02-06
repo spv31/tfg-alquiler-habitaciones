@@ -9,40 +9,46 @@
 
         <h2 class="text-2xl font-semibold text-center mb-1">{{ $t('reset_password.title') }}</h2>
 
+        <!-- Nueva contraseña -->
         <div class="flex flex-col relative">
           <label class="mb-1 font-medium">{{ $t('reset_password.new_password') }}</label>
           <div class="relative">
             <input
-              :type="showPassword ? 'text' : 'password'"
+              :type="showPassword.new ? 'text' : 'password'"
               v-model="password"
               class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none w-full pr-10"
             />
             <button
               type="button"
-              @click="togglePasswordVisibility"
+              @click="togglePasswordVisibility('new')"
               class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white focus:outline-none"
             >
-              <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
+              <i :class="showPassword.new ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
             </button>
           </div>
         </div>
 
+        <!-- Confirmar contraseña -->
         <div class="flex flex-col relative">
           <label class="mb-1 font-medium">{{ $t('reset_password.confirm_password') }}</label>
           <div class="relative">
             <input
-              :type="showPassword ? 'text' : 'password'"
+              :type="showPassword.confirm ? 'text' : 'password'"
               v-model="confirmPassword"
               class="p-2 rounded bg-gray-800 text-white border-none focus:ring-gray-600 outline-none w-full pr-10"
             />
             <button
               type="button"
-              @click="togglePasswordVisibility"
+              @click="togglePasswordVisibility('confirm')"
               class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-white focus:outline-none"
             >
-              <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
+              <i :class="showPassword.confirm ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
             </button>
           </div>
+          <!-- Error de contraseñas no coinciden -->
+          <span v-if="passwordMismatch" class="text-sm text-red-500 mt-1">
+            {{ $t('reset_password.errors.password_mismatch') }}
+          </span>
         </div>
 
         <button type="submit" class="bg-slate-800 font-semibold text-white p-2 rounded hover:bg-slate-900">
@@ -64,12 +70,13 @@ const authStore = useAuthStore();
 
 const password = ref('');
 const confirmPassword = ref('');
-const showPassword = ref(false);
+const showPassword = reactive({ new: false, confirm: false }); // Estado independiente para cada input
 const alertMessage = ref<string | null>(null);
 const alertType = ref<'error' | 'success'>('error');
+const passwordMismatch = computed(() => password.value !== confirmPassword.value && confirmPassword.value.length > 0);
 
-const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value;
+const togglePasswordVisibility = (field: 'new' | 'confirm') => {
+  showPassword[field] = !showPassword[field];
 };
 
 const handleResetPassword = async () => {
@@ -79,7 +86,7 @@ const handleResetPassword = async () => {
     return;
   }
 
-  if (password.value !== confirmPassword.value) {
+  if (passwordMismatch.value) {
     alertMessage.value = $t('reset_password.errors.password_mismatch');
     alertType.value = 'error';
     return;
@@ -87,11 +94,16 @@ const handleResetPassword = async () => {
 
   try {
     const token = route.query.token as string;
+    const email = route.query.email as string; 
     if (!token) {
       throw new Error('Token inválido');
     }
 
-    await authStore.resetPassword({ token, password: password.value });
+    if (!email) {
+      throw new Error('Email inválido');
+    }
+
+    await authStore.resetPassword({ token, password: password.value, email });
 
     alertMessage.value = $t('reset_password.success');
     alertType.value = 'success';

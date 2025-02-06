@@ -89,6 +89,12 @@ class UserService
     $user = new User($userData);
     $user->save();
 
+    if ($user->role === 'owner') {
+      app(MailService::class)->sendOwnerRegistrationMail($user);
+    } else {
+      app(MailService::class)->sendTenantRegistrationMail($user);
+    }
+
     return $user;
   }
 
@@ -110,7 +116,6 @@ class UserService
         'email' => $validatedData['email'],
         'token' => $validatedData['token'],
         'password' => $validatedData['password'],
-        'password_confirmation' => $validatedData['password_confirmation']
       ],
       function (User $user, string $password) {
         $user->forceFill([
