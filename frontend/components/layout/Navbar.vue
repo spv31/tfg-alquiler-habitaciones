@@ -12,12 +12,12 @@
 				<!-- Opciones de navegación -->
 				<template v-if="!authStore.isAuthenticated">
 					<div class="flex space-x-6 ml-auto">
-					<NuxtLink to="/login" class="text-white font-semibold text-lg hover:text-gray-300">
-						{{ $t('navbar.login') }}
-					</NuxtLink>
-					<NuxtLink to="/register" class="text-white font-semibold text-lg hover:text-gray-300">
-						{{ $t('navbar.register') }}
-					</NuxtLink>
+						<NuxtLink to="/login" class="text-white font-semibold text-lg hover:text-gray-300">
+							{{ $t('navbar.login') }}
+						</NuxtLink>
+						<NuxtLink to="/register" class="text-white font-semibold text-lg hover:text-gray-300">
+							{{ $t('navbar.register') }}
+						</NuxtLink>
 					</div>
 				</template>
 
