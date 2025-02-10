@@ -9,6 +9,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -19,8 +21,6 @@ class AuthController extends Controller
 
   public function register(Request $request)
   {
-    Log::info('Datos recibidos en register:', $request->all()); // DEBUG
-    
     $validatedData = $request->validate([
       'name' => 'required|string|max:255',
       'email' => 'required|email|unique:users',
@@ -67,5 +67,38 @@ class AuthController extends Controller
     $request->session()->regenerateToken();
 
     return response()->json(['message' => 'Logged out'], 200);
+  }
+
+  public function sendResetLink(Request $request)
+  {
+    $validatedData = $request->validate(['email' => 'required|email|exists:users,email']);
+
+    try {
+      $response = $this->userService->sendPasswordResetLink($validatedData['email']);
+      return response()->json($response);
+    } catch (ValidationException $e) {
+      return response()->json(['error' => 'Error al enviar el correo'], 400);
+    }
+  }
+
+  public function resetPassword(Request $request)
+  {
+    Log::info('Solicitud recibida para restablecer contraseña', [
+      'email' => $request->input('email'),
+      'token' => $request->input('token'),
+      'password' => $request->input('password'),
+    ]);
+    $validatedData = $request->validate([
+      'email' => 'required|email|exists:users,email',
+      'token' => 'required',
+      'password' => 'required|min:6',
+    ]);
+
+    try {
+      $response = $this->userService->resetPassword($validatedData);
+      return response()->json($response);
+    } catch (ValidationException $e) {
+      return response()->json(['error' => 'Error al restablecer la contraseña'], 400);
+    }
   }
 }

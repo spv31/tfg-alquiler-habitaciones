@@ -8,3 +8,10 @@ export interface RegisterUser {
 	phone_number: string,
 	address: string,
 }
+
+export interface CustomUser {
+	name: string,
+	email: string,
+	role: string,
+	user_type: 'individual' | 'company';
+}

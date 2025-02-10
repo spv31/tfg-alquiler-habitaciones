@@ -21,31 +21,31 @@ export default defineI18nConfig(() => ({
         },
       },
       dashboard: {
-        "title": "Bienvenido al Dashboard",
-        "properties": {
-          "title": "Mis Propiedades",
-          "description": "Administra todas tus propiedades aquí."
+        title: "Bienvenido al Dashboard",
+        properties: {
+          title: "Mis Propiedades",
+          description: "Administra todas tus propiedades aquí.",
         },
-        "add_property": {
-          "title": "Añadir Propiedad",
-          "description": "Agrega una nueva propiedad a tu lista."
+        add_property: {
+          title: "Añadir Propiedad",
+          description: "Agrega una nueva propiedad a tu lista.",
         },
-        "profile": {
-          "title": "Mi Perfil",
-          "description": "Consulta y actualiza tu información personal."
+        profile: {
+          title: "Mi Perfil",
+          description: "Consulta y actualiza tu información personal.",
         },
-        "statistics": {
-          "title": "Estadísticas",
-          "description": "Revisa el rendimiento de tus propiedades."
+        statistics: {
+          title: "Estadísticas",
+          description: "Revisa el rendimiento de tus propiedades.",
         },
-        "contracts": {
-          "title": "Contratos",
-          "description": "Gestión y creación de contratos personalizados."
+        contracts: {
+          title: "Contratos",
+          description: "Gestión y creación de contratos personalizados.",
         },
-        "chats": {
-          "title": "Chats",
-          "description": "Comunícate con tus inquilinos fácilmente."
-        }
+        chats: {
+          title: "Chats",
+          description: "Comunícate con tus inquilinos fácilmente.",
+        },
       },
       register: {
         title: "Forma parte de MyRentHub",
@@ -98,6 +98,74 @@ export default defineI18nConfig(() => ({
             "No se pudo enviar el enlace de recuperación. Inténtalo de nuevo.",
         },
       },
+      "reset_password": {
+        title: "Restablecer contraseña",
+        new_password: "Nueva contraseña",
+        confirm_password: "Confirmar contraseña",
+        submit: "Restablecer contraseña",
+        success: "¡Contraseña restablecida con éxito! Redirigiendo a login...",
+        errors: {
+          "fields_required": "Todos los campos son obligatorios.",
+          "password_mismatch": "Las contraseñas no coinciden.",
+          "failed": "No se pudo restablecer la contraseña. Inténtalo de nuevo."
+        }
+      },
+      properties: {
+        success_message: "¡Propiedad registrada con éxito!",
+        error_message: "Hubo un error al registrar la propiedad. Por favor, inténtalo de nuevo.",
+        add_title: "Añadir Propiedad",
+        add_rooms: "Añadir Habitaciones",
+        optional_stats: "Estadísticas Opcionales",
+        address: "Dirección",
+        cadastral_reference: "Referencia Catastral",
+        description: "Descripción",
+        per_room: "Alquiler por Habitaciones",
+        total_rooms: "Número de Habitaciones",
+        address_placeholder: "Introduce la dirección de la propiedad",
+        reference_placeholder: "Introduce la referencia catastral",
+        description_placeholder: "Introduce una descripción para la propiedad",
+        total_rooms_placeholder: "Número total de habitaciones",
+        add_rooms_title: "Añade las Habitaciones",
+        add_rooms_description:
+          "Especifica las características de cada habitación.",
+        room: "Habitación",
+        room_price: "Precio por habitación",
+        optional_title: "Completa los datos opcionales",
+        rental_type: "Tipo de alquiler",
+        rental_type_full: "Completo",
+        rental_type_per_room  : "Por habitación",
+        optional_description:
+          "Estos datos son opcionales pero pueden ayudarte a gestionar mejor tu propiedad.",
+        register_property: "Registrar Propiedad",
+        purchase_price: "Precio de compra",
+        is_financed: "¿Está financiado?",
+        mortgage_cost: "Coste de hipoteca",
+        purchase_taxes: "Impuestos de compra",
+        renovation_cost: "Coste de reforma",
+        furniture_cost: "Coste de amueblado",
+        purchase_date: "Fecha de compra",
+        estimated_value: "Valor estimado actual",
+        annual_insurance_cost: "Coste anual de seguro",
+        annual_property_tax: "Impuesto anual de propiedad (IBI)",
+        annual_community_fees: "Gastos de comunidad anuales",
+        annual_waste_tax: "Tasa anual de residuos",
+        income_tax_percentage: "IRPF / Impuesto sobre ingresos (%)",
+        annual_repair_percentage: "Porcentaje para reparaciones (%)",
+        rental_price: "Precio del alquiler",
+        property_size: "Tamaño de la propiedad (m²)",
+      },
+      common: {
+        back: "Volver",
+        continue: "Continuar",
+      },
+      errors: {
+        address_short: "La dirección debe tener al menos 5 caracteres.",
+        cadastral_required: "La referencia catastral es obligatoria.",
+        description_short: "La descripción debe tener al menos 10 caracteres.",
+        min_rooms: "Debe haber al menos 1 habitación.",
+        invalid_number: "Debe ser un número válido.",
+        invalid_date: "Debe ser una fecha válida.",
+      },
     },
     en: {
       navbar: {
@@ -120,31 +188,31 @@ export default defineI18nConfig(() => ({
         },
       },
       dashboard: {
-        "title": "Welcome to the Dashboard",
-        "properties": {
-          "title": "My Properties",
-          "description": "Manage all your properties here."
+        title: "Welcome to the Dashboard",
+        properties: {
+          title: "My Properties",
+          description: "Manage all your properties here.",
         },
-        "add_property": {
-          "title": "Add Property",
-          "description": "Add a new property to your list."
+        add_property: {
+          title: "Add Property",
+          description: "Add a new property to your list.",
         },
-        "profile": {
-          "title": "My Profile",
-          "description": "View and update your personal information."
+        profile: {
+          title: "My Profile",
+          description: "View and update your personal information.",
         },
-        "statistics": {
-          "title": "Statistics",
-          "description": "Review the performance of your properties."
+        statistics: {
+          title: "Statistics",
+          description: "Review the performance of your properties.",
         },
-        "contracts": {
-          "title": "Contracts",
-          "description": "Manage and create custom contracts."
+        contracts: {
+          title: "Contracts",
+          description: "Manage and create custom contracts.",
         },
-        "chats": {
-          "title": "Chats",
-          "description": "Communicate with your tenants easily."
-        }
+        chats: {
+          title: "Chats",
+          description: "Communicate with your tenants easily.",
+        },
       },
       register: {
         title: "Join MyRentHub",
@@ -195,6 +263,73 @@ export default defineI18nConfig(() => ({
           email_required: "Email is required.",
           failed: "Failed to send the recovery link. Please try again.",
         },
+      },
+      reset_password: {
+        title: "Reset Password",
+        new_password: "New Password",
+        confirm_password: "Confirm Password",
+        submit: "Reset Password",
+        success: "Password successfully reset! Redirecting to login...",
+        errors: {
+          "fields_required": "All fields are required.",
+          "password_mismatch": "Passwords do not match.",
+          "failed": "Failed to reset password. Please try again."
+        }
+      },
+      properties: {
+        success_message: "Property registered successfully!",
+        error_message: "There was an error registering the property. Please try again.",
+        add_title: "Add Property",
+        add_rooms: "Add Rooms",
+        optional_stats: "Optional Statistics",
+        address: "Address",
+        cadastral_reference: "Cadastral Reference",
+        description: "Description",
+        per_room: "Rent by Rooms",
+        total_rooms: "Number of Rooms",
+        address_placeholder: "Enter the property's address",
+        reference_placeholder: "Enter the cadastral reference",
+        description_placeholder: "Enter a description for the property",
+        total_rooms_placeholder: "Total number of rooms",
+        add_rooms_title: "Add the Rooms",
+        add_rooms_description: "Specify the details for each room.",
+        room: "Room",
+        room_price: "Room Price",
+        optional_title: "Complete the optional data",
+        rental_type: "Rental Type",
+        rental_type_full: "Full",
+        rental_type_per_room: "Per Room",
+        optional_description:
+          "These data are optional but can help you better manage your property.",
+        register_property: "Register Property",
+        purchase_price: "Purchase Price",
+        is_financed: "Is Financed?",
+        mortgage_cost: "Mortgage Cost",
+        purchase_taxes: "Purchase Taxes",
+        renovation_cost: "Renovation Cost",
+        furniture_cost: "Furniture Cost",
+        purchase_date: "Purchase Date",
+        estimated_value: "Current Estimated Value",
+        annual_insurance_cost: "Annual Insurance Cost",
+        annual_property_tax: "Annual Property Tax (IBI)",
+        annual_community_fees: "Annual Community Fees",
+        annual_waste_tax: "Annual Waste Tax",
+        income_tax_percentage: "Income Tax (%)",
+        annual_repair_percentage: "Repair Budget (%)",
+        rental_price: "Rental Price",
+        property_size: "Property Size (m²)",
+      },
+      common: {
+        back: "Back",
+        continue: "Continue",
+      },
+      errors: {
+        address_short: "The address must be at least 5 characters long.",
+        cadastral_required: "The cadastral reference is required.",
+        description_short: "The description must be at least 10 characters long.",
+        min_rooms: "There must be at least 1 room.",
+        invalid_number: "Must be a valid number.",
+        invalid_date: "Must be a valid date.",
       },
     },
   },
