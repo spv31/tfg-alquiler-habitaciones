@@ -10,7 +10,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Throwable;
+use Exception;
 
 class PropertyDetailController extends Controller
 {
@@ -18,7 +18,10 @@ class PropertyDetailController extends Controller
   /**
    * Display a listing of the resource.
    */
-  public function index() {}
+  public function index()
+  {
+    //  
+  }
 
   /**
    * Store a newly created resource in storage.
@@ -57,7 +60,7 @@ class PropertyDetailController extends Controller
         'error' => 'No tienes permisos para ver los detalles de esta propiedad',
         'error_code' => 403
       ], 403);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       return response()->json([
         'error' => 'Error inesperado al obtener los detalles de la propiedad',
         'message' => $e->getMessage()
@@ -85,7 +88,7 @@ class PropertyDetailController extends Controller
         'error' => 'No tienes permisos para actualizar los detalles de esta propiedad',
         'error_code' => 403
       ], 403);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       return response()->json([
         'error' => 'Error inesperado al actualizar los detalles de la propiedad',
         'message' => $e->getMessage()
