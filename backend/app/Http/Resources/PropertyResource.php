@@ -15,16 +15,27 @@ class PropertyResource extends JsonResource
   public function toArray(Request $request): array
   {
     return [
-      'id' => $this->id,
-      'address' => $this->address,
+      'id'                  => $this->id,
+      'address'             => $this->address,
       'cadastral_reference' => $this->cadastral_reference,
-      'description' => $this->description,
-      'rental_type' => $this->rental_type,
-      'status' => $this->status,
-      'total_rooms' => $this->total_rooms,
-      'details' => new PropertyDetailResource($this->whenLoaded('details')),
-      'created_at' => $this->created_at,
-      'updated_at' => $this->updated_at,
+      'description'         => $this->description,
+      'rental_type'         => $this->rental_type,
+      'status'              => $this->status,
+      'total_rooms'         => $this->total_rooms,
+
+      'main_image' => route('private.property_image', [
+        'filename' => $this->main_image_url
+      ]),
+
+      'images' => $this->images_url->map(
+        fn($imagePath) =>
+        route('private.property_image', ['filename' => $imagePath])
+      ),
+
+      'details'             => new PropertyDetailResource($this->whenLoaded('details')),
+      'owner'               => $this->whenLoaded('owner', fn() => new UserResource($this->owner)),
+      'created_at'          => $this->created_at,
+      'updated_at'          => $this->updated_at,
     ];
   }
 }
