@@ -14,7 +14,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 class PropertyController extends Controller
 {
@@ -36,7 +35,7 @@ class PropertyController extends Controller
       $properties = Property::where('user_id', Auth::id())->paginate(10);
 
       return PropertyResource::collection($properties);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       return response()->json([
         'error' => 'Error al obtener las propiedades',
         'message' => $e->getMessage()
@@ -58,7 +57,7 @@ class PropertyController extends Controller
         'message' => 'Propiedad creada exitosamente',
         'property' => new PropertyResource($property)
       ], 201);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       Log::error('Error al crear la propiedad:', [
         'error' => $e->getMessage(),
         'trace' => $e->getTraceAsString(),
@@ -91,7 +90,7 @@ class PropertyController extends Controller
         'error' => 'No tienes permisos para ver esta propiedad',
         'error_code' => 403
       ], 403);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       return response()->json([
         'error' => 'Error inesperado al obtener la propiedad',
         'message' => $e->getMessage()
@@ -121,7 +120,7 @@ class PropertyController extends Controller
         'error' => 'No tienes permisos para actualizar esta propiedad',
         'error_code' => 403
       ], 403);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       return response()->json([
         'error' => 'Error inesperado al actualizar la propiedad',
         'message' => $e->getMessage()
@@ -153,7 +152,7 @@ class PropertyController extends Controller
         'error' => 'No tienes permisos para eliminar esta propiedad',
         'error_code' => 403
       ], 403);
-    } catch (Throwable $e) {
+    } catch (Exception $e) {
       return response()->json([
         'error' => 'Error inesperado al eliminar la propiedad',
         'message' => $e->getMessage()

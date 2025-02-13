@@ -2,17 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreRoomRequest;
+use App\Http\Resources\RoomResource;
 use App\Models\Property;
 use App\Models\Room;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use RoomService;
 use Throwable;
 
 class RoomController extends Controller
 {
 	use AuthorizesRequests;
+
+	private $roomService;
+
+  public function __construct(RoomService $roomService)
+  {
+    $this->roomService = $roomService;
+  }
+
 	/**
 	 * Display a listing of the resource.
 	 */
@@ -24,13 +35,21 @@ class RoomController extends Controller
 			// We get all rooms
 			$rooms = $property->rooms();
 
+			$warning = null;
 			if ($rooms->count() < $property->total_rooms) {
-				// TODO
 				// Alert User needs to add more rooms
+				$warning = [
+					'key' => 'missing_rooms_warning',
+					'parms' => [
+						'total_expected' => $property->total_rooms,
+						'current' => $rooms->count(),
+					]
+				];
 			}
 
 			return response()->json([
-
+				'rooms' => RoomResource::collection($rooms),
+				'warning' => $warning,
 			], 200);
 		} catch (AuthorizationException $e) {
 			return response()->json([
@@ -39,20 +58,33 @@ class RoomController extends Controller
 			], 403);
 		} catch (Exception $e) {
 			return response()->json([
-
-			]);
+				'error' => 'Error inesperado al obtener las habitaciones',
+				'message' => $e->getMessage()
+			], 500);
 		}
 	}
 
 	/**
 	 * Store a newly created resource in storage.
 	 */
-	public function store(Request $request)
+	public function store(StoreRoomRequest $request, Property $property)
 	{
 		try {
+			if ($property->rooms()->count() >= $property->total_rooms) {
+				return response()->json([
+					'error' => 'La propiedad ya tiene todas las habitaciones creadas.',
+					'error_code' => 'ROOMS_LIMIT_REACHED'
+				], 400);
+			}
 
-		} catch () {
+			$room = $this->roomService->createRoom($property, $request->validated());
 			
+			return response()->json(new RoomResource($room), 201);
+		} catch (Exception $e) {
+			return response()->json([
+				'error' => 'Error inesperado al crear la habitación.',
+				'message' => $e->getMessage()
+		], 500);
 		}
 	}
 
@@ -61,21 +93,21 @@ class RoomController extends Controller
 	 */
 	public function show(Property $property, Room $room)
 	{
-			try {
-				$this->authorize('show', $property);
+		try {
+			$this->authorize('show', $property);
 
-				//TODO
-			} catch (AuthorizationException $e) {
-				return response()->json([
-					'error' => 'No tienes permisos para ver la habitación',
-					'error_code' => 403,
-				], 403);
-			} catch (Exception $e) {
-				return response()->json([
-					'error' => 'Error inesperado al obtener los detalles de la habitación',
-					'message' => $e->getMessage()
-				], 500);
-			}
+			//TODO
+		} catch (AuthorizationException $e) {
+			return response()->json([
+				'error' => 'No tienes permisos para ver la habitación',
+				'error_code' => 403,
+			], 403);
+		} catch (Exception $e) {
+			return response()->json([
+				'error' => 'Error inesperado al obtener los detalles de la habitación',
+				'message' => $e->getMessage()
+			], 500);
+		}
 	}
 
 	/**
@@ -83,7 +115,7 @@ class RoomController extends Controller
 	 */
 	public function update(Request $request, string $id)
 	{
-			//
+		//
 	}
 
 	/**
@@ -91,6 +123,6 @@ class RoomController extends Controller
 	 */
 	public function destroy(string $id)
 	{
-			//
+		//
 	}
 }
