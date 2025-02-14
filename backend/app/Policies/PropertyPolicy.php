@@ -39,4 +39,28 @@ class PropertyPolicy
     {
         return $user->id === $property->user_id;
     }
+
+    /**
+     * Determine whether the user can store a room
+     * 
+     * @param \App\Models\User $user
+     * @param \App\Models\Property $property
+     * @return bool
+     */
+    public function storeRoom(User $user, Property $property): bool
+    {
+        return $user->id === $property->user_id;
+    }
+    
+    /**
+     * Determine whether the user can update a room 
+     * 
+     * @param \App\Models\User $user
+     * @param \App\Models\Property $property
+     * @return bool
+     */
+    public function updateRoom(User $user, Property $property): bool
+    {
+        return $user->id === $property->user_id;
+    }
 }

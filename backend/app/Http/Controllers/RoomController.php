@@ -19,10 +19,10 @@ class RoomController extends Controller
 
 	private $roomService;
 
-  public function __construct(RoomService $roomService)
-  {
-    $this->roomService = $roomService;
-  }
+	public function __construct(RoomService $roomService)
+	{
+		$this->roomService = $roomService;
+	}
 
 	/**
 	 * Display a listing of the resource.
@@ -70,6 +70,8 @@ class RoomController extends Controller
 	public function store(StoreRoomRequest $request, Property $property)
 	{
 		try {
+			$this->authorize('storeRoom', $property);
+
 			if ($property->rooms()->count() >= $property->total_rooms) {
 				return response()->json([
 					'error' => 'La propiedad ya tiene todas las habitaciones creadas.',
@@ -78,13 +80,18 @@ class RoomController extends Controller
 			}
 
 			$room = $this->roomService->createRoom($property, $request->validated());
-			
+
 			return response()->json(new RoomResource($room), 201);
+		} catch (AuthorizationException $e) {
+			return response()->json([
+				'error' => 'No tienes permisos para añadir una habitación a esta propiedad',
+				'error_code' => 403
+			], 403);
 		} catch (Exception $e) {
 			return response()->json([
 				'error' => 'Error inesperado al crear la habitación.',
 				'message' => $e->getMessage()
-		], 500);
+			], 500);
 		}
 	}
 
@@ -113,16 +120,84 @@ class RoomController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 */
-	public function update(Request $request, string $id)
+	public function update(StoreRoomRequest $request, Property $property, Room $room)
 	{
-		//
+		try {
+			$this->authorize('updateRoom', $property);
+
+			// Rare
+			if ($property->id !== $room->property_id) {
+				return response()->json([
+					'error' => 'La habitación no pertenece a esta propiedad',
+					'error_code' => 400
+				], 400);
+			}
+
+			[$updatedRoom, $updated] = $this->roomService->updateRoom($room, $request->validated());
+
+			$response = [
+				'room' => new RoomResource($updatedRoom),
+			];
+
+			if (!$updated) {
+				$response['warning'] = [
+					'key' => 'no_update_performed',
+					'message' => 'No se han realizado cambios en la habitación.'
+				];
+			}
+
+			return response()->json($response, 200);
+		} catch (AuthorizationException $e) {
+			return response()->json([
+				'error' => 'No tienes permisos para editar una habitación de esta propiedad',
+				'error_code' => 403
+			], 403);
+		} catch (Exception $e) {
+			return response()->json([
+				'error' => 'Error inesperado al editar la habitación.',
+				'message' => $e->getMessage()
+			], 500);
+		}
 	}
 
 	/**
 	 * Remove the specified resource from storage.
 	 */
-	public function destroy(string $id)
+	public function destroy(Property $property, Room $room)
 	{
-		//
+		try {
+			$this->authorize('delete', $property);
+
+			// Rare
+			if ($property->id !== $room->property_id) {
+				return response()->json([
+					'error' => 'La habitación no pertenece a esta propiedad',
+					'error_code' => 400
+				], 400);
+			}
+
+			$deleted = $this->roomService->deleteRoom($room);
+
+			if (!$deleted) {
+				return response()->json([
+					'error' => 'No se pudo eliminar la habitación.',
+					'error_code' => 500,
+				], 500);
+			}
+
+			return response()->json([
+				'message' => 'Habitación eliminada correctamente.',
+			], 200);
+		} catch (AuthorizationException $e) {
+			return response()->json([
+				'error' => 'No tienes permisos para eliminar una habitación de esta propiedad',
+				'error_code' => 403
+			], 403);
+		} catch (Exception $e) {
+			return response()->json([
+				'error' => 'Error inesperado al eliminar la habitación.',
+				'message' => $e->getMessage()
+			], 500);
+		}
 	}
 }

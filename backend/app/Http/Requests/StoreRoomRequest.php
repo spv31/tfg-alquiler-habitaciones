@@ -22,7 +22,7 @@ class StoreRoomRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'property_id' => 'required|exists:properties,id',
+      // 'property_id' => 'required|exists:properties,id',
       'description' => 'required|string',
       'rental_price' => 'required|numeric|min:0',
     ];
