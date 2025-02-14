@@ -159,4 +159,32 @@ class PropertyController extends Controller
       ], 500);
     }
   }
+
+  public function changeStatus(Request $request, Property $property)
+  {
+    try {
+      $this->authorize('update', $property);
+
+      $validatedStatus = $request->validate([
+        'status' => 'required|in:available,unavailable,occupied,partially_occupied'
+      ]);
+
+      $this->propertyServices->changeStatus($property, $validatedStatus['status']);
+
+      return response()->json([
+        'message' => 'Estado de la propiedad actualizado con éxito.',
+        'property' => new PropertyResource($property->fresh()),
+      ], 200);
+    } catch (AuthorizationException $e) {
+      return response()->json([
+        'error' => 'No tienes permisos para cambiar el estado de esta propiedad.',
+        'error_code' => 403
+      ], 403);
+    } catch (Exception $e) {
+      return response()->json([
+        'error' => 'Error inesperado al cambiar el estado de la propiedad.',
+        'message' => $e->getMessage()
+      ], 500);
+    }
+  }
 }

@@ -204,7 +204,7 @@ class RoomController extends Controller
 	 * @param \Illuminate\Http\Request $request
 	 * @param \App\Models\Property $property
 	 * @param \App\Models\Room $room
-	 * @return void
+	 * @return mixed|\Illuminate\Http\JsonResponse
 	 */
 	public function changeStatus(Request $request, Property $property, Room $room)
 	{
@@ -213,11 +213,11 @@ class RoomController extends Controller
 
 			$this->ensureRoomBelongsToProperty($property, $room);
 
-			$validatedData = $request->validate([
+			$validatedStatus = $request->validate([
 				'status' => 'required|in:available,occupied,unavailable',
 			]);
 
-			$this->roomService->changeStatus($room, $validatedData['status']);
+			$this->roomService->changeStatus($room, $validatedStatus['status']);
 
 			return response()->json([
 				'message' => 'Estado de la habitación actualizado con éxito.',

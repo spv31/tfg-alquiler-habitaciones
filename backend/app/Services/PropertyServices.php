@@ -82,4 +82,29 @@ class PropertyServices
 
 		return $property;
 	}
+
+	/**
+	 * Deletes a property
+	 * 
+	 * @param \App\Models\Property $property
+	 * @return bool|null
+	 */
+	public function deleteProperty(Property $property) 
+	{
+		return $property->delete();
+	}
+
+	/**
+	 * Updates properties' status
+	 * 
+	 * @param \App\Models\Property $property
+	 * @param mixed $newStatus
+	 * @return bool
+	 */
+	public function changeStatus(Property $property, $newStatus)
+	{
+		return $property->update([
+			'status' => $newStatus,
+		]);
+	}
 }
