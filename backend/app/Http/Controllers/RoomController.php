@@ -24,6 +24,13 @@ class RoomController extends Controller
 		$this->roomService = $roomService;
 	}
 
+	public function ensureRoomBelongsToProperty(Property $property, Room $room)
+	{
+		if ($property->id !== $room->property_id) {
+			throw new Exception('La habitación no pertenece a esta propiedad.');
+		}
+	}
+
 	/**
 	 * Display a listing of the resource.
 	 */
@@ -103,7 +110,9 @@ class RoomController extends Controller
 		try {
 			$this->authorize('show', $property);
 
-			//TODO
+			$this->ensureRoomBelongsToProperty($property, $room);
+
+			return response()->json(new RoomResource($room), 200);
 		} catch (AuthorizationException $e) {
 			return response()->json([
 				'error' => 'No tienes permisos para ver la habitación',
@@ -125,13 +134,7 @@ class RoomController extends Controller
 		try {
 			$this->authorize('updateRoom', $property);
 
-			// Rare
-			if ($property->id !== $room->property_id) {
-				return response()->json([
-					'error' => 'La habitación no pertenece a esta propiedad',
-					'error_code' => 400
-				], 400);
-			}
+			$this->ensureRoomBelongsToProperty($property, $room);
 
 			[$updatedRoom, $updated] = $this->roomService->updateRoom($room, $request->validated());
 
@@ -168,13 +171,7 @@ class RoomController extends Controller
 		try {
 			$this->authorize('delete', $property);
 
-			// Rare
-			if ($property->id !== $room->property_id) {
-				return response()->json([
-					'error' => 'La habitación no pertenece a esta propiedad',
-					'error_code' => 400
-				], 400);
-			}
+			$this->ensureRoomBelongsToProperty($property, $room);
 
 			$deleted = $this->roomService->deleteRoom($room);
 
@@ -196,6 +193,44 @@ class RoomController extends Controller
 		} catch (Exception $e) {
 			return response()->json([
 				'error' => 'Error inesperado al eliminar la habitación.',
+				'message' => $e->getMessage()
+			], 500);
+		}
+	}
+
+	/**
+	 * Update the specified resource status in storage.
+	 * 
+	 * @param \Illuminate\Http\Request $request
+	 * @param \App\Models\Property $property
+	 * @param \App\Models\Room $room
+	 * @return void
+	 */
+	public function changeStatus(Request $request, Property $property, Room $room)
+	{
+		try {
+			$this->authorize('updateRoom', $property);
+
+			$this->ensureRoomBelongsToProperty($property, $room);
+
+			$validatedData = $request->validate([
+				'status' => 'required|in:available,occupied,unavailable',
+			]);
+
+			$this->roomService->changeStatus($room, $validatedData['status']);
+
+			return response()->json([
+				'message' => 'Estado de la habitación actualizado con éxito.',
+				'room' => new RoomResource($room->refresh()),
+			], 200);
+		} catch (AuthorizationException $e) {
+			return response()->json([
+				'error' => 'No tienes permisos para cambiar el estado de esta habitación',
+				'error_code' => 403
+			], 403);
+		} catch (Exception $e) {
+			return response()->json([
+				'error' => 'Error inesperado al cambiar el estado de la habitación.',
 				'message' => $e->getMessage()
 			], 500);
 		}

@@ -52,4 +52,18 @@ class RoomService
 	{
 		return $room->delete();
 	}
+
+	/**
+	 * Updates room's status
+	 * 
+	 * @param App\Models\Room $room
+	 * @param mixed $newStatus
+	 * @return bool
+	 */
+	public function changeStatus(Room $room, $newStatus)
+	{
+		return $room->update([
+			'status' => $newStatus,
+		]);
+	}
 }

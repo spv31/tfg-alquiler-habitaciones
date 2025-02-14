@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
      *  DELETE          api/properties/{property}/rooms/{room} 
      */
     Route::apiResource('properties.rooms', RoomController::class);
+    Route::patch('/properties/{property}/rooms/{room}/status', [RoomController::class, 'changeStatus'])->name('properties.rooms.changeStatus');
 });
 
 
