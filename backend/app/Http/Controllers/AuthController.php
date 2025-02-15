@@ -19,6 +19,46 @@ class AuthController extends Controller
     protected InvitationService $invitationService,
   ) {}
 
+  public function registerOwner(Request $request)
+  {
+    $validatedData = $request->validate([
+      'name' => 'required|string|max:255',
+      'email' => 'required|email|unique:users',
+      'password' => 'required|string|min:6',
+      'user_type' => 'required|in:individual,company',
+      'identifier' => 'required|string|unique:users,identifier|max:30',
+      'profile_picture' => 'nullable|string',
+      'phone_number' => 'required|string|max:15',
+      'address' => 'required|string|max:255',
+    ]);
+
+    try {
+
+    } catch(Exception $e) {
+
+    }
+  }
+
+  public function registerTenantFromInvitation(Request $request)
+  {
+    $validatedData = $request->validate([
+      'name' => 'required|string|max:255',
+      'email' => 'required|email|unique:users',
+      'password' => 'required|string|min:6',
+      'identifier' => 'required|string|unique:users,identifier|max:30',
+      'profile_picture' => 'nullable|string',
+      'phone_number' => 'required|string|max:15',
+      'address' => 'required|string|max:255',
+      'token' => 'required|string',
+    ]);
+
+    try {
+
+    } catch (Exception $e) {
+      
+    }
+  }
+
   public function register(Request $request)
   {
     $validatedData = $request->validate([
@@ -83,11 +123,12 @@ class AuthController extends Controller
 
   public function resetPassword(Request $request)
   {
-    Log::info('Solicitud recibida para restablecer contraseña', [
-      'email' => $request->input('email'),
-      'token' => $request->input('token'),
-      'password' => $request->input('password'),
-    ]);
+    // Log::info('Solicitud recibida para restablecer contraseña', [
+    //   'email' => $request->input('email'),
+    //   'token' => $request->input('token'),
+    //   'password' => $request->input('password'),
+    // ]);
+
     $validatedData = $request->validate([
       'email' => 'required|email|exists:users,email',
       'token' => 'required',

@@ -31,7 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 // Auth Routes for login, register and logout
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register/owner', [AuthController::class, 'registerOwner']);
+Route::post('/register/tenant', [AuthController::class, 'registerTenantFromInvitation']);
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 

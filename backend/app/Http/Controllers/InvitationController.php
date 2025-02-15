@@ -11,52 +11,52 @@ use Illuminate\Support\Facades\Auth;
 
 class InvitationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-      try {
-        $invitations = Invitation::where('owner_id', Auth::id())->paginate(10);
+  /**
+   * Display a listing of the resource.
+   */
+  public function index()
+  {
+    try {
+      $invitations = Invitation::where('owner_id', Auth::id())->paginate(10);
 
-        return InvitationResource::collection($invitations);
-      } catch (Exception $e) {
-        return response()->json([
-          'error' => 'Error al obtener las habitaciones.',
-          'message' => $e->getMessage(), 
-        ], 500);
-      }
+      return InvitationResource::collection($invitations);
+    } catch (Exception $e) {
+      return response()->json([
+        'error' => 'Error al obtener las habitaciones.',
+        'message' => $e->getMessage(),
+      ], 500);
     }
+  }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+  /**
+   * Store a newly created resource in storage.
+   */
+  public function store(Request $request)
+  {
+    //
+  }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+  /**
+   * Display the specified resource.
+   */
+  public function show(string $id)
+  {
+    //
+  }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+  /**
+   * Update the specified resource in storage.
+   */
+  public function update(Request $request, string $id)
+  {
+    //
+  }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+  /**
+   * Remove the specified resource from storage.
+   */
+  public function destroy(string $id)
+  {
+    //
+  }
 }
