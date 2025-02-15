@@ -37,7 +37,7 @@ class PropertyController extends Controller
       return PropertyResource::collection($properties);
     } catch (Exception $e) {
       return response()->json([
-        'error' => 'Error al obtener las propiedades',
+        'error' => 'Error al obtener las propiedades.',
         'message' => $e->getMessage()
       ], 500);
     }

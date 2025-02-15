@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\InvitationResource;
+use App\Models\Invitation;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class InvitationController extends Controller
 {
@@ -11,7 +16,16 @@ class InvitationController extends Controller
      */
     public function index()
     {
-        //
+      try {
+        $invitations = Invitation::where('owner_id', Auth::id())->paginate(10);
+
+        return InvitationResource::collection($invitations);
+      } catch (Exception $e) {
+        return response()->json([
+          'error' => 'Error al obtener las habitaciones.',
+          'message' => $e->getMessage(), 
+        ], 500);
+      }
     }
 
     /**
