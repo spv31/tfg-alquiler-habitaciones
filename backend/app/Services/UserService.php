@@ -18,6 +18,63 @@ class UserService
     return User::where('email', $email)->first();
   }
 
+
+  /**
+   * Registers an owner
+   * 
+   * @param array $validatedData
+   * @return array{message: string, status: string, user: User|null|array{message: string, status: string, user: User}}
+   */
+  public function registerOwner(array $validatedData): array
+  {
+    $existingUser = $this->findUserByEmail($validatedData['email']);
+
+    // Owner already exists
+    if ($existingUser) {
+      return [
+        'status'  => 'user_exists',
+        'message' => 'User already exists.',
+        'user'    => $existingUser,
+      ];
+    }
+
+    $validatedData['role'] = 'owner';
+    $user = $this->createUser($validatedData);
+
+    return [
+      'status'  => 'owner_registered',
+      'message' => 'Owner registered successfully.',
+      'user'    => $user,
+    ];
+  }
+
+  public function registerTenant(array $validatedData): array
+  {
+    $existingUser = $this->findUserByEmail($validatedData['email']);
+
+    if ($existingUser) {
+      $this->invitationService->acceptInvitation($validatedData['token'], $existingUser);
+
+      // Tenant already exists
+      return [
+        'status' => 'user_exists',
+        'message' => 'User already existed and was linked to the property.',
+        'user' => $existingUser,
+      ];
+    }
+
+    $validatedData['role'] = 'tenant';
+    $validatedData['user_type'] = 'individual';
+    $user = $this->createUser($validatedData);
+    $this->invitationService->acceptInvitation($validatedData['token'], $user);
+
+    return [
+      'status'  => 'tenant_registered',
+      'message' => 'Tenant registered and invitation accepted.',
+      'user'    => $user,
+    ];
+  }
+
   public function registerUser(array $validatedData)
   {
     $existingUser = $this->findUserByEmail($validatedData['email']);
