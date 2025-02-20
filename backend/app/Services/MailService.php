@@ -23,8 +23,8 @@ class MailService
 		Mail::to($tenant->email)->send(new TenantRegistrationMail($tenant));
 	}
 
-	public function sendInvitationRegistrationMail(User $user)
+	public function sendInvitationRegistrationMail($recipient, Invitation $invitation)
 	{
-
+		Mail::to($recipient)->send(new InvitationRegistrationMail($recipient, $invitation));
 	}
 }

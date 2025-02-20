@@ -63,4 +63,14 @@ class PropertyPolicy
     {
         return $user->id === $property->user_id;
     }
+
+    public function storeInvitation(User $user, Property $property)
+    {
+        return $user->id === $property->user_id;
+    }
+
+    public function updateInvitation(User $user, Property $property)
+    {
+        return $user->id === $property->user_id;
+    }
 }

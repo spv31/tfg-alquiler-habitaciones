@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
 use App\Http\Controllers\RoomController;
@@ -27,6 +28,11 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::apiResource('properties.rooms', RoomController::class);
     Route::patch('/properties/{property}/rooms/{room}/status', [RoomController::class, 'changeStatus'])->name('properties.rooms.changeStatus');
+
+    /**
+     * Invitations
+     */
+    Route::apiResource('invitations', InvitationController::class);
 });
 
 

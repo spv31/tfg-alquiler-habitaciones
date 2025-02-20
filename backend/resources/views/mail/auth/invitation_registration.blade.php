@@ -1,12 +1,26 @@
 <x-mail::message>
-# Introduction
+  # Hola,
 
-The body of your message.
+  Has recibido una invitación para formar parte del proceso de arrendamiento mediante nuestra plataforma.
 
-<x-mail::button :url="''">
-Button Text
-</x-mail::button>
+  **Tipo de invitación:** Has sido invitado para gestionar **{{ $invitationType }}**.
 
-Thanks,<br>
-{{ config('app.name') }}
+  **Ubicación:** {{ $locationDescription }}
+
+  A través de nuestra aplicación podrás:
+  - Consultar y gestionar tu contrato de arrendamiento.
+  - Comunicarte directamente con el propietario.
+  - Realizar pagos y ver detalles de tu alquiler.
+
+  Para comenzar el proceso, regístrate haciendo clic en el siguiente botón:
+
+  <x-mail::button :url="$registerUrl">
+    Registrarse en la Plataforma
+  </x-mail::button>
+
+  Si no reconoces esta invitación o no solicitaste arrendar, ignora este mensaje.
+
+  Saludos,
+  **El equipo de soporte**
+  {{ config('app.name') }}
 </x-mail::message>
