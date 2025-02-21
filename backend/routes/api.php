@@ -5,6 +5,7 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
 use App\Http\Controllers\RoomController;
+use App\Http\Middleware\ExpireInvitationsMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     /**
      * Invitations
      */
-    Route::apiResource('invitations', InvitationController::class);
+    Route::middleware(ExpireInvitationsMiddleware::class)->group(function () {
+        Route::apiResource('invitations', InvitationController::class);
+    });
 });
 
 

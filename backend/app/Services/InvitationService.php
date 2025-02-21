@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Invitations\Exceptions\InvitationAlreadyExistsException;
+use App\Invitations\Exceptions\RentableNotAvailableException;
 use App\Models\Invitation;
 use App\Models\Property;
 use App\Models\Room;
@@ -19,15 +21,23 @@ class InvitationService
     //
   }
 
-  public function createInvitation(User $user, array $data): Invitation
+  public function createInvitation(User $user, array $data): ?Invitation
   {
+    $rentable = $data['room_id'] 
+    ? Room::findOrFail($data['room_id'])
+    : Property::findOrFail($data['property_id']);
+
+    if ($rentable->status === 'unavailable' || $rentable->status === 'occupied') {
+      throw new RentableNotAvailableException();
+    }
+
     $existingInvitation = Invitation::where('email', $data['email'])
       ->where('rentable_id', $data['room_id'] ?? $data['property_id'])
       ->where('status', 'pending')
       ->first();
 
     if ($existingInvitation) {
-      throw new Exception('Ya existe una invitación pendiente para este usuario en esta propiedad o habitación.');
+      throw new InvitationAlreadyExistsException();
     }
 
     $invitation = Invitation::create([

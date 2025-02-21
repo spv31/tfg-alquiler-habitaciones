@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Invitation extends Model
@@ -19,6 +20,12 @@ class Invitation extends Model
         'owner_id',
         'status',
     ];
+
+    public function scopeExpireOld($query)
+    {
+        return $query->where('status', 'pending')
+            ->where('created_at', '<', Carbon::now()->subDays(7));
+    }
 
     /**
      * Polymorphic Relationship: Invitation could be related to Property or Room
