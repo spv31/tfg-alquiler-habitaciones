@@ -50,15 +50,22 @@ class UserService
 
   public function registerTenant(array $validatedData): array
   {
+    $invitation = $this->invitationService->validateInvitation($validatedData['email'], $validatedData['token']);
+
+    if (!$invitation) {
+      return [
+        'error_key' => 'invalid_invitation',
+      ];
+    }
+
     $existingUser = $this->findUserByEmail($validatedData['email']);
 
     if ($existingUser) {
-      $this->invitationService->acceptInvitation($validatedData['token'], $existingUser);
+      $this->invitationService->acceptInvitation($invitation, $existingUser);
 
       // Tenant already exists
       return [
         'status' => 'user_exists',
-        'message' => 'User already existed and was linked to the property.',
         'user' => $existingUser,
       ];
     }
@@ -66,11 +73,10 @@ class UserService
     $validatedData['role'] = 'tenant';
     $validatedData['user_type'] = 'individual';
     $user = $this->createUser($validatedData);
-    $this->invitationService->acceptInvitation($validatedData['token'], $user);
+    $this->invitationService->acceptInvitation($invitation, $user);
 
     return [
       'status'  => 'tenant_registered',
-      'message' => 'Tenant registered and invitation accepted.',
       'user'    => $user,
     ];
   }

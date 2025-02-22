@@ -13,19 +13,21 @@ use Illuminate\Support\Str;
 
 class InvitationService
 {
+  private PropertyTenantService $propertyTenantService;
+
   /**
    * Create a new class instance.
    */
-  public function __construct()
+  public function __construct(PropertyTenantService $propertyTenantService)
   {
-    //
+    $this->propertyTenantService = $propertyTenantService;
   }
 
   public function createInvitation(User $user, array $data): ?Invitation
   {
-    $rentable = $data['room_id'] 
-    ? Room::findOrFail($data['room_id'])
-    : Property::findOrFail($data['property_id']);
+    $rentable = $data['room_id']
+      ? Room::findOrFail($data['room_id'])
+      : Property::findOrFail($data['property_id']);
 
     if ($rentable->status === 'unavailable' || $rentable->status === 'occupied') {
       throw new RentableNotAvailableException();
@@ -43,8 +45,8 @@ class InvitationService
     $invitation = Invitation::create([
       'email' => $data['email'],
       'token' => Str::random(32),
-      'rentable_id' => $data['room_id'] ?? $data['property_id'],
-      'rentable_type' => $data['room_id'] ? Room::class : Property::class,
+      'rentable_id' => $rentable->id,
+      'rentable_type' => $data['room_id'] ? 'room' : 'property',
       'owner_id' => $user->id,
       'status' => 'pending'
     ]);
@@ -55,14 +57,36 @@ class InvitationService
     return $invitation;
   }
 
-  public function sendInvitation(string $email, Invitation $invitation) 
+  public function sendInvitation(string $email, Invitation $invitation): void
   {
     app(MailService::class)->sendInvitationRegistrationMail($email, $invitation);
   }
 
   public function regenerateInvitation() {}
 
-  public function acceptInvitation(string $token) {}
+  public function validateInvitation(string $email, string $token): ?Invitation
+  {
+    $invitation = Invitation::where('token', $token)
+      ->where('email', $email)
+      ->where('status', 'pending')
+      ->first();
 
-  public function verifyInvitationToken() {}
+    if (!$invitation) return null;
+
+    if (!$this->verifyInvitationToken($invitation, $token)) return null;
+
+    return $invitation;
+  }
+
+  public function acceptInvitation(Invitation $invitation, User $user)
+  {
+    $invitation->update(['status' => 'accepted']);
+
+    $this->propertyTenantService->assignTenant($invitation->rentable, $user);
+  }
+
+  public function verifyInvitationToken(Invitation $invitation, string $providedToken)
+  {
+    return $invitation->token === $providedToken;
+  }
 }

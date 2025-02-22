@@ -6,6 +6,6 @@ use Exception;
 
 class RentableNotAvailableException extends Exception
 {
-    protected $code = 1001; // Código único
-    protected $message = 'El rentable no está disponible para invitaciones.';
+    protected $code = 1002; 
+    protected $message = 'El alquiler no está disponible para invitaciones.';
 }

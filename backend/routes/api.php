@@ -5,39 +5,41 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\TenantAssignmentController;
 use App\Http\Middleware\ExpireInvitationsMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+  return $request->user();
 })->middleware('auth:sanctum');
 
-
 Route::middleware('auth:sanctum')->group(function () {
-    // Routes for properties (GET, POST, PUT, DELETE)
-    Route::apiResource('properties', PropertyController::class);
-    // Routes for creating or updating properties
-    Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);
-    Route::put('/properties/{id}/details', [PropertyDetailController::class, 'updateOrCreate']);
-    /**
-     *  GET|HEAD        api/properties/{property}/rooms 
-     *  POST            api/properties/{property}/rooms 
-     *  GET|HEAD        api/properties/{property}/rooms/{room} 
-     *  PUT|PATCH       api/properties/{property}/rooms/{room} 
-     *  DELETE          api/properties/{property}/rooms/{room} 
-     */
-    Route::apiResource('properties.rooms', RoomController::class);
-    Route::patch('/properties/{property}/rooms/{room}/status', [RoomController::class, 'changeStatus'])->name('properties.rooms.changeStatus');
-
-    /**
-     * Invitations
-     */
-    Route::middleware(ExpireInvitationsMiddleware::class)->group(function () {
-        Route::apiResource('invitations', InvitationController::class);
-    });
+  // Properties
+  Route::apiResource('properties', PropertyController::class);
+  Route::apiResource('properties.rooms', RoomController::class);
+  // See tenants
+  Route::get('/properties/{property}/tenants', [TenantAssignmentController::class, 'listPropertyTenants']);
+  Route::get('/properties/{property}/rooms/{room}/tenants', [RoomController::class, 'listRoomTenants']);
+  // Change status
+  Route::patch('/properties/{property}/status', [PropertyController::class, 'updateStatus']);
+  Route::patch('/properties/{property}/rooms/{room}/status', [RoomController::class, 'changeStatus'])->name('properties.rooms.changeStatus');
+  // Routes for creating or updating properties
+  Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);
+  Route::put('/properties/{id}/details', [PropertyDetailController::class, 'updateOrCreate']);
+  // Invitations
+  Route::middleware(ExpireInvitationsMiddleware::class)->group(function () {
+    Route::apiResource('invitations', InvitationController::class);
+    // Regenerate Invitation
+    Route::post('/invitations/{invitation}/regenerate', [InvitationController::class, 'regenerate']);
+  });
+  // Reassignment of tenants/properties/rooms 
+  Route::post('tenant-assignments/reassign', [TenantAssignmentController::class, 'reassign']);
+  // Release tenats
+  Route::delete('tenant-assignments/remove', [TenantAssignmentController::class, 'removeAssignment']);
+  // Tenant View
+  Route::get('/assigned-rentable', [TenantAssignmentController::class, 'getAssignedRentable']);
 });
-
 
 // Auth Routes for login, register and logout
 Route::post('/register/owner', [AuthController::class, 'registerOwner']);
