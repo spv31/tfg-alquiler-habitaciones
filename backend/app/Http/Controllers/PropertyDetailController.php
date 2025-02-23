@@ -44,25 +44,22 @@ class PropertyDetailController extends Controller
 
       if (!$details) {
         return response()->json([
-          'error' => 'No hay detalles para esta propiedad'
+          'error_key' => 'property_details_not_found'
         ], 404);
       }
 
       return new PropertyDetailResource($details);
     } catch (ModelNotFoundException $e) {
       return response()->json([
-        'error' => 'Propiedad no encontrada',
-        'error_code' => 404
+        'error_key' => 'property_not_found'
       ], 404);
     } catch (AuthorizationException $e) {
       return response()->json([
-        'error' => 'No tienes permisos para ver los detalles de esta propiedad',
-        'error_code' => 403
+        'error_key' => 'unauthorized_property_details_access'
       ], 403);
     } catch (Exception $e) {
       return response()->json([
-        'error' => 'Error inesperado al obtener los detalles de la propiedad',
-        'message' => $e->getMessage()
+        'error_key' => 'fetch_property_details_failed'
       ], 500);
     }
   }
@@ -76,21 +73,21 @@ class PropertyDetailController extends Controller
         ['property_id' => $property->id],
         $request->validated()
       );
-      return new PropertyDetailResource($details);
+      return response()->json([
+        'message_key' => 'property_details_updated',
+        'details' => new PropertyDetailResource($details)
+      ], 200);
     } catch (ModelNotFoundException $e) {
       return response()->json([
-        'error' => 'Propiedad no encontrada',
-        'error_code' => 404
+        'error_key' => 'property_not_found'
       ], 404);
     } catch (AuthorizationException $e) {
       return response()->json([
-        'error' => 'No tienes permisos para actualizar los detalles de esta propiedad',
-        'error_code' => 403
+        'error_key' => 'unauthorized_property_details_update'
       ], 403);
     } catch (Exception $e) {
       return response()->json([
-        'error' => 'Error inesperado al actualizar los detalles de la propiedad',
-        'message' => $e->getMessage()
+        'error_key' => 'update_property_details_failed'
       ], 500);
     }
   }

@@ -44,10 +44,7 @@ class InvitationController extends Controller
 
       return InvitationResource::collection($invitations);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error al obtener las habitaciones.',
-        'message' => $e->getMessage(),
-      ], 500);
+      return response()->json(['error_key' => 'fetch_invitations_failed'], 500);
     }
   }
 
@@ -63,13 +60,12 @@ class InvitationController extends Controller
       $invitation = $this->invitationService->createInvitation(Auth::user(), $request->validated());
 
       return response()->json([
-        'message' => 'Invitación enviada con éxito.',
+        'message_key' => 'invitation_sent',
         'invitation' => new InvitationResource($invitation)
       ], 201);
     } catch (AuthorizationException $e) {
       return response()->json([
-        'error' => 'No tienes permiso para enviar invitaciones para esta propiedad.',
-        'error_code' => 403
+        'error_key' => 'unauthorized_send_invitation'
       ], 403);
     } catch (RentableNotAvailableException $e) {
       return response()->json([
@@ -81,8 +77,7 @@ class InvitationController extends Controller
       ], 400);
     } catch (Exception $e) {
       return response()->json([
-        'error' => 'Error al crear la invitación.',
-        'message' => $e->getMessage()
+        'error_key' => 'create_invitation_failed',
       ], 500);
     }
   }
@@ -99,15 +94,9 @@ class InvitationController extends Controller
 
       return new InvitationResource($invitation);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para ver esta invitación.',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_view_invitation'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error al obtener la invitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'fetch_invitation_failed'], 500);
     }
   }
 
@@ -119,7 +108,6 @@ class InvitationController extends Controller
     try {
       $this->authorize('update', $invitation);
 
-
       $validated = $request->validate([
         'status' => 'required|in:pending,accepted,canceled,expired'
       ]);
@@ -127,19 +115,13 @@ class InvitationController extends Controller
       $invitation->update($validated);
 
       return response()->json([
-        'message' => 'Invitación actualizada con éxito.',
+        'message_key' => 'invitation_updated',
         'invitation' => new InvitationResource($invitation->fresh())
       ], 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para actualizar esta invitación.',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_update_invitation'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error al actualizar la invitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'update_invitation_failed'], 500);
     }
   }
 
@@ -153,19 +135,11 @@ class InvitationController extends Controller
 
       $invitation->delete();
 
-      return response()->json([
-        'message' => 'Invitación eliminada exitosamente.'
-      ], 200);
+      return response()->json(['message_key' => 'invitation_deleted'], 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para eliminar esta invitación.',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_delete_invitation'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error al eliminar la invitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'delete_invitation_failed'], 500);
     }
   }
 }

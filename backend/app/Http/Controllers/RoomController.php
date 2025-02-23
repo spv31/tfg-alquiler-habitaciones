@@ -27,7 +27,7 @@ class RoomController extends Controller
   public function ensureRoomBelongsToProperty(Property $property, Room $room)
   {
     if ($property->id !== $room->property_id) {
-      throw new Exception('La habitación no pertenece a esta propiedad.');
+      throw new Exception('room_does_not_belong_to_property');
     }
   }
 
@@ -59,15 +59,9 @@ class RoomController extends Controller
         'warning' => $warning,
       ], 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para ver las habitaciones de esta propiedad',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_view_rooms'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error inesperado al obtener las habitaciones',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'fetch_rooms_failed'], 500);
     }
   }
 
@@ -80,25 +74,19 @@ class RoomController extends Controller
       $this->authorize('storeRoom', $property);
 
       if ($property->rooms()->count() >= $property->total_rooms) {
-        return response()->json([
-          'error' => 'La propiedad ya tiene todas las habitaciones creadas.',
-          'error_code' => 'ROOMS_LIMIT_REACHED'
-        ], 400);
+        return response()->json(['error_key' => 'rooms_limit_reached'], 400);
       }
 
       $room = $this->roomService->createRoom($property, $request->validated());
 
-      return response()->json(new RoomResource($room), 201);
+      return response()->json([
+        'message_key' => 'room_created',
+        'room' => new RoomResource($room),
+      ], 201);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para añadir una habitación a esta propiedad',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_create_room'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error inesperado al crear la habitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'create_room_failed'], 500);
     }
   }
 
@@ -114,15 +102,9 @@ class RoomController extends Controller
 
       return response()->json(new RoomResource($room), 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para ver la habitación',
-        'error_code' => 403,
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_view_room'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error inesperado al obtener los detalles de la habitación',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'fetch_room_details_failed'], 500);
     }
   }
 
@@ -145,21 +127,14 @@ class RoomController extends Controller
       if (!$updated) {
         $response['warning'] = [
           'key' => 'no_update_performed',
-          'message' => 'No se han realizado cambios en la habitación.'
         ];
       }
 
       return response()->json($response, 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para editar una habitación de esta propiedad',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_update_room'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error inesperado al editar la habitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'update_room_failed'], 500);
     }
   }
 
@@ -176,25 +151,14 @@ class RoomController extends Controller
       $deleted = $this->roomService->deleteRoom($room);
 
       if (!$deleted) {
-        return response()->json([
-          'error' => 'No se pudo eliminar la habitación.',
-          'error_code' => 500,
-        ], 500);
+        return response()->json(['error_key' => 'delete_room_failed'], 500);
       }
 
-      return response()->json([
-        'message' => 'Habitación eliminada correctamente.',
-      ], 200);
+      return response()->json(['message_key' => 'room_deleted'], 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para eliminar una habitación de esta propiedad',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_delete_room'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error inesperado al eliminar la habitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'delete_room_failed'], 500);
     }
   }
 
@@ -220,19 +184,13 @@ class RoomController extends Controller
       $this->roomService->changeStatus($room, $validatedStatus['status']);
 
       return response()->json([
-        'message' => 'Estado de la habitación actualizado con éxito.',
+        'message_key' => 'room_status_updated',
         'room' => new RoomResource($room->refresh()),
       ], 200);
     } catch (AuthorizationException $e) {
-      return response()->json([
-        'error' => 'No tienes permisos para cambiar el estado de esta habitación',
-        'error_code' => 403
-      ], 403);
+      return response()->json(['error_key' => 'unauthorized_change_room_status'], 403);
     } catch (Exception $e) {
-      return response()->json([
-        'error' => 'Error inesperado al cambiar el estado de la habitación.',
-        'message' => $e->getMessage()
-      ], 500);
+      return response()->json(['error_key' => 'change_room_status_failed'], 500);
     }
   }
 }
