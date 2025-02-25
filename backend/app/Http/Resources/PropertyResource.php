@@ -23,7 +23,8 @@ class PropertyResource extends JsonResource
       'status'              => $this->status,
       'total_rooms'         => $this->total_rooms,
 
-      'main_image' => route('private.property_image', [
+      'main_image' => route('image.property.show', [
+        'property' => $this->id, 
         'filename' => $this->main_image_url
       ]),
 

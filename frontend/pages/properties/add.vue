@@ -65,7 +65,12 @@
               <p v-if="errors.rental_type" class="text-red-400 font-medium text-sm">{{ errors.rental_type }}</p>
             </div>
 
-
+            <div class="flex flex-col">
+              <label for="main_image" class="font-medium mb-1">{{ $t("properties.main_image") }}</label>
+              <input id="main_image" type="file" @change="handleImageUpload" accept="image/*"
+                class="p-2 bg-gray-700 rounded focus:ring-2 focus:ring-sky-500" />
+              <p v-if="errors.main_image" class="text-red-400 font-medium text-sm">{{ errors.main_image }}</p>
+            </div>
 
             <div class="flex justify-between mt-6">
               <button @click="nextStep"
@@ -145,6 +150,7 @@ const propertyData = ref({
   description: "",
   total_rooms: 0,
   rental_type: "full",
+  main_image: null,
   purchase_price: null,
   is_financed: false,
   mortgage_cost: null,

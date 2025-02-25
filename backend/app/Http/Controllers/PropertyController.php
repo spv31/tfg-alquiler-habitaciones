@@ -32,7 +32,12 @@ class PropertyController extends Controller
   public function index()
   {
     try {
-      $properties = Property::where('user_id', Auth::id())->paginate(10);
+      Log::info('Inicio del método index sin llamar a Auth');
+
+      Log::info('Inicio de búsqueda de propiedades para el usuario', ['user_id' => 2]);
+
+      $properties = Property::where('user_id', 2)->paginate(10);
+      Log::info('Propiedades obtenidas exitosamente', ['total' => $properties->total()]);
 
       return PropertyResource::collection($properties);
     } catch (Exception $e) {

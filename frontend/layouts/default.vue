@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<Navbar />
-		<div class="bg-gray-600 min-h-screen">
+		<div class="bg-gray-50 min-h-screen">
 			<NuxtPage/>
 		</div>
   </div>

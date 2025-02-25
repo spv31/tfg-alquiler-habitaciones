@@ -7,6 +7,10 @@ export const usePropertiesStore = defineStore(
   () => {
     const properties = ref([]);
     const currentProperty = ref(null);
+    const pagination = ref({
+      links: {},
+      meta: {},
+    });
     const loading = ref(false);
     const error = ref(null);
 
@@ -27,10 +31,45 @@ export const usePropertiesStore = defineStore(
             Accept: "application/json",
           },
         });
-
-        properties.value = response.data; 
+        properties.value = response.data;
+        pagination.value = {
+          links: response.links,
+          meta: response.meta,
+        };
       } catch (err) {
         error.value = err.message || "Error al obtener propiedades";
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const fetchProperty = async (id: any) => {
+      try {
+        loading.value = true;
+        error.value = null;
+
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) {
+          throw new Error("No se pudo obtener el token CSRF.");
+        }
+        console.log('dsa');
+
+        const response = await $fetch(
+          `http://localhost:8000/api/properties/${id}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+        console.log(response);
+        currentProperty.value = response;
+      } catch (err) {
+        error.value = err.message || "Error al obtener la propiedad";
         console.error(err);
       } finally {
         loading.value = false;
@@ -118,6 +157,7 @@ export const usePropertiesStore = defineStore(
       loading,
       error,
       fetchProperties,
+      fetchProperty,
       createProperty,
       updateProperty,
     };

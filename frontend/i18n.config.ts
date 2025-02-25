@@ -98,21 +98,22 @@ export default defineI18nConfig(() => ({
             "No se pudo enviar el enlace de recuperación. Inténtalo de nuevo.",
         },
       },
-      "reset_password": {
+      reset_password: {
         title: "Restablecer contraseña",
         new_password: "Nueva contraseña",
         confirm_password: "Confirmar contraseña",
         submit: "Restablecer contraseña",
         success: "¡Contraseña restablecida con éxito! Redirigiendo a login...",
         errors: {
-          "fields_required": "Todos los campos son obligatorios.",
-          "password_mismatch": "Las contraseñas no coinciden.",
-          "failed": "No se pudo restablecer la contraseña. Inténtalo de nuevo."
-        }
+          fields_required: "Todos los campos son obligatorios.",
+          password_mismatch: "Las contraseñas no coinciden.",
+          failed: "No se pudo restablecer la contraseña. Inténtalo de nuevo.",
+        },
       },
       properties: {
         success_message: "¡Propiedad registrada con éxito!",
-        error_message: "Hubo un error al registrar la propiedad. Por favor, inténtalo de nuevo.",
+        error_message:
+          "Hubo un error al registrar la propiedad. Por favor, inténtalo de nuevo.",
         add_title: "Añadir Propiedad",
         add_rooms: "Añadir Habitaciones",
         optional_stats: "Estadísticas Opcionales",
@@ -128,12 +129,13 @@ export default defineI18nConfig(() => ({
         add_rooms_title: "Añade las Habitaciones",
         add_rooms_description:
           "Especifica las características de cada habitación.",
+        main_image: "Imagen principal",
         room: "Habitación",
         room_price: "Precio por habitación",
         optional_title: "Completa los datos opcionales",
         rental_type: "Tipo de alquiler",
         rental_type_full: "Completo",
-        rental_type_per_room  : "Por habitación",
+        rental_type_per_room: "Por habitación",
         optional_description:
           "Estos datos son opcionales pero pueden ayudarte a gestionar mejor tu propiedad.",
         register_property: "Registrar Propiedad",
@@ -165,6 +167,99 @@ export default defineI18nConfig(() => ({
         min_rooms: "Debe haber al menos 1 habitación.",
         invalid_number: "Debe ser un número válido.",
         invalid_date: "Debe ser una fecha válida.",
+      },
+      api: {
+        success: {
+          owner_registered: "Propietario registrado con éxito.",
+          tenant_registered: "Inquilino registrado con éxito.",
+          login_successful: "Inicio de sesión exitoso.",
+          invitation_sent: "Invitación enviada.",
+          invitation_updated: "Invitación actualizada.",
+          invitation_deleted: "Invitación eliminada.",
+          property_created: "Propiedad creada.",
+          property_status_updated: "Estado de la propiedad actualizado.",
+          property_details_updated: "Detalles de la propiedad actualizados.",
+          room_created: "Habitación creada.",
+          room_status_updated: "Estado de la habitación actualizado.",
+          room_deleted: "Habitación eliminada.",
+          tenant_reassigned: "Inquilino reasignado.",
+          tenant_removed: "Inquilino eliminado.",
+        },
+        error: {
+          user_already_exists: "El usuario ya existe.",
+          unexpected_error: "Error inesperado.",
+          invalid_credentials: "Credenciales inválidas.",
+          reset_link_failed: "No se pudo enviar el enlace de restablecimiento.",
+          reset_link_sent: "Enlace de restablecimiento enviado.",
+          password_reset_successful: "Contraseña restablecida exitosamente.",
+          password_reset_failed: "No se pudo restablecer la contraseña.",
+          fetch_invitations_failed: "Error al obtener las invitaciones.",
+          unauthorized_send_invitation: "No autorizado para enviar invitación.",
+          rentable_not_available:
+            "El inmueble o habitación no está disponible.",
+          invitation_already_exists: "La invitación ya existe.",
+          create_invitation_failed: "Error al crear la invitación.",
+          unauthorized_view_invitation: "No autorizado para ver la invitación.",
+          fetch_invitation_failed: "Error al obtener la invitación.",
+          unauthorized_update_invitation:
+            "No autorizado para actualizar la invitación.",
+          update_invitation_failed: "Error al actualizar la invitación.",
+          unauthorized_delete_invitation:
+            "No autorizado para eliminar la invitación.",
+          delete_invitation_failed: "Error al eliminar la invitación.",
+          fetch_properties_failed: "Error al obtener las propiedades.",
+          property_creation_failed: "Error al crear la propiedad.",
+          property_not_found: "Propiedad no encontrada.",
+          unauthorized_property_access:
+            "No autorizado para acceder a la propiedad.",
+          fetch_property_failed: "Error al obtener la propiedad.",
+          unauthorized_property_update:
+            "No autorizado para actualizar la propiedad.",
+          update_property_failed: "Error al actualizar la propiedad.",
+          unauthorized_property_delete:
+            "No autorizado para eliminar la propiedad.",
+          delete_property_failed: "Error al eliminar la propiedad.",
+          unauthorized_property_status_change:
+            "No autorizado para cambiar el estado de la propiedad.",
+          property_status_update_failed:
+            "Error al actualizar el estado de la propiedad.",
+          property_details_not_found:
+            "Detalles de la propiedad no encontrados.",
+          unauthorized_property_details_access:
+            "No autorizado para acceder a los detalles de la propiedad.",
+          fetch_property_details_failed:
+            "Error al obtener los detalles de la propiedad.",
+          unauthorized_property_details_update:
+            "No autorizado para actualizar los detalles de la propiedad.",
+          update_property_details_failed:
+            "Error al actualizar los detalles de la propiedad.",
+          unauthorized_view_rooms: "No autorizado para ver las habitaciones.",
+          fetch_rooms_failed: "Error al obtener las habitaciones.",
+          rooms_limit_reached: "Se ha alcanzado el límite de habitaciones.",
+          unauthorized_create_room: "No autorizado para crear habitación.",
+          create_room_failed: "Error al crear la habitación.",
+          unauthorized_view_room: "No autorizado para ver la habitación.",
+          fetch_room_details_failed:
+            "Error al obtener los detalles de la habitación.",
+          unauthorized_update_room:
+            "No autorizado para actualizar la habitación.",
+          update_room_failed: "Error al actualizar la habitación.",
+          unauthorized_delete_room:
+            "No autorizado para eliminar la habitación.",
+          delete_room_failed: "Error al eliminar la habitación.",
+          unauthorized_change_room_status:
+            "No autorizado para cambiar el estado de la habitación.",
+          change_room_status_failed:
+            "Error al cambiar el estado de la habitación.",
+          no_rentable_assigned: "No hay un inmueble o habitación asignado.",
+          invalid_data: "Datos inválidos.",
+          rentable_not_found: "Inmueble o habitación no encontrado.",
+          rentable_already_occupied:
+            "El inmueble o habitación ya está ocupado.",
+          tenant_not_assigned: "El inquilino no está asignado.",
+          tenant_not_found: "Inquilino no encontrado.",
+          invalid_invitation: "Invitación inválida.",
+        },
       },
     },
     en: {
@@ -271,14 +366,15 @@ export default defineI18nConfig(() => ({
         submit: "Reset Password",
         success: "Password successfully reset! Redirecting to login...",
         errors: {
-          "fields_required": "All fields are required.",
-          "password_mismatch": "Passwords do not match.",
-          "failed": "Failed to reset password. Please try again."
-        }
+          fields_required: "All fields are required.",
+          password_mismatch: "Passwords do not match.",
+          failed: "Failed to reset password. Please try again.",
+        },
       },
       properties: {
         success_message: "Property registered successfully!",
-        error_message: "There was an error registering the property. Please try again.",
+        error_message:
+          "There was an error registering the property. Please try again.",
         add_title: "Add Property",
         add_rooms: "Add Rooms",
         optional_stats: "Optional Statistics",
@@ -293,6 +389,7 @@ export default defineI18nConfig(() => ({
         total_rooms_placeholder: "Total number of rooms",
         add_rooms_title: "Add the Rooms",
         add_rooms_description: "Specify the details for each room.",
+        main_image: "Main Image",
         room: "Room",
         room_price: "Room Price",
         optional_title: "Complete the optional data",
@@ -326,10 +423,89 @@ export default defineI18nConfig(() => ({
       errors: {
         address_short: "The address must be at least 5 characters long.",
         cadastral_required: "The cadastral reference is required.",
-        description_short: "The description must be at least 10 characters long.",
+        description_short:
+          "The description must be at least 10 characters long.",
         min_rooms: "There must be at least 1 room.",
         invalid_number: "Must be a valid number.",
         invalid_date: "Must be a valid date.",
+      },
+      api: {
+        success: {
+          owner_registered: "Owner registered successfully.",
+          tenant_registered: "Tenant registered successfully.",
+          login_successful: "Login successful.",
+          invitation_sent: "Invitation sent.",
+          invitation_updated: "Invitation updated.",
+          invitation_deleted: "Invitation deleted.",
+          property_created: "Property created.",
+          property_status_updated: "Property status updated.",
+          property_details_updated: "Property details updated.",
+          room_created: "Room created.",
+          room_status_updated: "Room status updated.",
+          room_deleted: "Room deleted.",
+          tenant_reassigned: "Tenant reassigned.",
+          tenant_removed: "Tenant removed.",
+        },
+        error: {
+          user_already_exists: "User already exists.",
+          unexpected_error: "Unexpected error.",
+          invalid_credentials: "Invalid credentials.",
+          reset_link_failed: "Reset link failed.",
+          reset_link_sent: "Reset link sent.",
+          password_reset_successful: "Password reset successful.",
+          password_reset_failed: "Password reset failed.",
+          fetch_invitations_failed: "Failed to fetch invitations.",
+          unauthorized_send_invitation: "Unauthorized to send invitation.",
+          rentable_not_available: "Rentable not available.",
+          invitation_already_exists: "Invitation already exists.",
+          create_invitation_failed: "Failed to create invitation.",
+          unauthorized_view_invitation: "Unauthorized to view invitation.",
+          fetch_invitation_failed: "Failed to fetch invitation.",
+          unauthorized_update_invitation: "Unauthorized to update invitation.",
+          update_invitation_failed: "Failed to update invitation.",
+          unauthorized_delete_invitation: "Unauthorized to delete invitation.",
+          delete_invitation_failed: "Failed to delete invitation.",
+          fetch_properties_failed: "Failed to fetch properties.",
+          property_creation_failed: "Failed to create property.",
+          property_not_found: "Property not found.",
+          unauthorized_property_access: "Unauthorized property access.",
+          fetch_property_failed: "Failed to fetch property.",
+          unauthorized_property_update: "Unauthorized property update.",
+          update_property_failed: "Failed to update property.",
+          unauthorized_property_delete: "Unauthorized property delete.",
+          delete_property_failed: "Failed to delete property.",
+          unauthorized_property_status_change:
+            "Unauthorized property status change.",
+          property_status_update_failed: "Failed to update property status.",
+          property_details_not_found: "Property details not found.",
+          unauthorized_property_details_access:
+            "Unauthorized property details access.",
+          fetch_property_details_failed: "Failed to fetch property details.",
+          unauthorized_property_details_update:
+            "Unauthorized property details update.",
+          update_property_details_failed: "Failed to update property details.",
+          unauthorized_view_rooms: "Unauthorized to view rooms.",
+          fetch_rooms_failed: "Failed to fetch rooms.",
+          rooms_limit_reached: "Rooms limit reached.",
+          unauthorized_create_room: "Unauthorized to create room.",
+          create_room_failed: "Failed to create room.",
+          unauthorized_view_room: "Unauthorized to view room.",
+          fetch_room_details_failed: "Failed to fetch room details.",
+          unauthorized_update_room: "Unauthorized to update room.",
+          update_room_failed: "Failed to update room.",
+          unauthorized_delete_room: "Unauthorized to delete room.",
+          delete_room_failed: "Failed to delete room.",
+          unauthorized_change_room_status:
+            "Unauthorized to change room status.",
+          change_room_status_failed: "Failed to change room status.",
+          no_rentable_assigned: "No rentable assigned.",
+          invalid_data: "Invalid data.",
+          rentable_not_found: "Rentable not found.",
+          rentable_already_occupied: "Rentable already occupied.",
+          tenant_not_assigned: "Tenant not assigned.",
+          tenant_not_found: "Tenant not found.",
+          invalid_invitation: "Invalid invitation.",
+        },
       },
     },
   },

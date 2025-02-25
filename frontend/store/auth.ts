@@ -48,10 +48,11 @@ export const useAuthStore = defineStore(
 
     const signIn = async (credentials: { email: string; password: string }) => {
       try {
-        await login(credentials);
+        const response = await login(credentials);
         await getUser();
       } catch (error) {
         console.error(error);
+        throw error;
       }
     };
 

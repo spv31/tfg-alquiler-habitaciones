@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
@@ -39,6 +40,15 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::delete('tenant-assignments/remove', [TenantAssignmentController::class, 'removeAssignment']);
   // Tenant View
   Route::get('/assigned-rentable', [TenantAssignmentController::class, 'getAssignedRentable']);
+  // Property images
+  Route::get('/properties/{property}/images/{filename}', [ImageController::class, 'showPropertyImage'])
+    ->name('image.property.show');
+  // Room images
+  Route::get('/properties/{property}/rooms/{room}/images/{filename}', [ImageController::class, 'showRoomImage'])
+    ->name('image.room.show');
+  // User images
+  Route::get('/users/{user}/avatar/{filename}', [ImageController::class, 'showUserImage'])
+    ->name('image.user.show');
 });
 
 // Auth Routes for login, register and logout

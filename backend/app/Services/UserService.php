@@ -18,7 +18,6 @@ class UserService
     return User::where('email', $email)->first();
   }
 
-
   /**
    * Registers an owner
    * 
