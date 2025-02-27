@@ -48,10 +48,10 @@ export default defineNuxtConfig({
           user: "/api/user",
         },
         redirect: {
-          onAuthOnly: '/login',
-          onGuestOnly: '/dashboard',
-          onLogin: "/dashboard",
-          onLogout: "/", // Landing Page / Home Page
+          onAuthOnly: (ctx) => ctx.$localePath('login'),
+          onGuestOnly: (ctx) => ctx.$localePath('dashboard'),
+          onLogin: (ctx) => ctx.$localePath('dashboard'),
+          onLogout: (ctx) => ctx.$localePath('/'), // Landing Page / Home Page
         },
       },
     }

@@ -3,7 +3,7 @@
     <div class="max-w-screen-xl flex items-center justify-between mx-auto p-4">
       <!-- Logo -->
       <div class="flex items-center space-x-6 mr-12">
-        <NuxtLink to="/dashboard" class="flex items-center">
+        <NuxtLink :to="$localePath('dashboard')" class="flex items-center">
           <span class="self-center text-2xl font-semibold text-gray-800">MyRentHub</span>
         </NuxtLink>
       </div>
@@ -12,14 +12,12 @@
       <div class="hidden lg:flex flex-grow items-center justify-between space-x-6">
         <template v-if="!authStore.isAuthenticated">
           <div class="flex space-x-6 ml-auto">
-            <NuxtLink 
-              to="/login"
+            <NuxtLink :to="$localePath('login')"
               class="text-gray-800 font-semibold text-lg hover:text-blue-500 transition-colors duration-200"
             >
               {{ $t('navbar.login') }}
             </NuxtLink>
-            <NuxtLink 
-              to="/register"
+            <NuxtLink :to="$localePath('register')"
               class="text-gray-800 font-semibold text-lg hover:text-blue-500 transition-colors duration-200"
             >
               {{ $t('navbar.register') }}
@@ -143,14 +141,12 @@
       <ul class="flex flex-col space-y-3 p-4">
 
         <template v-if="!authStore.isAuthenticated">
-          <NuxtLink 
-            to="/login" 
+          <NuxtLink :to="$localePath('login')"
             class="text-gray-800 font-semibold text-lg hover:text-blue-500 transition-colors duration-200"
           >
             {{ $t('navbar.login') }}
           </NuxtLink>
-          <NuxtLink 
-            to="/register" 
+          <NuxtLink :to="$localePath('register')" 
             class="text-gray-800 font-semibold text-lg hover:text-blue-500 transition-colors duration-200"
           >
             {{ $t('navbar.register') }}
@@ -217,7 +213,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+definePageMeta({
+  middleware: ['authRedirect']
+});
 import { useAuthStore } from "~/store/auth";
 
 const authStore = useAuthStore();
