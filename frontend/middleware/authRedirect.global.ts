@@ -1,14 +1,23 @@
-import { useAuthStore } from "~/store/auth";
+import { useAuthStore } from '~/store/auth';
 
 export default defineNuxtRouteMiddleware((to) => {
-  const { locale, localePath } = useI18n();
+  const { $localePath } = useNuxtApp();
   const authStore = useAuthStore();
 
-  if (!authStore.isAuthenticated() && (to.path === '/login' || to.path === '/register')) {
-    return navigateTo(localePath(to.path));
-  }
+  const allowedUnauthPaths = [
+    $localePath('login'),    
+    $localePath('register'),  
+    '/'                       
+  ];
 
-  if (authStore.isAuthenticated && to.path === localePath('login')) {
-    return navigateTo(localePath('dashboard'));
+  if (!authStore.isAuthenticated) {
+    if (!allowedUnauthPaths.includes(to.path)) {
+      return navigateTo($localePath('login'));
+    }
+  } 
+  else {
+    if (allowedUnauthPaths.includes(to.path)) {
+      return navigateTo($localePath('properties'));
+    }
   }
-})
+});

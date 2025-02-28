@@ -1,5 +1,5 @@
 <template>
-	
+	<RoomForm/>
 </template>
 
 <script>

@@ -14,6 +14,10 @@ export const usePropertiesStore = defineStore(
     const loading = ref(false);
     const error = ref(null);
 
+    const rooms = ref([]);
+    const currentRoom = ref(null);
+    const invitations = ref([]);
+
     const fetchProperties = async () => {
       try {
         loading.value = true;
@@ -53,7 +57,6 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) {
           throw new Error("No se pudo obtener el token CSRF.");
         }
-        console.log('dsa');
 
         const response = await $fetch(
           `http://localhost:8000/api/properties/${id}`,
@@ -66,8 +69,8 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
-        console.log(response);
-        currentProperty.value = response;
+        console.log(response.data);
+        currentProperty.value = response.data;
       } catch (err) {
         error.value = err.message || "Error al obtener la propiedad";
         console.error(err);
@@ -85,9 +88,6 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) {
           throw new Error("No se pudo obtener el token CSRF.");
         }
-        console.log("Token: ", csrfToken);
-
-        console.log("Propiedad: ", propertyData);
 
         const response = await $fetch("http://localhost:8000/api/properties", {
           method: "POST",
@@ -151,6 +151,148 @@ export const usePropertiesStore = defineStore(
       }
     };
 
+    const fetchRooms = async (propertyId: number) => {
+      try {
+        loading.value = true;
+        const csrfToken = await getCsrfToken();
+
+        const response = await $fetch(
+          `http://localhost:8000/api/properties/${propertyId}/rooms`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+
+        rooms.value = response.data;
+      } catch (err) {
+        error.value = err.message || "Error al obtener habitaciones";
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const fetchRoom = async (propertyId: number, roomId: number) => {
+      try {
+        loading.value = true;
+        const csrfToken = await getCsrfToken();
+
+        const response = await $fetch(
+          `http://localhost:8000/api/properties/${propertyId}/rooms/${roomId}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+
+        currentRoom.value = response.data;
+      } catch (err) {
+        error.value = err.message || "Error al obtener la habitación";
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    // Método para guardar detalles opcionales de una propiedad
+    const savePropertyDetails = async (
+      propertyId: number,
+      detailsData: any
+    ) => {
+      try {
+        loading.value = true;
+        const csrfToken = await getCsrfToken();
+
+        const response = await $fetch(
+          `http://localhost:8000/api/properties/${propertyId}/details`,
+          {
+            method: "PUT",
+            body: detailsData,
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (currentProperty.value) {
+          currentProperty.value.details = response.data;
+        }
+        return response;
+      } catch (err) {
+        error.value = err.message || "Error al guardar detalles";
+        console.error(err);
+        throw err;
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const createInvitation = async (invitationData: {
+      email: string;
+      assignable_id: number;
+      assignable_type: "property" | "room";
+    }) => {
+      try {
+        loading.value = true;
+        const csrfToken = await getCsrfToken();
+
+        const response = await $fetch("http://localhost:8000/api/invitations", {
+          method: "POST",
+          body: invitationData,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+
+        invitations.value.push(response.data);
+        return response;
+      } catch (err) {
+        error.value = err.message || "Error al crear invitación";
+        console.error(err);
+        throw err;
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const fetchInvitations = async () => {
+      try {
+        loading.value = true;
+        const csrfToken = await getCsrfToken();
+
+        const response = await $fetch("http://localhost:8000/api/invitations", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+          },
+        });
+
+        invitations.value = response.data;
+      } catch (err) {
+        error.value = err.message || "Error al obtener invitaciones";
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
     return {
       properties,
       currentProperty,
@@ -160,6 +302,14 @@ export const usePropertiesStore = defineStore(
       fetchProperty,
       createProperty,
       updateProperty,
+      rooms,
+      currentRoom,
+      invitations,
+      fetchRooms,
+      fetchRoom,
+      savePropertyDetails,
+      createInvitation,
+      fetchInvitations,
     };
   },
   {

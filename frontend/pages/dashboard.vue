@@ -5,7 +5,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 				<!-- Mis Propiedades -->
 				<NuxtLink
-					to="/properties"
+					:to="$localePath('properties')"
 					class="bg-sky-700 p-6 rounded-lg shadow-lg border border-sky-800 hover:bg-sky-600 hover:border-sky-500 transition duration-300 ease-in-out"
 				>
 					<h2 class="text-xl font-semibold text-white">{{ $t('dashboard.properties.title') }}</h2>
@@ -14,7 +14,7 @@
 
 				<!-- Añadir Propiedad -->
 				<NuxtLink
-					to="/properties/add"
+					:to="$localePath('/properties/add')"
 					class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 hover:bg-gray-700 hover:border-gray-500 transition duration-300 ease-in-out"
 				>
 					<h2 class="text-xl font-semibold text-white">{{ $t('dashboard.add_property.title') }}</h2>

@@ -1,11 +1,12 @@
 <template>
   <div v-if="message" :class="alertClasses" class="p-3 rounded-lg flex items-center">
     <span class="flex-grow">{{ message }}</span>
-    <button @click="closeAlert" class="text-white ml-3">&times;</button>
+    <button @click="closeAlert" class="text-gray-800 ml-3">&times;</button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 
 const props = defineProps({
   message: String,
@@ -23,10 +24,10 @@ const closeAlert = () => {
 
 const alertClasses = computed(() => {
   return {
-    'bg-red-600 font-medium text-white': props.type === 'error',
-    'bg-green-500 font-medium text-white': props.type === 'success',
-    'bg-yellow-500 font-medium text-black': props.type === 'warning',
-    'bg-blue-500 font-medium text-white': props.type === 'info',
+    'bg-red-300 font-medium text-red-900': props.type === 'error',
+    'bg-green-300 font-medium text-green-900': props.type === 'success',
+    'bg-yellow-300 font-medium text-yellow-900': props.type === 'warning',
+    'bg-blue-300 font-medium text-blue-900': props.type === 'info',
   };
 });
 </script>

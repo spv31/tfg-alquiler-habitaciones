@@ -1,5 +1,5 @@
 <template>
-	
+	<PropertyDetailsForm/>
 </template>
 
 <script>

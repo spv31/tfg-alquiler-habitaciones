@@ -4,11 +4,16 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   ssr: false,
   modules: [
-    'nuxt-auth-sanctum',
-    '@pinia/nuxt',
-    '@nuxtjs/google-fonts',
-    '@nuxtjs/i18n'
+    "nuxt-auth-sanctum",
+    "@pinia/nuxt",
+    "@nuxtjs/google-fonts",
+    "@nuxtjs/i18n",
+    "@nuxtjs/color-mode"
   ],
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+  },  
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
@@ -17,23 +22,23 @@ export default defineNuxtConfig({
   },
   components: [
     {
-      path: '~/components',
+      path: "~/components",
       pathPrefix: false,
-    }
+    },
   ],
   i18n: {
-    locales: ['es', 'en'],
-    vueI18n: './i18n.config.ts',
+    locales: ["es", "en"],
+    vueI18n: "./i18n.config.ts",
     detectBrowserLanguage: {
       useCookie: true,
-      redirectOn: 'root',
-    }
+      redirectOn: "root",
+    },
   },
   googleFonts: {
     families: {
       Montserrat: [100, 200, 300, 400, 500, 600, 700, 800, 900],
     },
-    display: 'swap',
+    display: "swap",
   },
   runtimeConfig: {
     public: {
@@ -47,16 +52,10 @@ export default defineNuxtConfig({
           logout: "/api/logout",
           user: "/api/user",
         },
-        redirect: {
-          onAuthOnly: (ctx) => ctx.$localePath('login'),
-          onGuestOnly: (ctx) => ctx.$localePath('dashboard'),
-          onLogin: (ctx) => ctx.$localePath('dashboard'),
-          onLogout: (ctx) => ctx.$localePath('/'), // Landing Page / Home Page
-        },
       },
-    }
+    },
   },
   imports: {
     autoImport: true,
-  }
+  },
 });
