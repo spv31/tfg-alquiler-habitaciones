@@ -4,6 +4,7 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import type { RegisterUser } from "~/types/registerUser";
 import type { CustomUser } from "~/types/customUser";
 import { getCsrfToken } from "~/utils/auth";
+import { tryCatch } from "~/utils/tryCatch";
 
 export const useAuthStore = defineStore(
   "auth",
@@ -14,9 +15,11 @@ export const useAuthStore = defineStore(
     const user = useSanctumUser<CustomUser>();
 
     const getUser = async () => {
-      try {
+      const { data, error } = await tryCatch(async () => {
         await refreshIdentity();
-      } catch (error) {
+      })
+
+      if (error) {
         console.error(error);
       }
     };
