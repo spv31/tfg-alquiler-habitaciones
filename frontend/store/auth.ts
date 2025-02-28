@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import { useSanctumAuth } from "#imports";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
-import type { CustomUser, RegisterUser } from "~/types/auth";
+import type { RegisterUser } from "~/types/registerUser";
+import type { CustomUser } from "~/types/customUser";
 import { getCsrfToken } from "~/utils/auth";
 
 export const useAuthStore = defineStore(
