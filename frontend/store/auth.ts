@@ -15,7 +15,7 @@ export const useAuthStore = defineStore(
     const user = useSanctumUser<CustomUser>();
 
     const getUser = async () => {
-      const { data, error } = await tryCatch(async () => {
+      const { error } = await tryCatch(async () => {
         await refreshIdentity();
       })
 
