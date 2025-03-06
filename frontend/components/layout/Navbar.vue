@@ -1,6 +1,6 @@
 <template>
-  <nav class="bg-blue-100/90 border-b-2 border-blue-100/90">
-    <div class="max-w-screen-xl mx-auto p-4 flex items-center justify-between">
+  <nav class="bg-white relative">
+    <div class="max-w-screen-xl mx-auto p-5 flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center space-x-6 mr-12">
         <NuxtLink :to="$localePath('dashboard')" class="flex items-center">

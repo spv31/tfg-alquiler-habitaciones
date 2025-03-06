@@ -18,3 +18,11 @@ export interface Room {
   created_at: string,
   updated_at: string,
 }
+
+export interface RoomsResponse {
+  data: Room[];
+  warning?: {
+    key: string;
+    parms?: any;
+  };
+}

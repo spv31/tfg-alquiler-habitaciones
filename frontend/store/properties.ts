@@ -1,65 +1,50 @@
 import { defineStore } from "pinia";
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import { getCsrfToken } from "#imports";
+import type {
+  PropertyCollection,
+  Property,
+  CreatePropertyResponse,
+} from "~/types/property";
+import type {
+  PropertyDetail,
+  UpdatePropertyDetailsResponse,
+} from "~/types/propertyDetail";
+import type { Room, RoomsResponse } from "~/types/room";
+import type { Tenant } from "~/types/tenant";
 
 export const usePropertiesStore = defineStore(
   "properties",
   () => {
-    const properties = ref([]);
-    const currentProperty = ref(null);
+    const config = useRuntimeConfig();
+    const apiBaseUrl = config.app.apiBaseUrl;
+
+    const properties = ref<Property[]>([]);
+    const rooms = ref<Room[]>([]);
+    const currentProperty = ref<Property | null>(null);
+    const currentRoom = ref<Room | null>(null);
+    const tenants = ref<Tenant[] | null>([]);
+    const currentTenant = ref<Tenant | null>(null);
+
+    const loading = ref(false);
+    const error = ref(null);
     const pagination = ref({
       links: {},
       meta: {},
     });
-    const loading = ref(false);
-    const error = ref(null);
 
-    const rooms = ref([]);
-    const currentRoom = ref(null);
-    const invitations = ref([]);
-
-    const fetchProperties = async () => {
-      try {
-        loading.value = true;
+    /**
+     * Sends request to get properties
+     *
+     * @async
+     * @returns {*}
+     */
+    const fetchProperties = async (): Promise<Property[]> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        if (!csrfToken) {
-          throw new Error("No se pudo obtener el token CSRF.");
-        }
-
-        const response = await $fetch("http://localhost:8000/api/properties", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": csrfToken,
-            Accept: "application/json",
-          },
-        });
-        properties.value = response.data;
-        pagination.value = {
-          links: response.links,
-          meta: response.meta,
-        };
-      } catch (err) {
-        error.value = err.message || "Error al obtener propiedades";
-        console.error(err);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const fetchProperty = async (id: any) => {
-      try {
-        loading.value = true;
-        error.value = null;
-
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) {
-          throw new Error("No se pudo obtener el token CSRF.");
-        }
-
-        const response = await $fetch(
-          `http://localhost:8000/api/properties/${id}`,
+        return await $fetch<PropertyCollection>(
+          `${apiBaseUrl}/api/properties`,
           {
             method: "GET",
             credentials: "include",
@@ -69,62 +54,71 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
-        console.log(response.data);
-        currentProperty.value = response.data;
-      } catch (err) {
-        error.value = err.message || "Error al obtener la propiedad";
-        console.error(err);
-      } finally {
-        loading.value = false;
+      }, loading);
+
+      if (error) {
+        error.value = error.message || "Error al obtener propiedades";
+        throw error;
       }
+
+      if (!data) throw new Error("No data received");
+
+      properties.value = data.data;
+      pagination.value = {
+        links: data.links,
+        meta: data.meta,
+      };
+
+      return data.data;
     };
 
-    const createProperty = async (propertyData: any) => {
-      try {
-        loading.value = true;
+    /**
+     * Sends request to get current property
+     *
+     * @async
+     * @param {number} id
+     * @returns {Promise<Property>}
+     */
 
+    const fetchProperty = async (id: number): Promise<Property> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        if (!csrfToken) {
-          throw new Error("No se pudo obtener el token CSRF.");
-        }
-
-        const response = await $fetch("http://localhost:8000/api/properties", {
-          method: "POST",
-          body: propertyData,
+        return await $fetch<Property>(`${apiBaseUrl}/properties/${id}`, {
+          method: "GET",
           credentials: "include",
           headers: {
             "X-XSRF-TOKEN": csrfToken,
             Accept: "application/json",
-            "Content-Type": "application/json",
           },
         });
+      }, loading);
 
-        properties.value.push(response);
-        return response;
-      } catch (error) {
-        error.value = error;
-        console.error(error);
-        throw error;
-      } finally {
-        loading.value = false;
-      }
+      if (error) throw error;
+
+      if (!data) throw new Error("No data received");
+
+      currentProperty.value = data;
+      return data;
     };
 
-    const updateProperty = async (id: number, propertyData: any) => {
-      try {
-        loading.value = true;
-
+    /**
+     * Sends request to create property
+     *
+     * @async
+     * @param {Partial<Property>} propertyData
+     * @returns {unknown}
+     */
+    const createProperty = async (propertyData: Partial<Property>) => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        if (!csrfToken) {
-          throw new Error("No se pudo obtener el token CSRF.");
-        }
-
-        const response = await $fetch(
-          `http://localhost:8000/api/properties/${id}`,
+        return await $fetch<CreatePropertyResponse>(
+          `${apiBaseUrl}/properties`,
           {
-            method: "PUT",
+            method: "POST",
             body: propertyData,
             credentials: "include",
             headers: {
@@ -134,30 +128,191 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
+      }, loading);
 
-        // Encuentra y actualiza la propiedad en el estado
-        const index = properties.value.findIndex((p) => p.id === id);
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      properties.value.push(data.property);
+      return data;
+    };
+
+    /**
+     * Sends request to update property
+     *
+     * @async
+     * @param {Property["id"]} id
+     * @param {Partial<Property>} propertyData
+     * @returns {unknown}
+     */
+    const updateProperty = async (
+      id: Property["id"],
+      propertyData: Partial<Property>
+    ) => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<Property>(`${apiBaseUrl}/properties/${id}`, {
+          method: "PUT",
+          body: propertyData,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
+      }, loading);
+
+      if (error) throw error;
+
+      if (data) {
+        currentProperty.value = data;
+
+        const index = properties.value.findIndex(
+          (property) => property.id === id
+        );
         if (index !== -1) {
-          properties.value[index] = response;
+          properties.value[index] = data;
         }
-
-        return response;
-      } catch (err) {
-        error.value = err;
-        console.error(err);
-        throw err;
-      } finally {
-        loading.value = false;
+        return data;
       }
     };
 
-    const fetchRooms = async (propertyId: number) => {
-      try {
-        loading.value = true;
+    /**
+     * Deletes a property by its id.
+     *
+     * @async
+     * @param {Property["id"]} id - The id of the property to delete.
+     * @returns {Promise<{ message_key: string }>} A response object with a message key.
+     * @throws An error if the deletion fails.
+     */
+    const deleteProperty = async (
+      id: Property["id"]
+    ): Promise<{ message_key: string }> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        const response = await $fetch(
-          `http://localhost:8000/api/properties/${propertyId}/rooms`,
+        return await $fetch<{ message_key: string }>(
+          `${apiBaseUrl}/api/properties/${id}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      // Remove deleted property from the state
+      properties.value = properties.value.filter(
+        (property) => property.id !== id
+      );
+      return data;
+    };
+
+    /**
+     * Changes the status of a property.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property to update.
+     * @param {"available" | "unavailable" | "occupied" | "partially_occupied"} status - The new status.
+     * @returns {Promise<Property>} The updated property.
+     * @throws An error if the update fails.
+     */
+    const changePropertyStatus = async (
+      propertyId: Property["id"],
+      status: "available" | "unavailable" | "occupied" | "partially_occupied"
+    ): Promise<Property> => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<Property>(
+          `${apiBaseUrl}/api/properties/${propertyId}/status`,
+          {
+            method: "PATCH",
+            credentials: "include",
+            body: { status },
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      currentProperty.value = data;
+      const index = properties.value.findIndex(
+        (property) => property.id === propertyId
+      );
+      if (index !== -1) {
+        properties.value[index] = data;
+      }
+      return data;
+    };
+
+    /**
+     * Fetches an image (Blob) for a given property and filename
+     *
+     * @param {number} propertyId
+     * @param {string} filename
+     * @returns {Promise<Blob>}
+     */
+    const fetchPropertyImage = async (
+      propertyId: number,
+      filename: string
+    ): Promise<Blob> => {
+      const { data, error } = await tryCatch<Blob>(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        // No usamos $fetch porque necesitamos un Blob
+        const response = await fetch(
+          `${apiBaseUrl}/properties/${propertyId}/image/${filename}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "image/*",
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch image");
+        return await response.blob();
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+      return data;
+    };
+
+    /**
+     * Sends request to fetch properties
+     *
+     * @async
+     * @param {Property["id"]} propertyId
+     * @returns {*}
+     */
+    const fetchRooms = async (propertyId: Property["id"]) => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<RoomsResponse>(
+          `${apiBaseUrl}/properties/${propertyId}/rooms`,
           {
             method: "GET",
             credentials: "include",
@@ -167,23 +322,35 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
+      }, loading);
 
-        rooms.value = response.data;
-      } catch (err) {
-        error.value = err.message || "Error al obtener habitaciones";
-        console.error(err);
-      } finally {
-        loading.value = false;
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      if (data.warning) {
       }
+
+      rooms.value = data.data;
     };
 
-    const fetchRoom = async (propertyId: number, roomId: number) => {
-      try {
-        loading.value = true;
+    /**
+     * Sends request to get a specific room from a property
+     *
+     * @async
+     * @param {number} propertyId
+     * @param {number} roomId
+     * @returns {Promise<Room>}
+     */
+    const fetchRoom = async (
+      propertyId: number,
+      roomId: number
+    ): Promise<Room> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        const response = await $fetch(
-          `http://localhost:8000/api/properties/${propertyId}/rooms/${roomId}`,
+        return await $fetch<Room>(
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}`,
           {
             method: "GET",
             credentials: "include",
@@ -193,27 +360,241 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
+      }, loading);
 
-        currentRoom.value = response.data;
-      } catch (err) {
-        error.value = err.message || "Error al obtener la habitación";
-        console.error(err);
-      } finally {
-        loading.value = false;
-      }
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      currentRoom.value = data;
+      return data;
     };
 
-    // Método para guardar detalles opcionales de una propiedad
+    /**
+     * Creates a new room for a given property.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property.
+     * @param {Partial<Room>} roomData - The data for the new room.
+     * @returns {Promise<Room>} The newly created room.
+     * @throws If the request fails.
+     */
+    const createRoom = async (
+      propertyId: Property["id"],
+      roomData: Partial<Room>
+    ): Promise<Room> => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<Room>(
+          `${apiBaseUrl}/api/properties/${propertyId}/rooms`,
+          {
+            method: "POST",
+            body: roomData,
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      rooms.value.push(data);
+      return data;
+    };
+
+    /**
+     * Updates an existing room for a given property.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property.
+     * @param {Room["id"]} roomId - The id of the room to update.
+     * @param {Partial<Room>} roomData - The updated data for the room.
+     * @returns {Promise<Room>} The updated room.
+     * @throws If the request fails.
+     */
+    const updateRoom = async (
+      propertyId: Property["id"],
+      roomId: Room["id"],
+      roomData: Partial<Room>
+    ): Promise<Room> => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<Room>(
+          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}`,
+          {
+            method: "PUT",
+            body: roomData,
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      const index = rooms.value.findIndex((room) => room.id === roomId);
+      if (index !== -1) {
+        rooms.value[index] = data;
+      }
+      if (currentRoom.value && currentRoom.value.id === roomId) {
+        currentRoom.value = data;
+      }
+      return data;
+    };
+
+    /**
+     * Deletes a room for a given property.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property.
+     * @param {Room["id"]} roomId - The id of the room to delete.
+     * @returns {Promise<{ message_key: string }>} A response with a message key.
+     * @throws If the deletion fails.
+     */
+    const deleteRoom = async (
+      propertyId: Property["id"],
+      roomId: Room["id"]
+    ): Promise<{ message_key: string }> => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<{ message_key: string }>(
+          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      rooms.value = rooms.value.filter((room) => room.id !== roomId);
+      return data;
+    };
+
+    /**
+     * Changes the status of a room for a given property.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property.
+     * @param {Room["id"]} roomId - The id of the room.
+     * @param {"available" | "unavailable" | "occupied"} status - The new status.
+     * @returns {Promise<Room>} The updated room.
+     * @throws If the update fails.
+     */
+    const changeRoomStatus = async (
+      propertyId: Property["id"],
+      roomId: Room["id"],
+      status: "available" | "unavailable" | "occupied"
+    ): Promise<Room> => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<Room>(
+          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}/status`,
+          {
+            method: "PATCH",
+            credentials: "include",
+            body: { status },
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      if (currentRoom.value && currentRoom.value.id === roomId) {
+        currentRoom.value = data;
+      }
+      const index = rooms.value.findIndex((room) => room.id === roomId);
+      if (index !== -1) {
+        rooms.value[index] = data;
+      }
+      return data;
+    };
+
+    /**
+     * Sends request to get room image
+     *
+     * @async
+     * @param {number} propertyId
+     * @param {number} roomId
+     * @param {string} filename
+     * @returns {Promise<Blob>}
+     */
+    const fetchRoomImage = async (
+      propertyId: number,
+      roomId: number,
+      filename: string
+    ): Promise<Blob> => {
+      const { data, error } = await tryCatch<Blob>(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        const response = await fetch(
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/image/${filename}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "image/*",
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch room image");
+        return await response.blob();
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+      return data;
+    };
+
+    /**
+     * Saves or updates property details
+     *
+     * @async
+     * @param {number} propertyId
+     * @param {Partial<PropertyDetail>} detailsData
+     * @returns {Promise<UpdatePropertyDetailsResponse>}
+     */
     const savePropertyDetails = async (
       propertyId: number,
-      detailsData: any
-    ) => {
-      try {
-        loading.value = true;
+      detailsData: Partial<PropertyDetail>
+    ): Promise<UpdatePropertyDetailsResponse> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        const response = await $fetch(
-          `http://localhost:8000/api/properties/${propertyId}/details`,
+        return await $fetch<UpdatePropertyDetailsResponse>(
+          `${apiBaseUrl}/properties/${propertyId}/details`,
           {
             method: "PUT",
             body: detailsData,
@@ -225,91 +606,117 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
+      }, loading);
 
-        if (currentProperty.value) {
-          currentProperty.value.details = response.data;
-        }
-        return response;
-      } catch (err) {
-        error.value = err.message || "Error al guardar detalles";
-        console.error(err);
-        throw err;
-      } finally {
-        loading.value = false;
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      if (currentProperty.value) {
+        currentProperty.value.details = data.details;
       }
+      return data;
     };
 
-    const createInvitation = async (invitationData: {
-      email: string;
-      assignable_id: number;
-      assignable_type: "property" | "room";
-    }) => {
-      try {
-        loading.value = true;
+    /**
+     * Fetches tenants for a given property.
+     * This endpoint is used when the property is rented as a whole.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property.
+     * @returns {Promise<Tenant[]>} The array of tenants associated with the property.
+     * @throws An error if the request fails.
+     */
+    const fetchPropertyTenants = async (
+      propertyId: Property["id"]
+    ): Promise<Tenant[]> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        return await $fetch<Tenant[]>(
+          `${apiBaseUrl}/api/properties/${propertyId}/tenants`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+      }, loading);
 
-        const response = await $fetch("http://localhost:8000/api/invitations", {
-          method: "POST",
-          body: invitationData,
-          credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": csrfToken,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
 
-        invitations.value.push(response.data);
-        return response;
-      } catch (err) {
-        error.value = err.message || "Error al crear invitación";
-        console.error(err);
-        throw err;
-      } finally {
-        loading.value = false;
-      }
+      tenants.value = data;
+      return data;
     };
 
-    const fetchInvitations = async () => {
-      try {
-        loading.value = true;
+    /**
+     * Fetches the tenant for a specific room.
+     * When the property is rented by room, each room typically has one tenant.
+     *
+     * @async
+     * @param {Property["id"]} propertyId - The id of the property.
+     * @param {Room["id"]} roomId - The id of the room.
+     * @returns {Promise<Tenant[]>} The array of tenants associated with the room.
+     * @throws An error if the request fails.
+     */
+    const fetchRoomTenant = async (
+      propertyId: Property["id"],
+      roomId: Room["id"]
+    ): Promise<Tenant> => {
+      const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        const response = await $fetch("http://localhost:8000/api/invitations", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": csrfToken,
-            Accept: "application/json",
-          },
-        });
+        return await $fetch<Tenant>(
+          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}/tenant`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+      }, loading);
 
-        invitations.value = response.data;
-      } catch (err) {
-        error.value = err.message || "Error al obtener invitaciones";
-        console.error(err);
-      } finally {
-        loading.value = false;
-      }
+      if (error) throw error;
+      if (!data) throw new Error('No data received');
+      
+      currentTenant.value = data || null;
+      return data;
     };
 
     return {
       properties,
       currentProperty,
-      loading,
-      error,
       fetchProperties,
       fetchProperty,
       createProperty,
       updateProperty,
+      deleteProperty,
+      changePropertyStatus,
+      fetchPropertyImage,
       rooms,
       currentRoom,
-      invitations,
       fetchRooms,
       fetchRoom,
+      createRoom,
+      updateRoom,
+      deleteRoom,
+      changeRoomStatus,
       savePropertyDetails,
-      createInvitation,
-      fetchInvitations,
+      fetchRoomImage,
+      tenants,
+      currentTenant,
+      fetchPropertyTenants,
+      fetchRoomTenant,
+      loading,
+      error,
+      pagination,
     };
   },
   {

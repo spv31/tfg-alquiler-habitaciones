@@ -17,3 +17,8 @@ export interface PropertyDetail {
   rental_price: number;
   property_size: number;
 }
+
+export interface UpdatePropertyDetailsResponse {
+  message_key: string;
+  details: PropertyDetail;
+}

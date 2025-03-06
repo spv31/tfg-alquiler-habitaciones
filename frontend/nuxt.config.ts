@@ -41,6 +41,9 @@ export default defineNuxtConfig({
     display: "swap",
   },
   runtimeConfig: {
+    app: {
+      apiBaseURL: "http://localhost:8000/api"
+    },
     public: {
       sanctum: {
         baseUrl: "http://localhost:8000",
