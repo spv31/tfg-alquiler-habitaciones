@@ -1,171 +1,90 @@
 <template>
-  <div class="py-10">
-    <div class="px-2">
-      <form
-        v-if="!forgotPasswordMode"
-        class="flex flex-col gap-5 p-8 px-4 max-w-md mx-auto bg-white shadow-lg rounded-lg text-gray-900"
-        @submit.prevent="handleLogin"
-      >
-        <Alert v-if="alertMessage" :message="alertMessage" :type="alertType" @close="alertMessage = ''" />
+  <section>
+    <form class="card-form" @submit.prevent="handleLogin">
+      <h2 class="title">{{ $t("login.title") }}</h2>
 
-        <h2 class="text-2xl font-semibold text-center mb-1">{{ $t('login.title') }}</h2>
+      <div class="flex flex-col">
+        <label class="label">{{ $t("login.email") }}</label>
+        <input
+          v-model="email"
+          type="email"
+          class="custom-input"
+          placeholder="example@domain.com"
+        />
+      </div>
 
-        <div class="flex flex-col">
-          <label class="mb-1 font-medium">{{ $t('login.email') }}</label>
+      <div class="flex flex-col relative">
+        <label class="label">{{ $t("login.password") }}</label>
+        <div class="relative">
           <input
-            v-model="email"
-            type="email"
-            class="p-2 rounded bg-gray-100 text-gray-900 border border-gray-300 focus:ring-blue-500 outline-none"
+            :type="showPassword ? 'text' : 'password'"
+            v-model="password"
+            class="custom-input-password"
+            placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;"
           />
-        </div>
-
-        <div class="flex flex-col relative">
-          <label class="mb-1 font-medium">{{ $t('login.password') }}</label>
-          <div class="relative">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model="password"
-              class="p-2 rounded bg-gray-100 text-gray-900 border border-gray-300 focus:ring-blue-500 outline-none w-full pr-10"
-            />
-            <button
-              type="button"
-              @click="togglePasswordVisibility"
-              class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
-            </button>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          class="bg-blue-500 font-semibold text-white p-2 rounded hover:bg-blue-600"
-        >
-          {{ $t('login.sign_in') }}
-        </button>
-
-        <p class="text-center text-sm mt-2 text-gray-500">
-          <a
-            href="#"
-            @click.prevent="toggleForgotPassword"
-            class="hover:text-blue-600"
+          <button
+            type="button"
+            @click="togglePasswordVisibility"
+            class="button-password"
           >
-            {{ $t('login.forgot_password') }}
-          </a>
-        </p>
-      </form>
-
-      <!-- Formulario de "forgot password" -->
-      <form
-        v-else
-        class="flex flex-col gap-5 p-8 px-4 max-w-md mx-auto bg-white shadow-lg rounded-lg text-gray-900"
-        @submit.prevent="handleForgotPassword"
-      >
-        <Alert v-if="alertMessage" :message="alertMessage" :type="alertType" @close="alertMessage = ''" />
-
-        <h2 class="text-2xl font-semibold text-center mb-1">{{ $t('forgot_password.title') }}</h2>
-
-        <div class="flex flex-col">
-          <label class="mb-1 font-medium">{{ $t('forgot_password.email') }}</label>
-          <input
-            v-model="email"
-            type="email"
-            class="p-2 rounded bg-gray-100 text-gray-900 border border-gray-300 focus:ring-blue-500 outline-none"
-          />
+            <i
+              :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"
+              class="icon-password"
+            ></i>
+          </button>
         </div>
+      </div>
+      <a href="#" @click.prevent="$emit('toggleForm')" class="link">
+        {{ $t("login.forgot_password") }}
+      </a>
 
-        <button
-          type="submit"
-          class="bg-blue-500 font-semibold text-white p-2 rounded hover:bg-blue-600"
-        >
-          {{ $t('forgot_password.submit') }}
-        </button>
+      <Alert
+        v-if="alertMessage"
+        :message="alertMessage"
+        :type="alertType"
+        @close="alertMessage = ''"
+      />
 
-        <p class="text-center text-sm mt-2 text-gray-500">
-          <a
-            href="#"
-            @click.prevent="toggleForgotPassword"
-            class="hover:text-blue-600"
-          >
-            {{ $t('forgot_password.back_to_login') }}
-          </a>
-        </p>
-      </form>
-    </div>
-  </div>
+      <button type="submit" class="button-primary">
+        {{ $t("login.sign_in") }}
+      </button>
+    </form>
+  </section>
 </template>
 
 <script setup lang="ts">
-import Alert from '../ui/Alert.vue';
-import { useAuthStore } from '~/store/auth';
+import { useAuthStore } from "~/store/auth";
 
 const { t: $t } = useI18n();
 
 const authStore = useAuthStore();
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
 const showPassword = ref(false);
-const forgotPasswordMode = ref(false);
 const alertMessage = ref<string | null>(null);
-const alertType = ref<'error' | 'success'>('error');
+const alertType = ref<"error" | "success">("error");
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
-const toggleForgotPassword = () => {
-  forgotPasswordMode.value = !forgotPasswordMode.value;
-  alertMessage.value = null;
-};
-
 const handleLogin = async () => {
   if (!email.value || !password.value) {
-    alertMessage.value = $t('login.errors.fields_required');
-    alertType.value = 'error';
+    alertMessage.value = $t("login.errors.fields_required");
+    alertType.value = "error";
     return;
   }
 
   try {
     await authStore.signIn({ email: email.value, password: password.value });
-    alertMessage.value = $t('login.success');
-    alertType.value = 'success';
+    alertMessage.value = $t("login.success");
+    alertType.value = "success";
   } catch (error) {
-    alertMessage.value = $t('login.errors.invalid_credentials');
-    alertType.value = 'error';
-  }
-};
-
-const handleForgotPassword = async () => {
-  if (!email.value) {
-    alertMessage.value = $t('forgot_password.errors.email_required');
-    alertType.value = 'error';
-    return;
-  }
-
-  try {
-    await authStore.forgotPassword(email.value);
-    alertMessage.value = $t('forgot_password.success');
-    alertType.value = 'success';
-  } catch (error) {
-    alertMessage.value = $t('forgot_password.errors.failed');
-    alertType.value = 'error';
+    alertMessage.value = $t("login.errors.invalid_credentials");
+    alertType.value = "error";
   }
 };
 </script>
 
 <style>
-input {
-  transition: all 0.3s ease-in-out;
-  border: 2px solid transparent;
-}
-
-input:focus {
-  outline: none;
-  border-color: gray;
-  box-shadow: 0 0 5px rgba(156, 163, 175, 0.5);
-}
-
-input:hover {
-  border-color: rgb(209, 213, 219);
-}
 </style>

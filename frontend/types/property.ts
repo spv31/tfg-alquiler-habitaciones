@@ -13,7 +13,7 @@ export interface Property {
   cadastral_reference: string,
   description: string,
   rental_type: "full" | "per_room",
-  status: "available" | "occupied" | "unavailable",
+  status: "available" | "occupied" | "unavailable" | "partially_occupied",
   total_rooms: number,
 
   main_image: string;

@@ -62,7 +62,7 @@ export default defineI18nConfig(() => ({
         tax_id: "NIF",
         phone: "Teléfono",
         address: "Dirección",
-        go_back: "Volver atrás",
+        go_back: "Atrás",
         sign_up: "Registrarse",
         errors: {
           name_required: "El nombre debe tener al menos 1 carácter.",
@@ -131,6 +131,7 @@ export default defineI18nConfig(() => ({
         add_rooms_description:
           "Especifica las características de cada habitación.",
         main_image: "Imagen principal",
+        select_file: "Seleccionar Imagen",
         room: "Habitación",
         room_price: "Precio por habitación",
         optional_title: "Completa los datos opcionales",
@@ -142,6 +143,10 @@ export default defineI18nConfig(() => ({
         register_property: "Registrar Propiedad",
         purchase_price: "Precio de compra",
         is_financed: "¿Está financiado?",
+        statuslabel: {
+          financed: "Financiada",
+          unfinanced: "No Financiada",
+        },
         mortgage_cost: "Coste de hipoteca",
         purchase_taxes: "Impuestos de compra",
         renovation_cost: "Coste de reforma",
@@ -443,6 +448,7 @@ export default defineI18nConfig(() => ({
         add_rooms_title: "Add the Rooms",
         add_rooms_description: "Specify the details for each room.",
         main_image: "Main Image",
+        select_file: "Select Image",
         room: "Room",
         room_price: "Room Price",
         optional_title: "Complete the optional data",
@@ -454,6 +460,10 @@ export default defineI18nConfig(() => ({
         register_property: "Register Property",
         purchase_price: "Purchase Price",
         is_financed: "Is Financed?",
+        statuslabel: {
+          financed: "Financed",
+          unfinanced: "No Financed",
+        },
         mortgage_cost: "Mortgage Cost",
         purchase_taxes: "Purchase Taxes",
         renovation_cost: "Renovation Cost",

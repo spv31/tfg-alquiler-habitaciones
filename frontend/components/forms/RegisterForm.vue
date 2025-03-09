@@ -1,161 +1,177 @@
 <template>
-  <div class="py-10">
-    <div class="px-2">
-      <form
-        class="flex flex-col gap-5 p-8 px-4 max-w-2xl mx-auto bg-white shadow-lg rounded-lg text-gray-900 font-medium"
-        @submit.prevent="validateForm"
-      >
-        <Alert
-          v-if="alertMessage"
-          :message="alertMessage"
-          :type="alertType"
-          @close="alertMessage = ''"
-        />
+  <section>
+    <form class="card-form-two-columns" @submit.prevent="validateForm">
+      <Alert
+        v-if="alertMessage"
+        :message="alertMessage"
+        :type="alertType"
+        @close="alertMessage = ''"
+      />
 
-        <h2 class="text-2xl font-semibold text-center mb-1">{{ $t('register.title') }}</h2>
+      <h2 class="title">
+        {{ $t("register.title") }}
+      </h2>
 
-        <div v-if="step === 1" class="flex flex-col gap-2">
-          <div class="flex items-center justify-center gap-4">
-            <label class="flex items-center text-lg">
-              <input
-                type="radio"
-                v-model="userData.user_type"
-                value="individual"
-                class="w-6 h-6 bg-gray-200 text-gray-900 mr-2"
-              />
-              {{ $t('register.individual') }}
-            </label>
-            <label class="flex items-center text-lg">
-              <input
-                type="radio"
-                v-model="userData.user_type"
-                value="company"
-                class="w-6 h-6 bg-gray-200 text-gray-900 mr-2"
-              />
-              {{ $t('register.company') }}
-            </label>
-          </div>
-          <button
-            @click.prevent="nextStep"
-            class="bg-blue-500 font-semibold text-white p-2 rounded hover:bg-blue-600 mt-4"
-          >
-            {{ $t('register.continue') }}
-          </button>
+      <div v-if="step === 1" class="flex flex-col">
+        <div class="flex items-center justify-center gap-4 mb-4">
+          <label class="flex items-center text-lg">
+            <input
+              type="radio"
+              v-model="userData.user_type"
+              value="individual"
+              class="w-6 h-6 bg-gray-200 text-gray-900 mr-2"
+            />
+            {{ $t("register.individual") }}
+          </label>
+          <label class="flex items-center text-lg">
+            <input
+              type="radio"
+              v-model="userData.user_type"
+              value="company"
+              class="w-6 h-6 bg-gray-200 text-gray-900 mr-2"
+            />
+            {{ $t("register.company") }}
+          </label>
         </div>
+        <button @click.prevent="nextStep" class="button-primary">
+          {{ $t("register.continue") }}
+        </button>
+      </div>
 
-        <transition name="fade">
-          <div v-if="step === 2">
-            <h3 class="text-xl font-semibold text-center mb-4">
-              {{ $t('register.register_as') }}
-              {{ $t(userData.user_type === 'individual' ? 'register.individual' : 'register.company') }}
-            </h3>
+      <transition name="fade">
+        <div v-if="step === 2">
+          <h3 class="text-xl font-semibold text-center mb-4">
+            {{ $t("register.register_as") }}
+            {{
+              $t(
+                userData.user_type === "individual"
+                  ? "register.individual"
+                  : "register.company"
+              )
+            }}
+          </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label class="mb-1 font-medium text-lg">
-                  {{ $t(userData.user_type === 'individual' ? 'register.full_name' : 'register.company_name') }}
-                </label>
-                <input
-                  v-model="userData.name"
-                  type="text"
-                  class="p-2 rounded bg-gray-100 text-gray-900 font-medium border-none focus:ring-blue-500 outline-none"
-                  @input="validateField('name')"
-                />
-                <span class="text-red-600 font-medium text-m">{{ errors.name }}</span>
-              </div>
-
-              <div class="flex flex-col">
-                <label class="mb-1 font-medium text-lg">{{ $t('register.email') }}</label>
-                <input
-                  v-model="userData.email"
-                  type="email"
-                  class="p-2 rounded bg-gray-100 text-gray-900 font-medium border-none focus:ring-blue-500 outline-none"
-                  @input="validateField('email')"
-                />
-                <span class="text-red-600 font-medium text-m">{{ errors.email }}</span>
-              </div>
-
-              <div class="flex flex-col relative">
-                <label class="mb-1 font-medium text-lg">{{ $t('register.password') }}</label>
-                <div class="relative">
-                  <input
-                    :type="showPassword ? 'text' : 'password'"
-                    v-model="userData.password"
-                    class="p-2 rounded bg-gray-100 text-gray-900 font-medium border-none focus:ring-blue-500 outline-none w-full pr-10"
-                    @input="validateField('password')"
-                  />
-                  <button
-                    type="button"
-                    @click="togglePasswordVisibility"
-                    class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700 font-medium focus:outline-none"
-                  >
-                    <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" class="text-lg"></i>
-                  </button>
-                </div>
-                <span class="text-red-600 font-medium text-m">{{ errors.password }}</span>
-              </div>
-
-              <div class="flex flex-col">
-                <label class="mb-1 font-medium text-lg">
-                  {{ $t(userData.user_type === 'individual' ? 'register.id_card' : 'register.tax_id') }}
-                </label>
-                <input
-                  v-model="userData.identifier"
-                  type="text"
-                  class="p-2 rounded bg-gray-100 text-gray-900 font-medium border-none focus:ring-blue-500 outline-none"
-                  @input="validateField('identifier')"
-                />
-                <span class="text-red-600 font-medium text-m">{{ errors.identifier }}</span>
-              </div>
-
-              <div class="flex flex-col">
-                <label class="mb-1 font-medium text-lg">{{ $t('register.phone') }}</label>
-                <input
-                  v-model="userData.phone_number"
-                  type="text"
-                  class="p-2 rounded bg-gray-100 text-gray-900 font-medium border-none focus:ring-blue-500 outline-none"
-                  @input="validateField('phone_number')"
-                />
-                <span class="text-red-600 font-medium text-m">{{ errors.phone_number }}</span>
-              </div>
-
-              <div class="flex flex-col">
-                <label class="mb-1 font-medium text-lg">{{ $t('register.address') }}</label>
-                <input
-                  v-model="userData.address"
-                  type="text"
-                  class="p-2 rounded bg-gray-100 text-gray-900 font-medium border-none focus:ring-blue-500 outline-none"
-                  @input="validateField('address')"
-                />
-                <span class="text-red-600 font-medium text-m">{{ errors.address }}</span>
-              </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col">
+              <label class="label">
+                {{
+                  $t(
+                    userData.user_type === "individual"
+                      ? "register.full_name"
+                      : "register.company_name"
+                  )
+                }}
+              </label>
+              <input
+                v-model="userData.name"
+                type="text"
+                class="custom-input"
+                placeholder="e.g. John Doe"
+                @input="validateField('name')"
+              />
+              <span class="error-message">{{ errors.name }}</span>
             </div>
 
-            <div class="flex justify-between mt-4">
-              <button
-                @click.prevent="prevStep"
-                class="bg-gray-200 font-semibold text-gray-900 p-2 rounded hover:bg-gray-300 px-3"
-              >
-                {{ $t('register.go_back') }}
-              </button>
-              <button
-                type="submit"
-                class="bg-blue-500 font-semibold text-white p-2 rounded hover:bg-blue-600 px-3"
-              >
-                {{ $t('register.sign_up') }}
-              </button>
+            <div class="flex flex-col">
+              <label class="label">{{ $t("register.email") }}</label>
+              <input
+                v-model="userData.email"
+                type="email"
+                class="custom-input"
+                placeholder="e.g. example@domain.com"
+                @input="validateField('email')"
+              />
+              <span class="error-message">{{ errors.email }}</span>
+            </div>
+
+            <div class="flex flex-col relative">
+              <label class="label">{{ $t("register.password") }}</label>
+              <div class="relative">
+                <input
+                  :type="showPassword ? 'text' : 'password'"
+                  v-model="userData.password"
+                  class="custom-input-password"
+                  placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;"
+                  @input="validateField('password')"
+                />
+                <button
+                  type="button"
+                  @click="togglePasswordVisibility"
+                  class="button-password"
+                >
+                  <i
+                    :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"
+                    class="icon-password"
+                  ></i>
+                </button>
+              </div>
+              <span class="error-message">{{ errors.password }}</span>
+            </div>
+
+            <div class="flex flex-col">
+              <label class="label">
+                {{
+                  $t(
+                    userData.user_type === "individual"
+                      ? "register.id_card"
+                      : "register.tax_id"
+                  )
+                }}
+              </label>
+              <input
+                v-model="userData.identifier"
+                type="text"
+                class="custom-input"
+                placeholder="e.g. ID / Tax ID"
+                @input="validateField('identifier')"
+              />
+              <span class="error-message">{{ errors.identifier }}</span>
+            </div>
+
+            <div class="flex flex-col">
+              <label class="label">{{ $t("register.phone") }}</label>
+              <input
+                v-model="userData.phone_number"
+                type="text"
+                class="custom-input"
+                placeholder="e.g. +1 234 567 890"
+                @input="validateField('phone_number')"
+              />
+              <span class="error-message">{{ errors.phone_number }}</span>
+            </div>
+
+            <div class="flex flex-col">
+              <label class="label">{{ $t("register.address") }}</label>
+              <input
+                v-model="userData.address"
+                type="text"
+                class="custom-input"
+                placeholder="e.g. 123 Main St"
+                @input="validateField('address')"
+              />
+              <span class="error-message">{{ errors.address }}</span>
             </div>
           </div>
-        </transition>
-      </form>
-    </div>
-  </div>
+
+          <div class="flex justify-between mt-4">
+            <button @click.prevent="prevStep" class="button-back">
+              <i class="bi bi-arrow-left"></i>
+              {{ $t("register.go_back") }}
+            </button>
+
+            <button type="submit" class="button-primary">
+              {{ $t("register.sign_up") }}
+            </button>
+          </div>
+        </div>
+      </transition>
+    </form>
+  </section>
 </template>
 
 <script setup lang="ts">
-import type { RegisterUser } from '~/types/auth';
-import { useAuthStore } from '~/store/auth';
-import Alert from '../ui/Alert.vue';
+import type { RegisterUser } from "~/types/registerUser";
+import { useAuthStore } from "~/store/auth";
 
 const { t: $t } = useI18n();
 
@@ -163,17 +179,17 @@ const authStore = useAuthStore();
 const step = ref(1);
 const showPassword = ref(false);
 const alertMessage = ref<string | null>(null);
-const alertType = ref<'error' | 'success'>('error');
+const alertType = ref<"error" | "success">("error");
 
 const userData = ref<RegisterUser>({
-  name: '',
-  email: '',
-  password: '',
-  user_type: 'individual',
-  identifier: '',
-  profile_picture: '',
-  phone_number: '',
-  address: '',
+  name: "",
+  email: "",
+  password: "",
+  user_type: "individual",
+  identifier: "",
+  profile_picture: "",
+  phone_number: "",
+  address: "",
 });
 
 const errors = ref<Record<string, string>>({});
@@ -184,30 +200,41 @@ const togglePasswordVisibility = () => {
 
 const validateField = (field: keyof RegisterUser) => {
   switch (field) {
-    case 'name':
-      errors.value.name = userData.value.name.length < 1 ? $t('register.errors.name_required') : '';
+    case "name":
+      errors.value.name =
+        userData.value.name.length < 1
+          ? $t("register.errors.name_required")
+          : "";
       break;
-    case 'email':
-      errors.value.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userData.value.email)
-        ? ''
-        : $t('register.errors.email_invalid');
+    case "email":
+      errors.value.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        userData.value.email
+      )
+        ? ""
+        : $t("register.errors.email_invalid");
       break;
-    case 'password':
+    case "password":
       errors.value.password =
-        userData.value.password.length < 6 ? $t('register.errors.password_length') : '';
+        userData.value.password.length < 6
+          ? $t("register.errors.password_length")
+          : "";
       break;
-    case 'identifier':
+    case "identifier":
       errors.value.identifier =
-        userData.value.identifier === '' ? $t('register.errors.identifier_required') : '';
+        userData.value.identifier === ""
+          ? $t("register.errors.identifier_required")
+          : "";
       break;
-    case 'phone_number':
+    case "phone_number":
       errors.value.phone_number = /^\d+$/.test(userData.value.phone_number)
-        ? ''
-        : $t('register.errors.phone_required');
+        ? ""
+        : $t("register.errors.phone_required");
       break;
-    case 'address':
+    case "address":
       errors.value.address =
-        userData.value.address.length < 5 ? $t('register.errors.address_required') : '';
+        userData.value.address.length < 5
+          ? $t("register.errors.address_required")
+          : "";
       break;
   }
 };
@@ -222,10 +249,10 @@ const validateForm = async () => {
   }
 
   try {
-    await authStore.register(userData.value);
+    await authStore.registerOwner(userData.value);
   } catch (error) {
-    alertMessage.value = $t('register.errors.registration_failed');
-    alertType.value = 'error';
+    alertMessage.value = $t("register.errors.registration_failed");
+    alertType.value = "error";
   }
 };
 

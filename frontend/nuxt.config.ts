@@ -1,14 +1,16 @@
-import tailwindcss from "@tailwindcss/vite";
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
+  typescript: {
+    typeCheck: false,
+  },
   modules: [
     "nuxt-auth-sanctum",
     "@pinia/nuxt",
     "@nuxtjs/google-fonts",
     "@nuxtjs/i18n",
-    "@nuxtjs/color-mode"
+    "@nuxtjs/color-mode",
+    '@nuxtjs/tailwindcss',
   ],
   colorMode: {
     preference: 'system',
@@ -16,9 +18,12 @@ export default defineNuxtConfig({
   },  
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
-  css: ["~/assets/css/main.css"],
+  css: [
+    "~/assets/css/main.css",
+    "~/assets/css/tailwind.css"
+  ],
   vite: {
-    plugins: [tailwindcss()],
+    // plugins: [tailwindcss()],
   },
   components: [
     {

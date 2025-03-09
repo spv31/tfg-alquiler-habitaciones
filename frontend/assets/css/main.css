@@ -1,5 +1,103 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
 
 body {
 	font-family: 'Montserrat', sans-serif;
+}
+
+.card-form {
+	@apply flex flex-col gap-4 py-8 px-4 max-w-md mx-auto bg-white shadow-lg rounded-3xl;
+}
+
+.card-form-two-columns {
+	@apply flex flex-col py-8 px-4 max-w-2xl mx-auto bg-white shadow-lg rounded-3xl; 
+}
+
+.label {
+	@apply font-semibold mb-1;
+}
+
+.custom-input {
+	@apply py-2 px-4 rounded-2xl bg-gray-100 border border-gray-300 
+		hover:border-info outline-none
+		text-gray-900 text-sm font-medium placeholder-gray-400
+		hover:ring-1 hover:ring-info
+		focus:ring-1 focus:ring-info;
+}
+
+.custom-input-password {
+	@apply py-2 px-4 rounded-2xl bg-gray-100 border border-gray-300 
+		hover:border-info outline-none
+		text-gray-900 text-sm font-medium placeholder-gray-400 w-full pr-10
+		hover:ring-1 hover:ring-info
+		focus:ring-1 focus:ring-info;
+}
+
+.custom-radio {
+  @apply appearance-none h-4 w-4 border border-gray-300 rounded-full cursor-pointer
+    focus:outline-none focus:ring-1 focus:ring-info
+    checked:bg-info
+}
+
+.custom-radio:checked {
+  @apply border-info;
+}
+
+.error-message {
+	@apply text-red-500 text-sm font-medium mt-1;
+}
+
+.button-card {
+	@apply block w-full py-2 px-4 w-full text-center bg-info hover:bg-info_dark transition-colors font-bold text-white text-sm rounded-3xl;
+}
+
+.title-card {
+	@apply text-xl font-semibold truncate;
+}
+
+.text-card {
+	@apply text-base font-normal line-clamp-4 text-gray-600
+}
+
+.gradient-card {
+	@apply bg-gradient-to-br  from-info/10 to-info/25;
+}
+
+.button-primary {
+	@apply py-2 px-4 bg-info hover:bg-info_dark transition-colors font-bold text-white text-sm rounded-3xl
+}
+
+.button-secondary {
+	@apply py-2 px-4 bg-secondary font-bold text-dark text-sm rounded-3xl
+}
+
+.button-info {
+
+}
+
+.button-password {
+	@apply absolute inset-y-0 right-3 flex items-center;
+}
+
+.button-back {
+  @apply inline-flex items-center text-info hover:text-info_dark font-medium transition-colors duration-200;
+}
+
+.button-back i {
+  @apply mr-2 text-lg;
+}
+
+.title {
+	@apply text-2xl font-bold text-center mb-4;
+}
+
+.link {
+	@apply font-bold text-sm text-info hover:text-info_dark;
+}
+
+.icon-password {
+	@apply text-info hover:text-info_dark text-lg;
+}
+
+.sr-only {
+  @apply absolute w-0 h-0 opacity-0 overflow-hidden;
 }

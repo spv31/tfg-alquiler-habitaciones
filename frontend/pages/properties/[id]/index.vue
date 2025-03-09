@@ -21,115 +21,12 @@
 
       <!-- Contenido principal -->
       <div v-else-if="currentProperty" class="space-y-8">
-        <h1 class="text-3xl font-bold text-gray-900 text-center mb-8">
-          {{ $t('properties.detail.title') }}
-        </h1>
 
-        <!-- Card principal -->
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row gap-8 p-8">
-          <!-- Imagen -->
-          <div
-            class="md:w-1/2 bg-gradient-to-br from-blue-50 to-blue-100 h-96 rounded-xl flex items-center justify-center">
-            <div class="text-center space-y-3">
-              <svg class="h-12 w-12 text-blue-200 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828
-                     0L16 16m-2-2l1.586-1.586a2 2 0 012.828
-                     0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V7a2
-                     2 0 00-2-2H6a2 2 0 00-2 2v11" />
-              </svg>
-              <span class="text-blue-300 text-sm font-medium">
-                Imagen de la propiedad
-              </span>
-            </div>
-          </div>
 
-          <!-- Detalles -->
-          <div class="md:w-1/2 space-y-6">
-            <div class="flex items-start justify-between">
-              <div>
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">
-                  {{ currentProperty.address }}
-                </h2>
-                <div class="inline-flex items-center space-x-2">
-                  <span :class="propertyStatusBadge(currentProperty.status)"
-                    class="px-3 py-1.5 text-xs font-semibold rounded-full uppercase tracking-wide">
-                    {{ statusLabel(currentProperty.status) }}
-                  </span>
-                  <span class="text-gray-500 text-sm">
-                    {{ $t('properties.detail.cadastral') }}
-                    {{ currentProperty.cadastral_reference }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Descripción -->
-            <dl class="grid grid-cols-2 gap-4">
-              <div class="col-span-2">
-                <dt class="text-sm font-medium text-gray-500">
-                  {{ $t('properties.detail.description') }}
-                </dt>
-                <dd class="mt-1 text-gray-900 font-light italic">
-                  {{ currentProperty.description || $t('properties.detail.noDescription') }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500">
-                  {{ $t('properties.detail.rentalType') }}
-                </dt>
-                <dd class="mt-1 text-gray-900 font-medium">
-                  {{ rentalTypeLabel(currentProperty.rental_type) }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-gray-500">
-                  {{ $t('properties.detail.totalRooms') }}
-                </dt>
-                <dd class="mt-1 text-gray-900 font-medium">
-                  {{ currentProperty.total_rooms }}
-                </dd>
-              </div>
-            </dl>
-
-            <!-- Botones con iconos -->
-            <div class="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-              <!-- Editar propiedad -->
-              <button @click="editProperty"
-                class="inline-flex items-center bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition">
-                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5
-                       2.5 0 113.536 3.536L6.5
-                       21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-                {{ $t('properties.detail.editButton') }}
-              </button>
-
-              <!-- Añadir datos estadísticos -->
-              <button @click="addStats"
-                class="inline-flex items-center bg-indigo-600 text-white font-semibold px-4 py-2 rounded hover:bg-indigo-700 transition">
-                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <!-- Icono chart -->
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 3v18h18M18 9h-6m0 0V3m0 6l-6 6" />
-                </svg>
-                {{ $t('properties.detail.addStatsButton') }}
-              </button>
-
-              <!-- Cambiar estado de la propiedad -->
-              <button @click="toggleStatus"
-                class="inline-flex items-center bg-red-600 text-white font-semibold px-4 py-2 rounded hover:bg-red-700 transition">
-                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <!-- Icono toggle -->
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7l4-4m0 0l4 4m-4-4v18" />
-                </svg>
-                {{ toggleStatusLabel }}
-              </button>
-            </div>
-          </div>
-        </div>
+        <PropertyDetailCard :property="currentProperty.data"/>
 
         <!-- Texto "Añade un inquilino" y botón para abrir formulario -->
-        <div class="mt-8 flex flex-col items-center" v-if="currentProperty.rental_type !== 'per_room'">
+        <div class="mt-8 flex flex-col items-center" v-if="currentProperty.data.rental_type !== 'per_room'">
           <p class="text-gray-700 font-medium mb-4">
             {{ $t('properties.detail.addTenantText') }}
           </p>
@@ -191,19 +88,19 @@
         </div>
 
         <!-- Sección de habitaciones (per_room) -->
-        <div v-if="currentProperty.rental_type === 'per_room'" class="mt-12">
+        <div v-if="currentProperty.data.rental_type === 'per_room'" class="mt-12">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-bold text-gray-900">
               {{ $t('properties.detail.roomsTitle') }}
             </h2>
             <span class="text-gray-500 text-sm">
-              {{ currentProperty.rooms?.length || 0 }} {{ $t('properties.detail.rooms.title') }}
+              {{ currentProperty.data.rooms?.length || 0 }} {{ $t('properties.detail.rooms.title') }}
             </span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Habitaciones existentes -->
-            <div v-for="room in currentProperty.rooms" :key="room.id"
+            <div v-for="room in currentProperty.data.rooms" :key="room.id"
               class="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
               <!-- Imagen -->
               <div class="relative h-48 bg-gradient-to-br from-blue-50 to-blue-100 rounded-t-2xl overflow-hidden">
@@ -267,7 +164,7 @@
           </div>
 
           <!-- Mensaje cuando no hay habitaciones -->
-          <div v-if="!currentProperty.rooms?.length" class="mt-8 text-center">
+          <div v-if="!currentProperty.data.rooms?.length" class="mt-8 text-center">
             <div class="bg-blue-50 p-6 rounded-2xl border border-blue-200 inline-block">
               <p class="text-blue-600 font-medium">
                 {{ $t('properties.detail.noRoomsPrompt') }}
@@ -277,7 +174,7 @@
         </div>
 
         <!-- No hay habitaciones -->
-        <div v-else-if="currentProperty.rental_type === 'per_room'" class="mt-12 text-center text-gray-500">
+        <div v-else-if="currentProperty.data.rental_type === 'per_room'" class="mt-12 text-center text-gray-500">
           <p>{{ $t('properties.detail.noRooms') }}</p>
         </div>
       </div>
@@ -301,7 +198,9 @@ const tenantEmail2 = ref('')
 
 onMounted(async () => {
   try {
-    await propertiesStore.fetchProperty(propertyId)
+    console.log(propertyId);
+    await propertiesStore.fetchProperty(propertyId);
+    console.log(currentProperty.address)
   } catch (e) {
     console.error('Error al obtener la propiedad:', e)
   }
@@ -330,75 +229,21 @@ const addStats = () => {
 }
 
 const toggleStatus = () => {
-  if (!currentProperty.value?.status) return
-  const newStatus = currentProperty.value.status === 'available' ? 'unavailable' : 'available'
+  if (!currentProperty.data?.status) return
+  const newStatus = currentProperty.data.status === 'available' ? 'unavailable' : 'available'
   console.log('Cambiar estado de la propiedad a', newStatus)
   // Lógica real...
 }
 
 const toggleStatusLabel = computed(() => {
-  if (currentProperty.value?.status === 'available') {
+  if (currentProperty.data?.status === 'available') {
     return $t('properties.detail.makeUnavailableButton')
   } else {
     return $t('properties.detail.makeAvailableButton')
   }
 })
 
-// Utils
-const propertyStatusBadge = (status: string) => {
-  switch (status) {
-    case 'available':
-      return 'bg-green-100 text-green-800'
-    case 'unavailable':
-      return 'bg-red-100 text-red-800'
-    case 'occupied':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'partially_occupied':
-      return 'bg-blue-100 text-blue-800'
-    default:
-      return 'bg-gray-200 text-gray-700'
-  }
-}
 
-const roomStatusBadge = (status: string) => {
-  switch (status) {
-    case 'available':
-      return 'bg-green-100 text-green-800'
-    case 'unavailable':
-      return 'bg-red-100 text-red-800'
-    case 'occupied':
-      return 'bg-yellow-100 text-yellow-800'
-    default:
-      return 'bg-gray-200 text-gray-700'
-  }
-}
-
-const statusLabel = (status: string) => {
-  switch (status) {
-    case 'available':
-      return $t('properties.detail.statusLabel.available')
-    case 'unavailable':
-      return $t('properties.detail.statusLabel.unavailable')
-    case 'occupied':
-      return $t('properties.detail.statusLabel.occupied')
-    case 'partially_occupied':
-      return $t('properties.detail.statusLabel.partially_occupied')
-    default:
-      return $t('properties.detail.statusLabel.unknown')
-  }
-}
-
-const rentalTypeLabel = (type: string) => {
-  switch (type) {
-    case 'entire':
-    case 'full':
-      return $t('properties.detail.rental_type_full') || 'Completo'
-    case 'per_room':
-      return $t('properties.detail.rental_type_per_room') || 'Por habitaciones'
-    default:
-      return 'Desconocido'
-  }
-}
 
 // Simples placeholders
 const editProperty = () => {

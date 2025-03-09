@@ -16,7 +16,7 @@ export const usePropertiesStore = defineStore(
   "properties",
   () => {
     const config = useRuntimeConfig();
-    const apiBaseUrl = config.app.apiBaseUrl;
+    const apiBaseUrl = config.app.apiBaseURL;
 
     const properties = ref<Property[]>([]);
     const rooms = ref<Room[]>([]);
@@ -44,7 +44,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<PropertyCollection>(
-          `${apiBaseUrl}/api/properties`,
+          `${apiBaseUrl}/properties`,
           {
             method: "GET",
             credentials: "include",

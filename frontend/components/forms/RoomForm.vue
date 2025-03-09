@@ -81,7 +81,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -152,3 +151,15 @@ function handleSubmit() {
 
 <style scoped>
 </style>
+
+function defineEmits(arg0: string[]) {
+  throw new Error('Function not implemented.')
+}
+
+function defineProps(arg0: { initialData: { type: ObjectConstructor; default: () => { description: string; rental_price: string; main_image: null } } }) {
+  throw new Error('Function not implemented.')
+}
+
+function defineEmits(arg0: string[]) {
+  throw new Error('Function not implemented.')
+}

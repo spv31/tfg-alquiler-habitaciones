@@ -1,12 +1,13 @@
 <template>
-  <div v-if="message" :class="alertClasses" class="p-3 rounded-lg flex items-center">
+  <div v-if="message" :class="alertClasses" class="p-3 rounded-none flex items-center">
     <span class="flex-grow">{{ message }}</span>
-    <button @click="closeAlert" class="text-gray-800 ml-3">&times;</button>
+    <button @click="closeAlert">
+      <img src="@/assets/icons/close-icon.svg" class="w-6 h-6" alt="Icono Cerrar" />
+    </button>
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue';
+<script setup>
 
 const props = defineProps({
   message: String,
@@ -24,10 +25,10 @@ const closeAlert = () => {
 
 const alertClasses = computed(() => {
   return {
-    'bg-red-300 font-medium text-red-900': props.type === 'error',
-    'bg-green-300 font-medium text-green-900': props.type === 'success',
-    'bg-yellow-300 font-medium text-yellow-900': props.type === 'warning',
-    'bg-blue-300 font-medium text-blue-900': props.type === 'info',
+    'bg-danger font-medium text-sm': props.type === 'error',
+    'bg-green-300 font-medium text-sm text-green-900': props.type === 'success',
+    'bg-yellow-300 font-medium text-sm text-yellow-900': props.type === 'warning',
+    'bg-blue-300 font-medium text-sm text-blue-900': props.type === 'info',
   };
 });
 </script>
