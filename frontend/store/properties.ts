@@ -95,6 +95,9 @@ export const usePropertiesStore = defineStore(
         });
       }, loading);
 
+
+      console.log('ID Recibido: ', id);
+  
       if (error) throw error;
 
       if (!data) throw new Error("No data received");

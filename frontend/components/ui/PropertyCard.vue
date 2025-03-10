@@ -1,8 +1,4 @@
 <template>
-  <!-- 
-    1) Un div contenedor con flex-col y height: 100% 
-       para ocupar toda la altura asignada en la grid 
-  -->
   <div
     class="relative group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full"
   >

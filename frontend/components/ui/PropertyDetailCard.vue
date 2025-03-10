@@ -108,26 +108,28 @@
 
           <!-- Actions -->
           <div class="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-            <!-- Editar propiedad -->
-            <CircleIconButton label="Editar" @click="editProperty">
-              <template #icon>
-                <svg
-                  class="h-5 w-5 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036
-               a2.5 2.5 0 113.536 3.536L6.5
-               21.036H3v-3.572L16.732 3.732z"
-                  />
-                </svg>
-              </template>
-            </CircleIconButton>
+            <NuxtLink :to="`/properties/${property.id}/edit`">
+              <CircleIconButton label="Editar">
+                <!-- Icono de edición -->
+                <template #icon>
+                  <svg
+                    class="h-5 w-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036
+             a2.5 2.5 0 113.536 3.536L6.5
+             21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </template>
+              </CircleIconButton>
+            </NuxtLink>
 
             <CircleIconButton label="Estadísticas" @click="showStats = true">
               <template #icon>
@@ -202,7 +204,6 @@ const props = defineProps({
 
 const isExpanded = ref(false);
 const showStats = ref(false);
-
 </script>
 <style scoped>
 </style>
