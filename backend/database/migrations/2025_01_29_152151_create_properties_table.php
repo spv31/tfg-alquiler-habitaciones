@@ -7,32 +7,32 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::create('properties', function (Blueprint $table) {
-            $table->id();
-            // Relación
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            
-            // Datos obligatorios propiedad / inmueble
-            $table->string('address');
-            $table->string('cadastral_reference')->unique();
-            $table->text('description');
-            $table->enum('rental_type', ['full', 'per_room'])->default('full');
-            $table->enum('status', ['available', 'unavailable', 'occupied', 'partially_occupied'])->default('available');
-            $table->integer('total_rooms');
-            $table->timestamps();
-        });
-    }
+  /**
+   * Run the migrations.
+   */
+  public function up(): void
+  {
+    Schema::create('properties', function (Blueprint $table) {
+      $table->id();
+      // Relación
+      $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('properties');
-    }
+      // Datos obligatorios propiedad / inmueble
+      $table->string('address');
+      $table->string('cadastral_reference')->unique();
+      $table->text('description');
+      $table->enum('rental_type', ['full', 'per_room'])->default('full');
+      $table->enum('status', ['available', 'unavailable', 'occupied', 'partially_occupied'])->default('available');
+      $table->integer('total_rooms');
+      $table->timestamps();
+    });
+  }
+
+  /**
+   * Reverse the migrations.
+   */
+  public function down(): void
+  {
+    Schema::dropIfExists('properties');
+  }
 };
