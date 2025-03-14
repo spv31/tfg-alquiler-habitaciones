@@ -21,6 +21,7 @@ export default {
         warning: '#F4D03F', 
         neutral: '#F5F5F5', 
         dark: '#2C2C2C',
+        background: '#FAFAFA',
       }
     },
   },

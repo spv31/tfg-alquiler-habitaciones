@@ -1,19 +1,19 @@
 <template>
   <div class="flex flex-col gap-4">
-    <!-- Checkbox "is_financed" -->
     <div class="flex mx-auto items-center">
       <input
         id="is_financed"
         type="checkbox"
         class="w-4 h-4 mr-2"
         v-model="localPropertyData.is_financed"
+        :true-value="1"
+        :false-value="0"
       />
       <label for="is_financed" class="font-semibold">
         {{ $t("properties.is_financed") }}
       </label>
     </div>
 
-    <!-- Campos opcionales (mapeados desde optionalFields) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div v-for="field in optionalFields" :key="field.key" class="flex flex-col">
         <label :for="field.key" class="label">{{ field.label }}</label>
@@ -59,10 +59,8 @@ import { useI18n } from "vue-i18n";
 
 const { t: $t } = useI18n();
 
-// Emitimos para sincronizar con el padre
 const emits = defineEmits(["update:propertyData", "update:errors"]);
 
-// Props que recibimos
 const props = defineProps<{
   propertyData: Record<string, any>;
   errors: Record<string, any>;
@@ -84,7 +82,6 @@ const localErrors = computed({
   set: (val) => emits("update:errors", val),
 });
 
-// Validación genérica
 function validateField(key: string, type: string) {
   const value = localPropertyData.value[key];
   if (type === "number") {
@@ -95,7 +92,6 @@ function validateField(key: string, type: string) {
         localErrors.value[key] = "";
       }
     } else {
-      // Campo vacío no lo consideramos error
       localErrors.value[key] = "";
     }
   } else if (type === "date") {

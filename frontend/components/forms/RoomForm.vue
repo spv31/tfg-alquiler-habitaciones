@@ -1,165 +1,91 @@
 <template>
-  <div class="mx-auto max-w-3xl py-10">
-    <div class="bg-white p-6 shadow-lg rounded-xl space-y-6">
-      <!-- Título centrado -->
-      <h2 class="text-xl font-semibold text-gray-800 text-center">
+  <div class="py-8 px-4">
+    <div class="max-w-3xl mx-auto mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 text-center">
         {{ $t("properties.detail.rooms.addRoomTitle") }}
       </h2>
-
-      <!-- Descripción -->
-      <div class="flex flex-col">
-        <label for="description" class="font-medium text-gray-700 mb-1">
-          {{ $t("properties.detail.rooms.description") }}
-        </label>
-        <textarea
-          id="description"
-          v-model="form.description"
-          rows="3"
-          class="p-2 bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          @input="validateDescription"
-        ></textarea>
-        <p v-if="errors.description" class="text-red-500 text-sm font-medium mt-1">
-          {{ errors.description }}
-        </p>
-      </div>
-
-      <!-- Precio de Alquiler -->
-      <div class="flex flex-col">
-        <label for="rental_price" class="font-medium text-gray-700 mb-1">
-          {{ $t("properties.detail.rooms.rentalPrice") }}
-        </label>
-        <input
-          id="rental_price"
-          type="number"
-          step="0.01"
-          v-model="form.rental_price"
-          class="p-2 bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          @input="validateRentalPrice"
-        />
-        <p v-if="errors.rental_price" class="text-red-500 text-sm font-medium mt-1">
-          {{ errors.rental_price }}
-        </p>
-      </div>
-
-      <!-- Imagen principal -->
-      <div class="flex flex-col">
-        <label for="room_image" class="font-medium text-gray-700 mb-1">
-          {{ $t("properties.detail.rooms.mainImage") }}
-        </label>
-        <input
-          id="room_image"
-          type="file"
-          accept="image/*"
-          class="p-2 bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          @change="handleImageUpload"
-        />
-        <p v-if="errors.main_image" class="text-red-500 text-sm font-medium mt-1">
-          {{ errors.main_image }}
-        </p>
-      </div>
-
-      <!-- Botones -->
-      <div class="flex justify-between mt-4">
-        <button
-          type="button"
-          @click="goBack"
-          class="px-6 py-2 bg-gray-400 text-white font-semibold rounded hover:bg-gray-500 transition"
-        >
-          {{ $t("common.back") }}
-        </button>
-        <button
-          type="button"
-          @click="handleSubmit"
-          class="px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-          :disabled="hasErrors"
-        >
-          {{ $t("properties.detail.rooms.saveRoomButton") }}
-        </button>
-      </div>
     </div>
+
+    <!-- Pasamos el formData y los errors al componente RoomForm -->
+    <RoomForm
+      :form="formData"
+      :errors="errors"
+      @submit="handleSubmit"
+      @goBack="handleGoBack"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import { reactive, computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
+import { usePropertiesStore } from "~/store/properties";
+import type { Room } from "~/types/room";
 
-const props = defineProps({
-  initialData: {
-    type: Object,
-    default: () => ({
-      description: '',
-      rental_price: '',
-      main_image: null
-    })
-  }
-})
+const { t: $t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const store = usePropertiesStore();
 
-const emit = defineEmits(['submit', 'goBack'])
-const { t: $t } = useI18n()
+// Identificador de la propiedad desde la URL /properties/[id]/rooms/add
+const propertyId = Number(route.params.id);
 
-// Estado del formulario y errores
-const form = ref({ ...props.initialData })
-const errors = ref<Record<string, string>>({})
+// Objeto reactivo para el formulario
+const formData = reactive<Partial<Room>>({
+  description: "",
+  rental_price: 0,
+  main_image: "",
+});
 
-// Validaciones
-function validateDescription() {
-  if (!form.value.description || form.value.description.length < 3) {
-    errors.value.description = $t('errors.description_short')
+// Errores de validación
+const errors = reactive<Record<string, string>>({});
+
+// Validaciones simples
+function validateForm() {
+  // Validar descripción
+  if (!formData.description || formData.description.length < 3) {
+    errors.description = $t("errors.description_short");
   } else {
-    errors.value.description = ''
+    errors.description = "";
   }
-}
 
-function validateRentalPrice() {
-  const price = Number(form.value.rental_price)
+  // Validar rental_price
+  const price = Number(formData.rental_price);
   if (isNaN(price) || price <= 0) {
-    errors.value.rental_price = $t('errors.invalid_number')
+    errors.rental_price = $t("errors.invalid_number");
   } else {
-    errors.value.rental_price = ''
+    errors.rental_price = "";
   }
+
+  // Si quisieras validar la imagen, lo harías aquí
+  // if (!formData.main_image) { ... }
 }
 
-function handleImageUpload(e: Event) {
-  const target = e.target as HTMLInputElement
-  if (!target.files?.length) return
-
-  const file = target.files[0]
-  form.value.main_image = file
-  errors.value.main_image = ''
-}
-
-// Computed para deshabilitar el botón si hay errores
+// Indica si hay errores para, por ejemplo, deshabilitar un botón
 const hasErrors = computed(() => {
-  return Object.values(errors.value).some(err => err !== '')
-})
+  return Object.values(errors).some((err) => err !== "");
+});
 
-// Botón “Volver”
-function goBack() {
-  emit('goBack')
-}
-
-// Botón “Guardar”
-function handleSubmit() {
-  validateDescription()
-  validateRentalPrice()
+// Maneja el envío del formulario (crear habitación)
+async function handleSubmit() {
+  validateForm();
 
   if (!hasErrors.value) {
-    emit('submit', form.value)
+    try {
+      await store.createRoom(propertyId, formData); // Llamada al Pinia Store
+      alert("¡Habitación creada con éxito!");
+      router.push(`/properties/${propertyId}`);
+    } catch (err: any) {
+      console.error("Error al crear habitación:", err);
+      // Podrías mostrar un mensaje global de error o mapear errores de backend
+      errors.description = err?.data?.message || $t("errors.generic_error");
+    }
   }
 }
+
+// Botón "Volver"
+function handleGoBack() {
+  router.go(-1);
+}
 </script>
-
-<style scoped>
-</style>
-
-function defineEmits(arg0: string[]) {
-  throw new Error('Function not implemented.')
-}
-
-function defineProps(arg0: { initialData: { type: ObjectConstructor; default: () => { description: string; rental_price: string; main_image: null } } }) {
-  throw new Error('Function not implemented.')
-}
-
-function defineEmits(arg0: string[]) {
-  throw new Error('Function not implemented.')
-}

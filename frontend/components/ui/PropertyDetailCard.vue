@@ -5,7 +5,7 @@
     </h1>
     <div v-if="!showStats">
       <div
-        class="bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col md:flex-row gap-8 p-8"
+        class="bg-white/90 rounded-3xl shadow-lg overflow-hidden flex flex-col md:flex-row gap-8 p-8"
       >
         <div
           class="md:w-1/2 gradient-card h-64 lg:h-96 rounded-3xl flex items-center justify-center"

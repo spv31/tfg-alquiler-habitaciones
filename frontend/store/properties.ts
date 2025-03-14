@@ -63,6 +63,8 @@ export const usePropertiesStore = defineStore(
 
       if (!data) throw new Error("No data received");
 
+      console.log(data.data);
+
       properties.value = data.data;
       pagination.value = {
         links: data.links,
@@ -199,7 +201,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<{ message_key: string }>(
-          `${apiBaseUrl}/api/properties/${id}`,
+          `${apiBaseUrl}/properties/${id}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -239,7 +241,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<Property>(
-          `${apiBaseUrl}/api/properties/${propertyId}/status`,
+          `${apiBaseUrl}/properties/${propertyId}/status`,
           {
             method: "PATCH",
             credentials: "include",
@@ -390,7 +392,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<Room>(
-          `${apiBaseUrl}/api/properties/${propertyId}/rooms`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms`,
           {
             method: "POST",
             body: roomData,
@@ -431,7 +433,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<Room>(
-          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}`,
           {
             method: "PUT",
             body: roomData,
@@ -476,7 +478,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<{ message_key: string }>(
-          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -515,7 +517,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<Room>(
-          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}/status`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/status`,
           {
             method: "PATCH",
             credentials: "include",
@@ -636,7 +638,7 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
         return await $fetch<Tenant[]>(
-          `${apiBaseUrl}/api/properties/${propertyId}/tenants`,
+          `${apiBaseUrl}/properties/${propertyId}/tenants`,
           {
             method: "GET",
             credentials: "include",
@@ -674,7 +676,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<Tenant>(
-          `${apiBaseUrl}/api/properties/${propertyId}/rooms/${roomId}/tenant`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/tenant`,
           {
             method: "GET",
             credentials: "include",

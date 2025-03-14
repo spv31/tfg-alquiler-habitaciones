@@ -11,7 +11,6 @@
         />
       </div>
 
-      <!-- Título del formulario -->
       <h1 class="text-3xl font-bold text-gray-900 text-center">
         {{
           step === 1
@@ -21,9 +20,7 @@
       </h1>
     </div>
 
-    <!-- Formulario -->
     <form @submit.prevent="handleSubmit" class="card-form-two-columns">
-      <!-- PASO 1: Campos obligatorios -->
       <PropertyForm
         ref="propertyFormRef"
         v-if="step === 1"
@@ -31,7 +28,6 @@
         v-model:errors="errors"
       />
 
-      <!-- PASO 2: Campos opcionales -->
       <PropertyDetailsForm
         v-else
         v-model:propertyData="propertyData"
@@ -41,7 +37,7 @@
 
       <!-- Botones de navegación -->
       <div class="flex justify-between mt-4">
-        <!-- Botón "Volver" (solo en el paso 2) -->
+
         <button
           v-if="step === 2"
           type="button"
@@ -51,7 +47,6 @@
           {{ $t("common.back") }}
         </button>
 
-        <!-- Botón "Continuar" (solo en el paso 1) -->
         <button
           v-else
           type="button"
@@ -80,16 +75,12 @@
 import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
 
-// Componentes hijo
-
 const { t: $t } = useI18n();
 const route = useRoute();
 const store = usePropertiesStore();
 
-// currentProperty, por si ya está cargada en el store
 const { currentProperty } = storeToRefs(store);
 
-// Paso actual (1 o 2)
 const step = ref(1);
 
 // Alertas
@@ -245,7 +236,10 @@ onMounted(async () => {
       if (fetched) {
         Object.assign(propertyData, fetched.data);
         if (fetched.data.details) {
+          console.log('Datos: ', fetched.data);
+          console.log('Financiado: ', fetched.data.details.is_financed);
           Object.assign(propertyData, fetched.data.details);
+          console.log('Datos copiados: ', propertyData.is_financed);
         }
       }
     } catch (err) {
