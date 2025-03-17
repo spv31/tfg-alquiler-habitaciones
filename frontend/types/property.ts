@@ -16,7 +16,7 @@ export interface Property {
   status: "available" | "occupied" | "unavailable" | "partially_occupied",
   total_rooms: number,
 
-  main_image: string;
+  main_image_url: string;
   images: string[],
 
   details?: PropertyDetail,

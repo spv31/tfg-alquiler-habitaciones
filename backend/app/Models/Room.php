@@ -45,22 +45,25 @@ class Room extends Model
    * 
    * @return string
    */
-  public function getMainImageUrlAttribute()
+  public function getMainImageUrlAttribute(): string|null
   {
-    if ($this->relationLoaded('images') && $this->images->isNotEmpty()) {
-      return $this->images->first()->image_path;
+    if (!$this->relationLoaded('images')) {
+      $this->load('images');
     }
-    return 'private/images/rooms/default.jpg';
+
+    return $this->images->isNotEmpty()
+      ? route('image.room.show', ['property' => $this->property_id, 'room' => $this->id, 'filename' => $this->images->first()->image_path])
+      : null;
   }
 
   /**
    * Accessor: Get a collection of filenames for all images associated with the room.
    */
-  public function getImagesUrlAttribute()
+  public function getImagesUrlAttribute(): mixed
   {
-    return $this->images->map(function ($image) {
-      return $image->image_path;
-    });
+    return $this->images->isNotEmpty()
+      ? $this->images->map(fn($image) => route('image.room.show', ['room' => $this->id, 'filename' => $image->image_path]))
+      : null;
   }
 
   public function tenant()

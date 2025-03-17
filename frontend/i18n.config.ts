@@ -1,6 +1,29 @@
 export default defineI18nConfig(() => ({
   messages: {
     es: {
+      common: {
+        edit: "Editar",
+        readMore: "Leer más",
+        readLess: "Mostrar menos",
+        back: "Volver",
+        continue: "Continuar",
+        save: "Guardar",
+        cancel: "Cancelar",
+      },
+      badges: {
+        status: {
+          available: "Disponible",
+          unavailable: "No disponible",
+          occupied: "Ocupada",
+          partially_occupied: "Parcial",
+          unknown: "Desconocido",
+        },
+        rental_type: {
+          full: "Completa",
+          per_room: "Por habitaciones",
+          unknown: "Desconocido",
+        },
+      },
       navbar: {
         login: "Inicia Sesión",
         register: "Regístrate",
@@ -20,6 +43,19 @@ export default defineI18nConfig(() => ({
           profile: "Mis datos",
           support: "Soporte",
         },
+      },
+
+      invitations: {
+        inviteTenantButton: "Invitar inquilino",
+        closeFormButton: "Cerrar formulario",
+        emailLabel: "Correo electrónico del inquilino",
+        emailPlaceholder: "Introduce el correo del inquilino",
+        sendButton: "Enviar invitación",
+        sending: "Enviando...",
+        invalidEmailError: "Por favor, introduce un correo electrónico válido.",
+        invitationSuccess: "Invitación enviada con éxito.",
+        invitationError:
+          "Hubo un error al enviar la invitación. Inténtalo de nuevo.",
       },
       dashboard: {
         title: "Bienvenido al Dashboard",
@@ -73,6 +109,8 @@ export default defineI18nConfig(() => ({
             "El número de teléfono es obligatorio y solo debe contener números.",
           address_required: "La dirección debe tener al menos 5 caracteres.",
           registration_failed: "Error al registrar. Inténtalo de nuevo.",
+          total_rooms_too_low:
+            "No puedes reducir el número total de habitaciones por debajo de {minRooms} habitaciones existentes.",
         },
       },
       login: {
@@ -113,9 +151,11 @@ export default defineI18nConfig(() => ({
       },
       properties: {
         success_message: "¡Propiedad registrada con éxito!",
+        update_success_message: "Propiedad actualizada con éxito.",
         error_message:
           "Hubo un error al registrar la propiedad. Por favor, inténtalo de nuevo.",
         add_title: "Añadir Propiedad",
+        edit_title: "Editar Propiedad",
         add_rooms: "Añadir Habitaciones",
         optional_stats: "Estadísticas Opcionales",
         address: "Dirección",
@@ -172,7 +212,9 @@ export default defineI18nConfig(() => ({
           rentalType: "Tipo de Alquiler:",
           rental_type_full: "Completo",
           rental_type_per_room: "Por habitaciones",
-          status: "Estado:",
+          rentalPriceLabel: "Alquiler estimado",
+          rentalPriceValue: "{price}€",
+          status: "Cambiar estado",
           totalRooms: "Número de habitaciones:",
           editButton: "Editar Propiedad",
           addRoomButton: "Añadir Habitación",
@@ -187,12 +229,14 @@ export default defineI18nConfig(() => ({
           sendInvitationButton: "Enviar invitación",
           cancelButton: "Cancelar",
           chatButton: "Chat",
-          addStatsButton: "Añadir estadísticas",
-          makeUnavailableButton: "Hacer no disponible",
-          makeAvailableButton: "Hacer disponible",
+          addStatsButton: "Estadísticas",
+          makeUnavailableButton: "Cambiar estado",
+          makeAvailableButton: "Cambiar estado",
           addTenantText: "¿Necesitas asignar un inquilino para esta propiedad?",
           addTenantButton: "Añadir Inquilino",
           tenantFormTitle: "Invitar Inquilino",
+          seeComplete: "Ver completa",
+          rentalPriceText: "Alquiler estimado: {price}",
           statusLabel: {
             available: "Disponible",
             unavailable: "No disponible",
@@ -203,19 +247,27 @@ export default defineI18nConfig(() => ({
           room: "Habitación",
           rooms: {
             title: "Habitaciones",
+            missing_rooms_warning_singular: "Falta 1 habitación por añadir.",
+            missing_rooms_warning_plural:
+              "Faltan {missing} habitaciones por añadir.",
             addRoomTitle: "Añadir Habitación",
+            editRoomTitle: "Editar Habitación",
+            rental_price: "Precio de alquiler (Estimación)",
+            roomUpdated: "Habitación actualizada correctamente.",
             description: "Descripción",
             rentalPrice: "Precio de Alquiler",
             mainImage: "Imagen principal",
-            saveRoomButton: "Guardar Habitación"
+            saveRoomButton: "Guardar Habitación",
           },
           addRoomHelpText: "Haz clic para registrar una nueva habitación",
           noRoomsPrompt: "¡Comienza añadiendo tu primera habitación!",
+          deleteButton: "Eliminar",
+          confirmDelete: "Confirmar eliminación",
+          deleteConfirmationMessage:
+            "¿Estás seguro de que quieres eliminar esta propiedad? Esta acción no se puede deshacer.",
+          propertyDeleted: "Propiedad eliminada con éxito.",
+          deleteError: "Error al eliminar la propiedad.",
         },
-      },
-      common: {
-        back: "Volver",
-        continue: "Continuar",
       },
       errors: {
         address_short: "La dirección debe tener al menos 5 caracteres.",
@@ -320,6 +372,29 @@ export default defineI18nConfig(() => ({
       },
     },
     en: {
+      common: {
+        edit: "Edit",
+        readMore: "Read more",
+        readLess: "Show less",
+        back: "Back",
+        continue: "Continue",
+        save: "Save",
+        cancel: "Cancel",
+      },
+      badges: {
+        status: {
+          available: "Available",
+          unavailable: "Unavailable",
+          occupied: "Occupied",
+          partially_occupied: "Partially occupied",
+          unknown: "Unknown",
+        },
+        rental_type: {
+          full: "Full",
+          per_room: "Per room",
+          unknown: "Unknown",
+        },
+      },
       navbar: {
         login: "Log In",
         register: "Register",
@@ -339,6 +414,18 @@ export default defineI18nConfig(() => ({
           profile: "My Profile",
           support: "Support",
         },
+      },
+      invitations: {
+        inviteTenantButton: "Invite tenant",
+        closeFormButton: "Close form",
+        emailLabel: "Tenant's email",
+        emailPlaceholder: "Enter tenant's email",
+        sendButton: "Send invitation",
+        sending: "Sending...",
+        invalidEmailError: "Please enter a valid email address.",
+        invitationSuccess: "Invitation sent successfully.",
+        invitationError:
+          "There was an error sending the invitation. Please try again.",
       },
       dashboard: {
         title: "Welcome to the Dashboard",
@@ -431,9 +518,11 @@ export default defineI18nConfig(() => ({
       },
       properties: {
         success_message: "Property registered successfully!",
+        update_success_message: "Property updated successfully.",
         error_message:
           "There was an error registering the property. Please try again.",
         add_title: "Add Property",
+        edit_title: "Edit Property",
         add_rooms: "Add Rooms",
         optional_stats: "Optional Statistics",
         address: "Address",
@@ -478,7 +567,7 @@ export default defineI18nConfig(() => ({
         annual_repair_percentage: "Repair Budget (%)",
         rental_price: "Rental Price",
         property_size: "Property Size (m²)",
-        details: {
+        detail: {
           loading: "Loading property...",
           error: "Error loading property:",
           title: "Property Details",
@@ -499,14 +588,18 @@ export default defineI18nConfig(() => ({
           addTenantText: "Need to assign a tenant for this property?",
           addTenantButton: "Add Tenant",
           tenantFormTitle: "Invite Tenant",
+          rentalPriceText: "Estimated rent: {price}",
+          rentalPriceLabel: "Estimated rent",
+          rentalPriceValue: "{price}€",
+          seeComplete: "See complete",
           tenantEmailLabel: "Tenant Email",
           tenantEmailPlaceholder: "tenant@example.com",
           sendInvitationButton: "Send Invitation",
           cancelButton: "Cancel",
           chatButton: "Chat",
           addStatsButton: "Add Stats",
-          makeUnavailableButton: "Make Unavailable",
-          makeAvailableButton: "Make Available",
+          makeUnavailableButton: "Status",
+          makeAvailableButton: "Status",
           statusLabel: {
             available: "Available",
             unavailable: "Unavailable",
@@ -517,19 +610,27 @@ export default defineI18nConfig(() => ({
           room: "Room",
           rooms: {
             title: "Rooms",
+            missing_rooms_warning_singular: "1 room is missing to be added.",
+            missing_rooms_warning_plural:
+              "{missing} rooms are missing to be added.",
             addRoomTitle: "Add Room",
+            editRoomTitle: "Edit Room",
+            rental_price: "Rental Price (Estimate)",
+            roomUpdated: "Room updated successfully.",
             description: "Description",
             rentalPrice: "Rental Price",
             mainImage: "Main Image",
-            saveRoomButton: "Save Room"
+            saveRoomButton: "Save Room",
           },
           addRoomHelpText: "Click to register a new room",
           noRoomsPrompt: "Start by adding your first room!",
+          deleteButton: "Delete",
+          confirmDelete: "Confirm Deletion",
+          deleteConfirmationMessage:
+            "Are you sure you want to delete this property? This action cannot be undone.",
+          propertyDeleted: "Property successfully deleted.",
+          deleteError: "Error deleting the property.",
         },
-      },
-      common: {
-        back: "Back",
-        continue: "Continue",
       },
       errors: {
         address_short: "The address must be at least 5 characters long.",
@@ -539,6 +640,8 @@ export default defineI18nConfig(() => ({
         min_rooms: "There must be at least 1 room.",
         invalid_number: "Must be a valid number.",
         invalid_date: "Must be a valid date.",
+        total_rooms_too_low:
+          "You cannot reduce the total number of rooms below the {minRooms} existing rooms.",
       },
       api: {
         success: {

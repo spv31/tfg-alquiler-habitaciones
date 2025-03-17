@@ -64,7 +64,7 @@
           class="button-primary"
           :disabled="hasErrors"
         >
-          {{ $t("properties.save_changes") }}
+          {{ $t("common.save") }}
         </button>
       </div>
     </form>
@@ -220,7 +220,7 @@ const hasErrors = computed(() => {
 });
 
 onMounted(async () => {
-  const routePropertyId = Number(route.params.id);
+  const routePropertyId = Number(route.params.propertyId);
 
   if (!routePropertyId) {
     alertMessage.value = $t("properties.error_loading_property");
@@ -236,10 +236,7 @@ onMounted(async () => {
       if (fetched) {
         Object.assign(propertyData, fetched.data);
         if (fetched.data.details) {
-          console.log('Datos: ', fetched.data);
-          console.log('Financiado: ', fetched.data.details.is_financed);
           Object.assign(propertyData, fetched.data.details);
-          console.log('Datos copiados: ', propertyData.is_financed);
         }
       }
     } catch (err) {
@@ -261,25 +258,54 @@ function prevStep() {
   step.value = 1;
 }
 
-async function handleSubmit() {
-  if (!hasErrors.value) {
+const handleSubmit = async () => {
+if (!hasErrors.value) {
     try {
+      console.log("Datos propiedad actualizados: ", propertyData);
       await store.updateProperty(propertyData.id, propertyData);
+
       alertMessage.value = $t("properties.update_success_message");
       alertType.value = "success";
+
+      navigateTo(`/properties/${propertyData.id}?msg=success`);
     } catch (error: any) {
       console.error("Error al actualizar la propiedad:", error);
-      const errorsFromBackend = error?.data?.errors || {};
-      Object.keys(errorsFromBackend).forEach((key) => {
-        errors.value[key] = errorsFromBackend[key][0] || "Error desconocido";
-      });
-      alertMessage.value = $t("properties.error_message");
-      alertType.value = "error";
+
+      if (error.data?.error_key === "total_rooms_too_low") {
+        alertMessage.value = error.data?.message || $t("properties.error_message");
+        alertType.value = "error";
+      } else {
+        const errorsFromBackend = error?.data?.errors || {};
+        Object.keys(errorsFromBackend).forEach((key) => {
+          errors.value[key] = errorsFromBackend[key][0] || "Error desconocido";
+        });
+        alertMessage.value = $t("properties.error_message");
+        alertType.value = "error";
+      }
     }
   }
 }
+
+// async function handleSubmit() {
+  // if (!hasErrors.value) {
+  //   try {
+  //     console.log('Datos propiedad actualizados: ', propertyData);
+  //     await store.updateProperty(propertyData.id, propertyData);
+  //     alertMessage.value = $t("properties.update_success_message");
+  //     alertType.value = "success";
+  //   } catch (error: any) {
+  //     console.error("Error al actualizar la propiedad:", error);
+  //     const errorsFromBackend = error?.data?.errors || {};
+  //     Object.keys(errorsFromBackend).forEach((key) => {
+  //       errors.value[key] = errorsFromBackend[key][0] || "Error desconocido";
+  //     });
+  //     alertMessage.value = $t("properties.error_message");
+  //     alertType.value = "error";
+  //   }
+  // }
+  
+// }
 </script>
 
 <style scoped>
-/* Tus estilos personalizados */
 </style>

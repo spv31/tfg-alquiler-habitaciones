@@ -22,14 +22,7 @@ class RoomResource extends JsonResource
       'rental_price' => $this->rental_price,
       'status' => $this->status,
 
-      'main_image' => route('private.room_image', [
-        'filename' => $this->main_image_url
-      ]),
-
-      'images' => $this->images_url->map(
-        fn($imagePath) =>
-        route('private.room_image', ['filename' => $imagePath])
-      ),
+      'main_image_url' => $this->main_image_url,
 
       'tenant' => $this->whenLoaded('tenant', fn() => new TenantResource($this->tenant)),
       'invitations' => InvitationResource::collection($this->whenLoaded('invitations')),

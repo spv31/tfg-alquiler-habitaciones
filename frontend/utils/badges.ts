@@ -1,5 +1,9 @@
-
-export type PropertyStatus = "available" | "unavailable" | "occupied" | "partially_occupied" | string;
+export type PropertyStatus =
+  | "available"
+  | "unavailable"
+  | "occupied"
+  | "partially_occupied"
+  | string;
 export type RentalType = "full" | "per_room" | string;
 
 export const statusBadgeClasses = (status: PropertyStatus): string => {
@@ -17,19 +21,11 @@ export const statusBadgeClasses = (status: PropertyStatus): string => {
   }
 };
 
-export const statusLabel = (status: PropertyStatus): string => {
-  switch (status) {
-    case "available":
-      return "Disponible";
-    case "unavailable":
-      return "No disponible";
-    case "occupied":
-      return "Ocupada";
-    case "partially_occupied":
-      return "Parcial";
-    default:
-      return "Desconocido";
-  }
+export const statusLabel = (
+  status: PropertyStatus,
+  t: (key: string, fallback?: string) => string
+): string => {
+  return t(`badges.status.${status}`, "Desconocido");
 };
 
 export const rentalBadgeClasses = (type: RentalType): string => {
@@ -43,13 +39,9 @@ export const rentalBadgeClasses = (type: RentalType): string => {
   }
 };
 
-export const rentalTypeLabel = (type: RentalType): string => {
-  switch (type) {
-    case "full":
-      return "Completa";
-    case "per_room":
-      return "Por habitaciones";
-    default:
-      return "Desconocido";
-  }
+export const rentalTypeLabel = (
+  type: RentalType,
+  t: (key: string, fallback?: string) => string
+): string => {
+  return t(`badges.rental_type.${type}`, "Desconocido");
 };

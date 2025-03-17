@@ -8,13 +8,28 @@
         :class="statusBadgeClasses(property.status)"
         class="px-3 py-1.5 text-xs font-semibold rounded-full uppercase tracking-wide shadow-sm"
       >
-        {{ statusLabel(property.status) }}
+        {{ statusLabel(property.status, t) }}
       </span>
     </div>
 
-    <!-- Bloque superior: imagen/degradado -->
     <div class="h-48 gradient-card rounded-t-3xl overflow-hidden relative">
-      <div class="absolute inset-0 flex items-center justify-center">
+      <div
+        v-if="loadingImage"
+        class="absolute inset-0 flex items-center justify-center"
+      >
+        <div
+          class="animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-gray-500"
+        ></div>
+      </div>
+
+      <img
+        v-else-if="propertyImage"
+        :src="propertyImage"
+        :alt="`Imagen de ${property.address}`"
+        class="absolute inset-0 w-full h-full object-cover"
+      />
+
+      <div v-else class="absolute inset-0 flex items-center justify-center">
         <svg
           class="h-16 w-16 text-info/30"
           fill="none"
@@ -45,16 +60,13 @@
 
     <div class="px-6 pb-6">
       <div class="flex items-center justify-between text-sm">
-        <!-- <span class="font-medium text-blue-600">
-          {{ rentalTypeLabel(property.rental_type) }}
-        </span> -->
         <span
           :class="[
             rentalBadgeClasses(property.rental_type),
             'px-3 py-1 text-xs font-semibold rounded-full uppercase tracking-wide',
           ]"
         >
-          {{ rentalTypeLabel(property.rental_type) }}
+          {{ rentalTypeLabel(property.rental_type, t) }}
         </span>
 
         <div class="flex items-center space-x-2">
@@ -68,20 +80,58 @@
         :to="`/properties/${property.id}`"
         class="button-card mt-4 block text-center"
       >
-        Ver completa
+        {{ $t("properties.detail.seeComplete") }}
       </NuxtLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Property } from "~/types/property";
-import { statusBadgeClasses, statusLabel, rentalBadgeClasses, rentalTypeLabel} from "~/utils/badges";
+import { usePropertiesStore } from "~/store/properties";
+import {
+  statusBadgeClasses,
+  statusLabel,
+  rentalBadgeClasses,
+  rentalTypeLabel,
+} from "~/utils/badges";
 
-defineProps<{
-  property: Property;
-}>();
+const props = defineProps({
+  property: {
+    type: Object,
+    required: true,
+  },
+});
 
+const { t } = useI18n();
+const propertyImage = ref<string | null>(null);
+const loadingImage = ref(false);
+const errorLoadingImage = ref(false);
+const propertiesStore = usePropertiesStore();
+
+const failedImageUrls = new Set<string>();
+
+const loadImage = async () => {
+  if (!props.property.main_image_url) return;
+  if (propertyImage.value) return;
+
+  const filename = props.property.main_image_url.split("/").pop() || "";
+  if (!filename) return;
+
+  try {
+    loadingImage.value = true;
+    propertyImage.value = await propertiesStore.fetchPropertyImageUrl(
+      props.property.id,
+      filename
+    );
+  } catch (error) {
+    console.error("Error loading image:", error);
+  } finally {
+    loadingImage.value = false;
+  }
+};
+
+onMounted(loadImage);
+watch(() => props.property, loadImage);
 </script>
 
 <style scoped>

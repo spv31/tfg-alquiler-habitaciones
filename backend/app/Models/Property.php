@@ -79,10 +79,13 @@ class Property extends Model
    */
   public function getMainImageUrlAttribute()
   {
-    if ($this->relationLoaded('images') && $this->images->isNotEmpty()) {
-      return $this->images->first()->image_path;
+    if (!$this->relationLoaded('images')) {
+      $this->load('images');
     }
-    return 'private/images/properties/default.jpg';
+
+    return $this->images->isNotEmpty()
+      ? route('image.property.show', ['property' => $this->id, 'filename' => $this->images->first()->image_path])
+      : null;
   }
 
   /**
@@ -90,9 +93,9 @@ class Property extends Model
    */
   public function getImagesUrlAttribute()
   {
-    return $this->images->map(function ($image) {
-      return $image->image_path;
-    });
+    return $this->images->isNotEmpty()
+      ? $this->images->map(fn($image) => route('image.property.show', ['property' => $this->id, 'filename' => $image->image_path]))
+      : null;
   }
 
   /**

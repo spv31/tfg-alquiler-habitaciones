@@ -18,7 +18,10 @@ Route::get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
   // Properties
   Route::apiResource('properties', PropertyController::class);
+  Route::post('/properties/{id}/update', [PropertyController::class, 'update']);
   Route::apiResource('properties.rooms', RoomController::class);
+  Route::post('/properties/{property}/rooms/{room}/update', [RoomController::class, 'update']);
+
   // See tenants
   Route::get('/properties/{property}/tenants', [TenantAssignmentController::class, 'listPropertyTenants']);
   Route::get('/properties/{property}/rooms/{room}/tenants', [RoomController::class, 'listRoomTenants']);
@@ -36,16 +39,21 @@ Route::middleware('auth:sanctum')->group(function () {
   });
   // Reassignment of tenants/properties/rooms 
   Route::post('tenant-assignments/reassign', [TenantAssignmentController::class, 'reassign']);
+
   // Release tenats
   Route::delete('tenant-assignments/remove', [TenantAssignmentController::class, 'removeAssignment']);
+
   // Tenant View
   Route::get('/assigned-rentable', [TenantAssignmentController::class, 'getAssignedRentable']);
+  
   // Property images
   Route::get('/properties/{property}/images/{filename}', [ImageController::class, 'showPropertyImage'])
     ->name('image.property.show');
+
   // Room images
   Route::get('/properties/{property}/rooms/{room}/images/{filename}', [ImageController::class, 'showRoomImage'])
     ->name('image.room.show');
+
   // User images
   Route::get('/users/{user}/avatar/{filename}', [ImageController::class, 'showUserImage'])
     ->name('image.user.show');

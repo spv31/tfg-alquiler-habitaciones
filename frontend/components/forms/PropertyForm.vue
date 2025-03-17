@@ -1,5 +1,10 @@
 <template>
   <div class="flex flex-col gap-4">
+    
+    <div v-if="roomsWarning" class="text-red-500 bg-red-100 p-3 rounded">
+      {{ $t(roomsWarning.key, { minRooms: roomsWarning.params.minRooms }) }}
+    </div>
+
     <!-- Dirección -->
     <div class="flex flex-col">
       <label for="address" class="label">
@@ -63,8 +68,8 @@
         id="total_rooms"
         type="number"
         class="custom-input"
-        v-model.number="localPropertyData.total_rooms"
-        @input="validateTotalRooms"
+        v-model="localPropertyData.total_rooms"
+        @change="validateTotalRooms"
         :placeholder="$t('properties.total_rooms_placeholder')"
       />
       <p v-if="localErrors.total_rooms" class="error-message">
@@ -147,9 +152,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useI18n } from "vue-i18n";
-
 const { t: $t } = useI18n();
 
 // Emitimos para sincronizar con el padre
@@ -161,7 +163,6 @@ const props = defineProps<{
   errors: Record<string, any>;
 }>();
 
-// Computed reactivas para propertyData y errors
 const localPropertyData = computed({
   get: () => props.propertyData,
   set: (val) => emits("update:propertyData", val),
@@ -171,7 +172,6 @@ const localErrors = computed({
   set: (val) => emits("update:errors", val),
 });
 
-// Validaciones simples
 function validateAddress() {
   localErrors.value.address =
     localPropertyData.value.address.length >= 5

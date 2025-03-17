@@ -10,7 +10,7 @@ export const useInvitationsStore = defineStore(
   "invitations",
   () => {
     const config = useRuntimeConfig();
-    const apiBaseUrl = config.app.apiBaseUrl;
+    const apiBaseUrl = config.app.apiBaseURL;
 
     const invitations = ref<Invitation[]>([]);
     const currentInvitation = ref<Invitation | null>(null);
@@ -105,11 +105,21 @@ export const useInvitationsStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
+        const formattedData: any = {
+          email: invitationData.email,
+        };
+      
+        if (invitationData.assignable_type === "property") {
+          formattedData.property_id = invitationData.assignable_id;
+        } else if (invitationData.assignable_type === "room") {
+          formattedData.room_id = invitationData.assignable_id;
+        }
+
         return await $fetch<CreateInvitationResponse>(
           `${apiBaseUrl}/invitations`,
           {
             method: "POST",
-            body: invitationData,
+            body: formattedData,
             credentials: "include",
             headers: {
               "X-XSRF-TOKEN": csrfToken,

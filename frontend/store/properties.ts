@@ -27,10 +27,12 @@ export const usePropertiesStore = defineStore(
 
     const loading = ref(false);
     const error = ref(null);
+    const roomsWarning = ref<{ key: string; parms?: any } | null>(null);
     const pagination = ref({
       links: {},
       meta: {},
     });
+    const propertyImagesCache = ref<Record<string, string>>({});
 
     /**
      * Sends request to get properties
@@ -43,17 +45,14 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<PropertyCollection>(
-          `${apiBaseUrl}/properties`,
-          {
-            method: "GET",
-            credentials: "include",
-            headers: {
-              "X-XSRF-TOKEN": csrfToken,
-              Accept: "application/json",
-            },
-          }
-        );
+        return await $fetch<PropertyCollection>(`${apiBaseUrl}/properties`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+          },
+        });
       }, loading);
 
       if (error) {
@@ -83,6 +82,10 @@ export const usePropertiesStore = defineStore(
      */
 
     const fetchProperty = async (id: number): Promise<Property> => {
+      currentProperty.value = null;
+      rooms.value = [];
+      roomsWarning.value = null;
+
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
@@ -97,14 +100,12 @@ export const usePropertiesStore = defineStore(
         });
       }, loading);
 
-
-      console.log('ID Recibido: ', id);
-  
       if (error) throw error;
 
       if (!data) throw new Error("No data received");
 
       currentProperty.value = data;
+
       return data;
     };
 
@@ -120,16 +121,27 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
+        const formData = new FormData();
+
+        Object.keys(propertyData).forEach((key) => {
+          const value = propertyData[key as keyof Property];
+
+          if (key === "main_image" && value instanceof File) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, value != null ? value.toString() : "");
+          }
+        });
+
         return await $fetch<CreatePropertyResponse>(
           `${apiBaseUrl}/properties`,
           {
             method: "POST",
-            body: propertyData,
+            body: formData,
             credentials: "include",
             headers: {
               "X-XSRF-TOKEN": csrfToken,
               Accept: "application/json",
-              "Content-Type": "application/json",
             },
           }
         );
@@ -158,19 +170,33 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
+        const formData = new FormData();
+
+        formData.append("_method", "PUT");
+
+        Object.keys(propertyData).forEach((key) => {
+          const value = propertyData[key as keyof Property];
+          if (key === "main_image" && value instanceof File) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, value != null ? value.toString() : "");
+          }
+        });
+
         return await $fetch<Property>(`${apiBaseUrl}/properties/${id}`, {
-          method: "PUT",
-          body: propertyData,
+          method: "POST",
+          body: formData,
           credentials: "include",
           headers: {
             "X-XSRF-TOKEN": csrfToken,
             Accept: "application/json",
-            "Content-Type": "application/json",
           },
         });
       }, loading);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (data) {
         currentProperty.value = data;
@@ -275,17 +301,13 @@ export const usePropertiesStore = defineStore(
      * @param {string} filename
      * @returns {Promise<Blob>}
      */
-    const fetchPropertyImage = async (
-      propertyId: number,
-      filename: string
-    ): Promise<Blob> => {
+    const fetchPropertyImage = async (propertyId: number, filename: string) => {
       const { data, error } = await tryCatch<Blob>(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        // No usamos $fetch porque necesitamos un Blob
         const response = await fetch(
-          `${apiBaseUrl}/properties/${propertyId}/image/${filename}`,
+          `${apiBaseUrl}/properties/${propertyId}/images/${filename}`,
           {
             method: "GET",
             credentials: "include",
@@ -301,6 +323,7 @@ export const usePropertiesStore = defineStore(
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
+
       return data;
     };
 
@@ -333,9 +356,12 @@ export const usePropertiesStore = defineStore(
       if (!data) throw new Error("No data received");
 
       if (data.warning) {
+        roomsWarning.value = data.warning;
+      } else {
+        roomsWarning.value = null;
       }
 
-      rooms.value = data.data;
+      rooms.value = data.rooms;
     };
 
     /**
@@ -391,16 +417,27 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
+        const formData = new FormData();
+
+        Object.keys(roomData).forEach((key) => {
+          const value = roomData[key as keyof Room];
+
+          if (key === "main_image" && value instanceof File) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, value != null ? value.toString() : "");
+          }
+        });
+
         return await $fetch<Room>(
           `${apiBaseUrl}/properties/${propertyId}/rooms`,
           {
             method: "POST",
-            body: roomData,
+            body: formData,
             credentials: "include",
             headers: {
               "X-XSRF-TOKEN": csrfToken,
               Accept: "application/json",
-              "Content-Type": "application/json",
             },
           }
         );
@@ -410,6 +447,7 @@ export const usePropertiesStore = defineStore(
       if (!data) throw new Error("No data received");
 
       rooms.value.push(data);
+      await fetchRooms(propertyId);
       return data;
     };
 
@@ -432,16 +470,29 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
+        const formData = new FormData();
+
+        formData.append("_method", "POST");
+
+        Object.keys(roomData).forEach((key) => {
+          const value = roomData[key as keyof Room];
+    
+          if (key === "main_image" && value instanceof File) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, value != null ? value.toString() : "");
+          }
+        });
+
         return await $fetch<Room>(
-          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/update`,
           {
-            method: "PUT",
-            body: roomData,
+            method: "POST",
+            body: formData,
             credentials: "include",
             headers: {
               "X-XSRF-TOKEN": csrfToken,
               Accept: "application/json",
-              "Content-Type": "application/json",
             },
           }
         );
@@ -557,13 +608,13 @@ export const usePropertiesStore = defineStore(
       propertyId: number,
       roomId: number,
       filename: string
-    ): Promise<Blob> => {
+    ) => {
       const { data, error } = await tryCatch<Blob>(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         const response = await fetch(
-          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/image/${filename}`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/images/${filename}`,
           {
             method: "GET",
             credentials: "include",
@@ -689,11 +740,80 @@ export const usePropertiesStore = defineStore(
       }, loading);
 
       if (error) throw error;
-      if (!data) throw new Error('No data received');
-      
+      if (!data) throw new Error("No data received");
+
       currentTenant.value = data || null;
       return data;
     };
+
+    /**
+     * It creates a url for a property image fetched to the API
+     *
+     * @async
+     * @param {number} propertyId
+     * @param {string} filename
+     * @returns {unknown}
+     */
+    const fetchPropertyImageUrl = async (
+      propertyId: number,
+      filename: string
+    ) => {
+      const cacheKey = `${propertyId}-${filename}`;
+
+      if (propertyImagesCache.value[cacheKey]) {
+        return propertyImagesCache.value[cacheKey];
+      }
+
+      try {
+        console.log("Fichero: ", filename);
+        const blob = await fetchPropertyImage(propertyId, filename);
+        const url = URL.createObjectURL(blob);
+
+        propertyImagesCache.value[cacheKey] = url;
+        return url;
+      } catch (error) {
+        console.error("Error fetching property image:", error);
+        return null;
+      }
+    };
+
+    /**
+     * It creates a url for a room image fetched to the API
+     *
+     * @async
+     * @param {number} propertyId
+     * @param {number} roomId
+     * @param {string} filename
+     * @returns {unknown}
+     */
+    const fetchRoomImageUrl = async (
+      propertyId: number,
+      roomId: number,
+      filename: string
+    ) => {
+      const cacheKey = `${propertyId}-${roomId}-${filename}`;
+
+      if (propertyImagesCache.value[cacheKey]) {
+        return propertyImagesCache.value[cacheKey];
+      }
+
+      try {
+        const blob = await fetchRoomImage(propertyId, roomId, filename);
+        const url = URL.createObjectURL(blob);
+
+        propertyImagesCache.value[cacheKey] = url;
+        return url;
+      } catch (error) {
+        console.error("Error fetching room image:", error);
+        return null;
+      }
+    };
+
+    if (import.meta.hot) {
+      import.meta.hot.accept(
+        acceptHMRUpdate(usePropertiesStore, import.meta.hot)
+      );
+    }
 
     return {
       properties,
@@ -721,7 +841,11 @@ export const usePropertiesStore = defineStore(
       fetchRoomTenant,
       loading,
       error,
+      roomsWarning,
       pagination,
+      fetchPropertyImageUrl,
+      fetchRoomImageUrl,
+      propertyImagesCache,
     };
   },
   {

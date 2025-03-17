@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 
 class PropertyResource extends JsonResource
 {
@@ -14,6 +15,12 @@ class PropertyResource extends JsonResource
    */
   public function toArray(Request $request): array
   {
+    Log::info('Datos de PropertyResource antes de enviarse:', [
+      'id' => $this->id,
+      'address' => $this->address,
+      'main_image_url' => $this->main_image_url,
+    ]);
+
     return [
       'id'                  => $this->id,
       'address'             => $this->address,
@@ -23,15 +30,7 @@ class PropertyResource extends JsonResource
       'status'              => $this->status,
       'total_rooms'         => $this->total_rooms,
 
-      'main_image' => route('image.property.show', [
-        'property' => $this->id, 
-        'filename' => $this->main_image_url
-      ]),
-
-      'images' => $this->images_url->map(
-        fn($imagePath) =>
-        route('private.property_image', ['filename' => $imagePath])
-      ),
+      'main_image_url' => $this->main_image_url,
 
       'details'             => new PropertyDetailResource($this->whenLoaded('details')),
       'owner'               => $this->whenLoaded('owner', fn() => new UserResource($this->owner)),

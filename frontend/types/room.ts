@@ -20,7 +20,7 @@ export interface Room {
 }
 
 export interface RoomsResponse {
-  data: Room[];
+  rooms: Room[];
   warning?: {
     key: string;
     parms?: any;

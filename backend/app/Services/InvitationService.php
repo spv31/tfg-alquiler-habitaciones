@@ -25,7 +25,7 @@ class InvitationService
 
   public function createInvitation(User $user, array $data): ?Invitation
   {
-    $rentable = $data['room_id']
+    $rentable = array_key_exists('room_id', $data) && $data['room_id']
       ? Room::findOrFail($data['room_id'])
       : Property::findOrFail($data['property_id']);
 
@@ -46,7 +46,9 @@ class InvitationService
       'email' => $data['email'],
       'token' => Str::random(32),
       'rentable_id' => $rentable->id,
-      'rentable_type' => $data['room_id'] ? 'room' : 'property',
+      'rentable_type' => array_key_exists('room_id', $data) && $data['room_id']
+        ? Room::class
+        : Property::class,
       'owner_id' => $user->id,
       'status' => 'pending'
     ]);

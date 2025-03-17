@@ -61,4 +61,9 @@ class UploadFilesService
 			'mime' => $mime,
 		];
 	}
+
+	public function deleteFile(string $path)
+	{
+		Storage::disk('private')->delete($path);
+	}
 }

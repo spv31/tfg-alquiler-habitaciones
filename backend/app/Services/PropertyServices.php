@@ -7,6 +7,7 @@ use App\Models\PropertyDetail;
 use App\Models\Room;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class PropertyServices
 {
@@ -63,25 +64,49 @@ class PropertyServices
 	}
 
 	public function updateProperty(Property $property, array $validatedData)
-	{
-		unset($validatedData['total_rooms']);
+{
+    Log::info("Intentando actualizar propiedad", ['property_id' => $property->id]);
 
-		$property->update([
-			'address' => $validatedData['address'] ?? $property->address,
-			'cadastral_reference' => $validatedData['cadastral_reference'] ?? $property->cadastral_reference,
-			'description' => $validatedData['description'] ?? $property->description,
-			'rental_type' => $validatedData['rental_type'] ?? $property->rental_type,
-			'status' => $validatedData['status'] ?? $property->status,
-		]);
+    $existingRoomsCount = $property->rooms()->count();
+    Log::info("Número de habitaciones existentes", ['property_id' => $property->id, 'existing_rooms' => $existingRoomsCount]);
 
-		$optionalData = array_intersect_key($validatedData, array_flip(self::$propertyDetailFields));
+    if (isset($validatedData['total_rooms']) && $validatedData['total_rooms'] < $existingRoomsCount) {
+        Log::warning("Error: Intento de reducir el número total de habitaciones por debajo de las existentes", [
+            'property_id' => $property->id,
+            'requested_total_rooms' => $validatedData['total_rooms'],
+            'existing_rooms' => $existingRoomsCount
+        ]);
 
-		if (!empty($optionalData)) {
-			$property->details()->updateOrCreate(['property_id' => $property->id], $optionalData);
-		}
+        throw ValidationException::withMessages([
+            'error_key' => 'total_rooms_too_low',
+            'message' => __('No puedes reducir el número total de habitaciones por debajo de las ya creadas.')
+        ]);
+    }
 
-		return $property;
-	}
+    Log::info("Datos validados para la actualización", ['property_id' => $property->id, 'data' => $validatedData]);
+
+    $property->update([
+        'address' => $validatedData['address'] ?? $property->address,
+        'cadastral_reference' => $validatedData['cadastral_reference'] ?? $property->cadastral_reference,
+        'description' => $validatedData['description'] ?? $property->description,
+        'rental_type' => $validatedData['rental_type'] ?? $property->rental_type,
+        'status' => $validatedData['status'] ?? $property->status,
+				'total_rooms' => $validatedData['total_rooms'] ?? $property->total_rooms,
+    ]);
+
+    Log::info("Propiedad actualizada con éxito", ['property_id' => $property->id]);
+
+    $optionalData = array_intersect_key($validatedData, array_flip(self::$propertyDetailFields));
+
+    if (!empty($optionalData)) {
+        Log::info("Actualizando detalles de la propiedad", ['property_id' => $property->id, 'details' => $optionalData]);
+        $property->details()->updateOrCreate(['property_id' => $property->id], $optionalData);
+    }
+
+    Log::info("Actualización finalizada", ['property_id' => $property->id]);
+
+    return $property;
+}
 
 	/**
 	 * Deletes a property

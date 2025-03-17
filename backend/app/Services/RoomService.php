@@ -1,8 +1,9 @@
 <?php
 
+namespace App\Services;
+
 use App\Models\Property;
 use App\Models\Room;
-use App\Services;
 
 class RoomService
 {
