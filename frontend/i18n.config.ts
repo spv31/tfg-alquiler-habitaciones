@@ -9,6 +9,13 @@ export default defineI18nConfig(() => ({
         continue: "Continuar",
         save: "Guardar",
         cancel: "Cancelar",
+        tenantData: "Datos del inquilino",
+        name: "Nombre",
+        email: "Correo electrónico",
+        phone: "Número de teléfono",
+        chat: "Chat",
+        move: "Mover",
+        remove: "Eliminar",
       },
       badges: {
         status: {
@@ -399,6 +406,13 @@ export default defineI18nConfig(() => ({
         continue: "Continue",
         save: "Save",
         cancel: "Cancel",
+        tenantData: "Tenant Data",
+        name: "Name",
+        email: "Email",
+        phone: "Phone",
+        chat: "Chat",
+        move: "Move",
+        remove: "Remove",
       },
       badges: {
         status: {

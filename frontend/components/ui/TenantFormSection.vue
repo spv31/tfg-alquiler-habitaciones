@@ -1,21 +1,25 @@
 <template>
   <div class="mt-4 flex flex-col items-center">
-    <button
-      class="button-primary"
-      @click="toggleForm"
-    >
-      <span v-if="!showForm">
-        {{ $t("invitations.inviteTenantButton") }}
-      </span>
-      <span v-else>
-        {{ $t("invitations.closeFormButton") }}
-      </span>
-    </button>
+    <div v-if="currentTenant">
+      <TenantCard v-if="currentTenant" :tenant="currentTenant" />
+    </div>
+
+    <div v-else>
+      <button class="button-primary" @click="toggleForm">
+        <span v-if="!showForm">
+          {{ $t("invitations.inviteTenantButton") }}
+        </span>
+        <span v-else>
+          {{ $t("invitations.closeFormButton") }}
+        </span>
+      </button>
+    </div>
 
     <transition name="fade">
       <div v-if="showForm" class="w-full max-w-md mx-auto mt-4">
         <TenantInvitationForm
-          :property-id="property.id"
+          :property-id="propertyId"
+          :room-id="roomId"
           @invitationSent="handleInvitationSent"
         />
       </div>
@@ -31,19 +35,30 @@
 </template>
 
 <script setup lang="ts">
-import TenantInvitationForm from "../forms/TenantInvitationForm.vue";
+import { usePropertiesStore } from "~/store/properties";
+import type { Tenant } from "~/types/tenant";
 
 const props = defineProps<{
   property: {
     id: number;
     [key: string]: any;
   };
+  room?: {
+    id: number;
+    [key: string]: any;
+  };
 }>();
 
 const { t: $t } = useI18n();
+const route = useRoute();
+const propertiesStore = usePropertiesStore();
+const { currentTenant } = storeToRefs(propertiesStore);
 
 const showForm = ref(false);
 const successMessage = ref("");
+
+const propertyId = route.params.propertyId;
+const roomId = route.params.roomId ?? null;
 
 const toggleForm = () => {
   showForm.value = !showForm.value;
@@ -56,6 +71,18 @@ const handleInvitationSent = (message: string) => {
   successMessage.value = message;
   showForm.value = false;
 };
+
+onMounted(async () => {
+  try {
+    if (props.room) {
+      await propertiesStore.fetchRoomTenant(propertyId, roomId);
+    } else {
+      await propertiesStore.fetchPropertyTenant(propertyId);
+    }
+  } catch (error) {
+    console.error("Error fetching tenant:", error);
+  }
+});
 </script>
 
 <style scoped>

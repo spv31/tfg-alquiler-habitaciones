@@ -10,7 +10,7 @@ import type {
   UpdatePropertyDetailsResponse,
 } from "~/types/propertyDetail";
 import type { Room, RoomsResponse } from "~/types/room";
-import type { Tenant } from "~/types/tenant";
+import type { Tenant, TenantCollection } from "~/types/tenant";
 
 export const usePropertiesStore = defineStore(
   "properties",
@@ -721,8 +721,8 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<Tenant>(
-          `${apiBaseUrl}/properties/${propertyId}/tenant`,
+        return await $fetch<TenantCollection>(
+          `${apiBaseUrl}/properties/${propertyId}/tenants`,
           {
             method: "GET",
             credentials: "include",
@@ -736,8 +736,10 @@ export const usePropertiesStore = defineStore(
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
-
-      currentTenant.value = data || null;
+      console.log('Datos recibidos: ', data.data[0]);
+      const tenant = data.data.length > 0 ? data.data[0] : null;
+      currentTenant.value = tenant;
+      console.log(currentTenant);
       return data;
     };
 
@@ -760,7 +762,7 @@ export const usePropertiesStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         return await $fetch<Tenant>(
-          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/tenant`,
+          `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/tenants`,
           {
             method: "GET",
             credentials: "include",

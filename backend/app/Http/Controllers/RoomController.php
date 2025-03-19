@@ -349,15 +349,13 @@ class RoomController extends Controller
     try {
       $this->authorize('view', $property);
 
-      $roomTenant = $room->tenants->first();
+      $room->load('tenant.tenant');
 
-      if (!$roomTenant || !$roomTenant->tenant) {
+      if (!$room->tenant || !$room->tenant->tenant) {
         return response()->json(['error_key' => 'tenant_not_found'], 404);
       }
 
-      $tenant = $roomTenant->tenant;
-
-      return new TenantResource($tenant);
+      return new TenantResource($room->tenant->tenant);
     } catch (AuthorizationException $e) {
       Log::warning('Acceso no autorizado a la habitación', [
         'property_id' => $property->id,

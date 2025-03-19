@@ -40,6 +40,7 @@ import type { CreateInvitationResponse } from "~/types/invitation";
 
 const props = defineProps<{
   propertyId: number;
+  roomId?: number,
 }>();
 
 const invitationsStore = useInvitationsStore();
@@ -52,9 +53,6 @@ const loading = ref(false);
 
 const emits = defineEmits(["invitationSent"]);
 
-/**
- * Envía la invitación al backend, usando el store de `invitations`.
- */
 const handleSendInvitation = async () => {
   if (!email.value || !email.value.includes("@")) {
     errorMessage.value = $t("invitations.invalidEmailError");
@@ -70,8 +68,8 @@ const handleSendInvitation = async () => {
     const response: CreateInvitationResponse =
       await invitationsStore.createInvitation({
         email: email.value,
-        assignable_id: props.propertyId,
-        assignable_type: "property",
+        property_id: props.propertyId,
+        room_id: props.roomId,
       });
 
     successMessage.value = $t("invitations.invitationSuccess");

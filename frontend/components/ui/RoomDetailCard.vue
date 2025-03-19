@@ -183,10 +183,6 @@ const toggleStatus = () => {
  
   console.log("Cambiando estado a", newStatus);
 };
-
-onMounted(() => {
-  console.log('PROPS ', props.roomImage);
-})
 </script>
 
 <style scoped>

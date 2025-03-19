@@ -98,8 +98,8 @@ export const useInvitationsStore = defineStore(
      */
     const createInvitation = async (invitationData: {
       email: string;
-      assignable_id: number;
-      assignable_type: "property" | "room";
+      property_id: number;
+      room_id?: number;
     }): Promise<CreateInvitationResponse> => {
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
@@ -107,12 +107,11 @@ export const useInvitationsStore = defineStore(
 
         const formattedData: any = {
           email: invitationData.email,
+          property_id: invitationData.property_id,
         };
       
-        if (invitationData.assignable_type === "property") {
-          formattedData.property_id = invitationData.assignable_id;
-        } else if (invitationData.assignable_type === "room") {
-          formattedData.room_id = invitationData.assignable_id;
+        if (invitationData.room_id) {
+          formattedData.room_id = invitationData.room_id; 
         }
 
         return await $fetch<CreateInvitationResponse>(

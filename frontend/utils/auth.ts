@@ -3,8 +3,6 @@ export const getCsrfToken = async (): Promise<string | null> => {
 
   let matches = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
   if (matches) {
-    console.log("[getCsrfToken] Token encontrado en cookies:", matches[1]);
-
     return decodeURIComponent(matches[1]);
   }
 
@@ -15,8 +13,6 @@ export const getCsrfToken = async (): Promise<string | null> => {
     credentials: "include",
   });
 
-  // matches = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-  // return matches ? decodeURIComponent(matches[1]) : null;
   matches = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
   if (matches) {
     console.log(

@@ -4,26 +4,24 @@ export default defineNuxtRouteMiddleware((to) => {
   const { $localePath } = useNuxtApp();
   const authStore = useAuthStore();
 
-  const allowedUnauthPaths = [
-    $localePath('login'),    
-    $localePath('register'),  
-    $localePath('reset-password'),
-    $localePath('/register/owner'),
-    $localePath('/register/tenant'),
-    '/reset-password',
-    '/'                       
-  ];
+  const login = $localePath('login');
+  const register = $localePath('register');
+  const resetPassword = $localePath('reset-password');
+  const registerOwner = $localePath('/register/owner');
+  const registerTenant = $localePath('/register/tenant');
+  const dashboard = $localePath('dashboard');
 
-  const isAllowed = allowedUnauthPaths.some(path => to.path.startsWith(path));
+  const authPages = [login, register, resetPassword, registerOwner, registerTenant];
 
-  if (!authStore.isAuthenticated) {
-    if (!isAllowed) {
-      return navigateTo($localePath('login'));
-    }
-  } 
-  else {
-    if (!isAllowed) {
-      return navigateTo($localePath('/dashboard'));
+  const isTenantRegistration = to.path.startsWith('/register/tenant');
+
+  if (!authStore.isAuthenticated && !authPages.includes(to.path) && !isTenantRegistration) {
+    return navigateTo(login);
+  }
+
+  if (authStore.isAuthenticated && authPages.includes(to.path)) {
+    if (to.path !== dashboard) {
+      return navigateTo(dashboard);
     }
   }
 });

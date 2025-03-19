@@ -107,12 +107,6 @@ onMounted(async () => {
   }
 });
 
-const sendTenantInvitation = () => {
-  console.log("Enviar invitación a", tenantEmail2.value);
-  
-  
-};
-
 const goToChat = () => {
   console.log("Ir al chat con el inquilino");
 };
@@ -137,10 +131,6 @@ const addRoom = () => {
   const lang = locale.value;
   const url = `/${lang}/properties/${propertyId}/rooms/add`;
   navigateTo(url);
-};
-
-const sendInvitation = (roomId: number) => {
-  console.log("Enviar invitación para la habitación con id", roomId);
 };
 </script>
 

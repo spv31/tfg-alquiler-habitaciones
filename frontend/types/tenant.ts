@@ -7,3 +7,7 @@ export interface Tenant {
   phone_number: string;
   room_id?: string | null,
 }
+
+export interface TenantCollection {
+  data: Tenant[];
+}
