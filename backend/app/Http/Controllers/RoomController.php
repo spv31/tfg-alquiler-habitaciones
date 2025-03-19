@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Http\Resources\RoomResource;
+use App\Http\Resources\TenantResource;
 use App\Models\Property;
 use App\Models\Room;
 use App\Services\UploadFilesService;
@@ -340,6 +341,40 @@ class RoomController extends Controller
     } catch (Exception $e) {
       Log::error("Error al cambiar el estado de la habitación [{$room->id}] para la propiedad [{$property->id}]: " . $e->getMessage());
       return response()->json(['error_key' => 'change_room_status_failed'], 500);
+    }
+  }
+
+  public function listRoomTenants(Property $property, Room $room)
+  {
+    try {
+      $this->authorize('view', $property);
+
+      $roomTenant = $room->tenants->first();
+
+      if (!$roomTenant || !$roomTenant->tenant) {
+        return response()->json(['error_key' => 'tenant_not_found'], 404);
+      }
+
+      $tenant = $roomTenant->tenant;
+
+      return new TenantResource($tenant);
+    } catch (AuthorizationException $e) {
+      Log::warning('Acceso no autorizado a la habitación', [
+        'property_id' => $property->id,
+        'room_id'     => $room->id,
+      ]);
+      return response()->json([
+        'error_key' => 'unauthorized_room_access',
+      ], 403);
+    } catch (Exception $e) {
+      Log::error('Error inesperado al obtener el inquilino de la habitación', [
+        'error'       => $e->getMessage(),
+        'property_id' => $property->id,
+        'room_id'     => $room->id,
+      ]);
+      return response()->json([
+        'error_key' => 'list_room_tenant_failed',
+      ], 500);
     }
   }
 }

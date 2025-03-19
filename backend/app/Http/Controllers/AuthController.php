@@ -52,7 +52,6 @@ class AuthController extends Controller
       'identifier' => 'required|string|unique:users,identifier|max:30',
       'profile_picture' => 'nullable|string',
       'phone_number' => 'required|string|max:15',
-      'address' => 'required|string|max:255',
       'token' => 'required|string',
     ]);
 

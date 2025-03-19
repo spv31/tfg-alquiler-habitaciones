@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Room;
 use App\Models\User;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -67,6 +68,14 @@ class UserService
         'status' => 'user_exists',
         'user' => $existingUser,
       ];
+    }
+
+    $rentable = $invitation->rentable;
+
+    if ($rentable instanceof Room) {
+      $validatedData['address'] = $rentable->property->address ?? null;
+    } else {
+      $validatedData['address'] = $rentable->address ?? null;
     }
 
     $validatedData['role'] = 'tenant';

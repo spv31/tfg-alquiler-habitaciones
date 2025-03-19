@@ -5,7 +5,16 @@
     >
       <!-- Logo -->
       <div class="flex items-center space-x-6 mr-12">
-        <NuxtLink :to="$localePath('dashboard')" class="flex items-center">
+        <NuxtLink 
+          v-if="authStore.isAuthenticated"
+          :to="$localePath('dashboard')" 
+          class="flex items-center">
+          <span class="text-2xl font-medium"> MyRentHub </span>
+        </NuxtLink>
+        <NuxtLink 
+          v-if="!authStore.isAuthenticated"
+          :to="$localePath('login')" 
+          class="flex items-center">
           <span class="text-2xl font-medium"> MyRentHub </span>
         </NuxtLink>
       </div>
@@ -23,7 +32,7 @@
               {{ $t("navbar.login") }}
             </NuxtLink>
             <NuxtLink
-              :to="$localePath('register')"
+              :to="$localePath('/register/owner')"
               class="font-medium text-base hover:text-info_dark transition-colors duration-200"
             >
               {{ $t("navbar.register") }}

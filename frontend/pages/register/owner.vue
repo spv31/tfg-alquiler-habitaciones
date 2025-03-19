@@ -4,9 +4,12 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 definePageMeta({
   layout: "default",
   middleware: ["sanctum:guest"],
 });
 </script>
+
+<style scoped>
+</style>

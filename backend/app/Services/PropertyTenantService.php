@@ -14,7 +14,7 @@ class PropertyTenantService
 	{
 		PropertyTenant::create([
 			'rentable_id' => $rentable->id,
-			'rentable_type' => $rentable instanceof Room ? 'room' : 'property',
+			'rentable_type' => $rentable instanceof Room ? Room::class : Property::class,
 			'tenant_id' => $user->id,
 		]);
 
@@ -30,12 +30,12 @@ class PropertyTenantService
 		if ($property->rental_type !== 'full') {
 			throw new InvalidRentableTypeException();
 		}
-		$property->update(attributes: ['status' => 'occupied']);
+		$property->update(['status' => 'occupied']);
 	}
 
 	public function assignTenantToRoom(Room $room)
 	{
-		if ($room->property->rentable_type !== 'per_room') {
+		if ($room->property->rental_type !== 'per_room') {
 			throw new InvalidRentableTypeException();
 		}
 		$room->update(attributes: ['status' => 'occupied']);
@@ -44,7 +44,7 @@ class PropertyTenantService
 	public function removeTenant($rentable, User $user)
 	{
 		$tenantAssignment = PropertyTenant::where('rentable_id', $rentable->id)
-			->where('rentable_type', $rentable instanceof Room ? 'room' : 'property')
+			->where('rentable_type', $rentable instanceof Room ? Room::class : Property::class)
 			->where('tenant_id', $user->id)
 			->first();
 

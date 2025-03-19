@@ -5,7 +5,7 @@
       <div class="hidden md:block"></div>
 
       <h1 class="text-3xl font-bold text-gray-900 text-center">
-        Listado de Propiedades
+        Mis propiedades
       </h1>
 
       <div class="text-center md:text-right">
@@ -13,7 +13,7 @@
           :to="$localePath('/properties/add')"
           class="button-primary inline-block"
         >
-          Añadir propiedad
+          Añadir una nueva propiedad
         </NuxtLink>
       </div>
     </div>

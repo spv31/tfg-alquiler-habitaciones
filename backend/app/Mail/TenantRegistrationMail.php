@@ -21,7 +21,7 @@ class TenantRegistrationMail extends Mailable
      */
     public function __construct(User $tenant)
     {
-        $tenant = $tenant;
+        $this->tenant = $tenant;
     }
 
     /**

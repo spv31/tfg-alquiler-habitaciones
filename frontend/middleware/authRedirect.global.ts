@@ -7,17 +7,23 @@ export default defineNuxtRouteMiddleware((to) => {
   const allowedUnauthPaths = [
     $localePath('login'),    
     $localePath('register'),  
+    $localePath('reset-password'),
+    $localePath('/register/owner'),
+    $localePath('/register/tenant'),
+    '/reset-password',
     '/'                       
   ];
 
+  const isAllowed = allowedUnauthPaths.some(path => to.path.startsWith(path));
+
   if (!authStore.isAuthenticated) {
-    if (!allowedUnauthPaths.includes(to.path)) {
+    if (!isAllowed) {
       return navigateTo($localePath('login'));
     }
   } 
   else {
-    if (allowedUnauthPaths.includes(to.path)) {
-      return navigateTo($localePath('properties'));
+    if (!isAllowed) {
+      return navigateTo($localePath('/dashboard'));
     }
   }
 });

@@ -476,7 +476,7 @@ export const usePropertiesStore = defineStore(
 
         Object.keys(roomData).forEach((key) => {
           const value = roomData[key as keyof Room];
-    
+
           if (key === "main_image" && value instanceof File) {
             formData.append(key, value);
           } else {
@@ -674,8 +674,7 @@ export const usePropertiesStore = defineStore(
     };
 
     /**
-     * Fetches tenants for a given property.
-     * This endpoint is used when the property is rented as a whole.
+     * Fetches tenants for a given property (including tenants of rooms).
      *
      * @async
      * @param {Property["id"]} propertyId - The id of the property.
@@ -705,6 +704,40 @@ export const usePropertiesStore = defineStore(
       if (!data) throw new Error("No data received");
 
       tenants.value = data;
+      return data;
+    };
+
+    
+    /**
+     * Fetches the tenant for a specific property
+     * This endpoint is used when the property is rented as a whole.
+     *
+     * @async
+     * @param {Property["id"]} propertyId 
+     * @returns {unknown} 
+     */
+    const fetchPropertyTenant = async (propertyId: Property["id"]) => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<Tenant>(
+          `${apiBaseUrl}/properties/${propertyId}/tenant`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrfToken,
+              Accept: "application/json",
+            },
+          }
+        );
+      });
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      currentTenant.value = data || null;
       return data;
     };
 
@@ -765,7 +798,6 @@ export const usePropertiesStore = defineStore(
       }
 
       try {
-        console.log("Fichero: ", filename);
         const blob = await fetchPropertyImage(propertyId, filename);
         const url = URL.createObjectURL(blob);
 
@@ -838,6 +870,7 @@ export const usePropertiesStore = defineStore(
       tenants,
       currentTenant,
       fetchPropertyTenants,
+      fetchPropertyTenant,
       fetchRoomTenant,
       loading,
       error,

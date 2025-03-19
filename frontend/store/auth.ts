@@ -16,6 +16,7 @@ export const useAuthStore = defineStore(
 
     const user = useSanctumUser<CustomUser>();
     const loading = ref(false);
+    const userImagesCache = ref<Record<string, string>>({});
 
     /**
      * Gets user
@@ -222,7 +223,7 @@ export const useAuthStore = defineStore(
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
         const response = await fetch(
-          `${apiBaseUrl}/users/${userId}/image/${filename}`,
+          `${apiBaseUrl}/users/${userId}/avatar/${filename}`,
           {
             method: "GET",
             credentials: "include",
@@ -241,6 +242,28 @@ export const useAuthStore = defineStore(
       return data;
     };
 
+    const fetchUserImageUrl = async (
+      userId: number,
+      filename: string,
+    ) => {
+      const cacheKey = `${userId}-${filename}`;
+
+      if (userImagesCache.value[cacheKey]) {
+        return userImagesCache.value[cacheKey];
+      }
+
+      try {
+        const blob = await fetchUserImage(userId, filename);
+        const url = URL.createObjectURL(blob);
+
+        userImagesCache.value[cacheKey] = url;
+        return url;
+      } catch (error) {
+        console.error("Error getting user image:", error);
+        return null;
+      }
+    }
+
     return {
       user,
       isAuthenticated,
@@ -251,7 +274,9 @@ export const useAuthStore = defineStore(
       forgotPassword,
       resetPassword,
       signOut,
-      fetchUserImage
+      fetchUserImage,
+      fetchUserImageUrl,
+      userImagesCache
     };
   },
   {

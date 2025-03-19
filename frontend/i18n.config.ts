@@ -14,8 +14,8 @@ export default defineI18nConfig(() => ({
         status: {
           available: "Disponible",
           unavailable: "No disponible",
-          occupied: "Ocupada",
-          partially_occupied: "Parcial",
+          occupied: "Alquilada",
+          partially_occupied: "Parcialmente alquilada",
           unknown: "Desconocido",
         },
         rental_type: {
@@ -111,6 +111,25 @@ export default defineI18nConfig(() => ({
           registration_failed: "Error al registrar. Inténtalo de nuevo.",
           total_rooms_too_low:
             "No puedes reducir el número total de habitaciones por debajo de {minRooms} habitaciones existentes.",
+        },
+      },
+      register_tenant: {
+        title: "Gestiona tu alquiler fácilmente con MyRentHub",
+        subtitle:
+          "Regístrate para gestionar tu alquiler con tu arrendatario sin complicaciones.",
+        full_name: "Nombre completo",
+        email: "Correo electrónico",
+        password: "Contraseña",
+        id_card: "Documento de identidad",
+        phone: "Teléfono",
+        sign_up: "Registrarse",
+        errors: {
+          name_required: "El nombre es obligatorio.",
+          email_invalid: "Correo electrónico no válido.",
+          password_length: "La contraseña debe tener al menos 6 caracteres.",
+          identifier_required: "El documento de identidad es obligatorio.",
+          phone_required: "El teléfono debe contener solo números.",
+          registration_failed: "Error al registrarse. Inténtalo de nuevo.",
         },
       },
       login: {
@@ -240,8 +259,8 @@ export default defineI18nConfig(() => ({
           statusLabel: {
             available: "Disponible",
             unavailable: "No disponible",
-            occupied: "Ocupado",
-            partially_occupied: "Parcialmente ocupado",
+            occupied: "Alquilada",
+            partially_occupied: "Parcialmente alquilada",
             unknown: "Desconocido",
           },
           room: "Habitación",
@@ -385,8 +404,8 @@ export default defineI18nConfig(() => ({
         status: {
           available: "Available",
           unavailable: "Unavailable",
-          occupied: "Occupied",
-          partially_occupied: "Partially occupied",
+          occupied: "Rented",
+          partially_occupied: "Partially rented",
           unknown: "Unknown",
         },
         rental_type: {
@@ -478,6 +497,25 @@ export default defineI18nConfig(() => ({
           phone_required:
             "The phone number is required and should contain only numbers.",
           address_required: "The address must be at least 5 characters long.",
+          registration_failed: "Registration failed. Please try again.",
+        },
+      },
+      register_tenant: {
+        title: "Easily manage your rental with MyRentHub",
+        subtitle:
+          "Sign up to manage your rental with your landlord hassle-free.",
+        full_name: "Full name",
+        email: "Email address",
+        password: "Password",
+        id_card: "Identity document",
+        phone: "Phone number",
+        sign_up: "Sign up",
+        errors: {
+          name_required: "Full name is required.",
+          email_invalid: "Invalid email address.",
+          password_length: "Password must be at least 6 characters long.",
+          identifier_required: "Identity document is required.",
+          phone_required: "Phone number must contain only digits.",
           registration_failed: "Registration failed. Please try again.",
         },
       },
@@ -603,8 +641,8 @@ export default defineI18nConfig(() => ({
           statusLabel: {
             available: "Available",
             unavailable: "Unavailable",
-            occupied: "Occupied",
-            partially_occupied: "Partially Occupied",
+            occupied: "Rented",
+            partially_occupied: "Partially rented",
             unknown: "Unknown",
           },
           room: "Room",

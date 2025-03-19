@@ -55,7 +55,7 @@ class ImageController extends Controller
 
   public function showUserImage(User $user, $filename)
   {
-    $path = storage_path("app/private/images/profile_pictures/{$user->id}/{$filename}");
+    $path = storage_path("app/private/images/profile_pictures/{$filename}");
 
     if (!file_exists($path)) {
       return response()->json(['error_key' => 'image_not_found'], 404);

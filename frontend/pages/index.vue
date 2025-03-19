@@ -1,4 +1,0 @@
-<template>
-		<FormsRegisterForm/>
-
-</template>

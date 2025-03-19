@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePropertyRequest;
 use App\Http\Requests\UpdatePropertyRequest;
 use App\Http\Resources\PropertyResource;
+use App\Http\Resources\TenantResource;
 use App\Models\Property;
 use App\Services\PropertyServices;
 use App\Services\UploadFilesService;
@@ -341,6 +342,44 @@ class PropertyController extends Controller
       Log::error('Error inesperado al cambiar estado de la propiedad', ['error' => $e->getMessage()]);
       return response()->json([
         'error_key' => 'property_status_update_failed'
+      ], 500);
+    }
+  }
+
+  public function listPropertyTenants(Property $property)
+  {
+    try {
+      $this->authorize('view', $property);
+
+      $tenantsCollection = collect();
+
+      if ($property->rental_type === 'full') {
+        // It should only be 1 tenant
+        foreach($property->tenants as $tenant) {
+          if ($tenant->tenant) {
+            $tenantsCollection->push($tenant->tenant);
+          }
+        }
+      } else {
+        foreach($property->rooms as $room) {
+          if ($room->tenant && $room->tenant->tenant) {
+            $tenantsCollection->push($room->tenant->tenant);
+          }
+        }
+      }
+      return TenantResource::collection($tenantsCollection);
+    } catch (AuthorizationException $e) {
+      Log::warning('Acceso no autorizado a la propiedad', ['property_id' => $property->id]);
+      return response()->json([
+        'error_key' => 'unauthorized_property_access',
+      ], 403);
+    } catch (Exception $e) {
+      Log::error('Error inesperado al listar los inquilinos de la propiedad', [
+        'error' => $e->getMessage(),
+        'property_id' => $property->id,
+      ]);
+      return response()->json([
+        'error_key' => 'list_property_tenants_failed',
       ], 500);
     }
   }

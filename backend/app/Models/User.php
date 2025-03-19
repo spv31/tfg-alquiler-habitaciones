@@ -84,6 +84,12 @@ class User extends Authenticatable
 
   public function getProfileImageUrlAttribute()
   {
-    return $this->profileImage->image_path ?? 'default.jpg';
+    if (!$this->relationLoaded('profileImage')) {
+      $this->load('profileImage');
+    }
+
+    return $this->profileImage
+      ? route('image.user.show ', ['user' => $this->id, 'filename' => $this->profileImage->image_path])
+      : null;
   }
 }

@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('/properties/{property}/rooms/{room}/update', [RoomController::class, 'update']);
 
   // See tenants
-  Route::get('/properties/{property}/tenants', [TenantAssignmentController::class, 'listPropertyTenants']);
+  Route::get('/properties/{property}/tenants', [PropertyController::class, 'listPropertyTenants']);
   Route::get('/properties/{property}/rooms/{room}/tenants', [RoomController::class, 'listRoomTenants']);
   // Change status
   Route::patch('/properties/{property}/status', [PropertyController::class, 'updateStatus']);

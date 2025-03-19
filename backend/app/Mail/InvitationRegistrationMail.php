@@ -42,7 +42,7 @@ class InvitationRegistrationMail extends Mailable
       $this->locationDescription = $propertyAddress;
     }
 
-    $this->registerUrl = url('/register?token=' . $invitation->token);
+    $this->registerUrl = env('FRONTEND_URL', 'http://localhost:3000') . '/register/tenant?token=' . $invitation->token;
   }
 
   /**
