@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-col gap-4">
 
-    <!-- Descripción -->
     <div class="flex flex-col">
       <label for="description" class="label">
         {{ $t("properties.detail.rooms.description") }}
@@ -18,7 +17,6 @@
       </p>
     </div>
 
-    <!-- Precio de alquiler de la habitación -->
     <div class="flex flex-col">
       <label for="rental_price" class="label">
         {{ $t("properties.detail.rooms.rental_price") }}
@@ -35,13 +33,11 @@
       </p>
     </div>
 
-    <!-- Imagen principal (opcional) -->
     <div class="flex flex-col">
       <label for="main_image" class="label">
         {{ $t("properties.main_image") }}
       </label>
       <div class="relative">
-        <!-- Input file REAL, oculto con .sr-only -->
         <input
           id="main_image"
           type="file"
@@ -49,14 +45,12 @@
           class="sr-only"
           @change="handleImageUpload"
         />
-        <!-- Label estilizado como botón -->
         <label
           for="main_image"
           class="custom-input w-full cursor-pointer inline-block text-center"
         >
           {{ $t("properties.select_file") }}
         </label>
-        <!-- Mostrar el nombre del archivo si se ha seleccionado -->
         <span
           v-if="localRoomData.main_image && localRoomData.main_image.name"
           class="ml-2 text-sm text-gray-500"
@@ -75,10 +69,8 @@
 <script setup lang="ts">
 const { t: $t } = useI18n();
 
-// Emitimos para sincronizar con el padre
 const emits = defineEmits(["update:roomData", "update:errors"]);
 
-// Props que recibimos
 const props = defineProps<{
   roomData: Record<string, any>;
   errors: Record<string, any>;

@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-primary">
     <Navbar />
-    <!-- <div class="bg-gray min-h-screen">  -->
     <main class="relative">
       <NuxtPage />
     </main>

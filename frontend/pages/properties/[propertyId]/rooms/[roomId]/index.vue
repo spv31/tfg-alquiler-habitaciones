@@ -55,8 +55,6 @@
         />
 
         <TenantFormSection
-          :property="currentProperty.data"
-          :room="currentRoom.data"
         />
       </div>
     </div>
@@ -80,9 +78,9 @@ const roomId = Number(route.params.roomId);
 
 onMounted(async () => {
   try {
-    console.log(currentProperty.data, currentRoom.data);
     await propertiesStore.fetchRoom(propertyId, roomId);
-
+    await propertiesStore.fetchRoomTenant(propertyId, roomId);
+    
     if (currentRoom.value?.main_image_url) {
       const filename = currentRoom.value.main_image_url.split("/").pop() || "";
       roomImage.value = await propertiesStore.fetchRoomImageUrl(
@@ -91,16 +89,10 @@ onMounted(async () => {
         filename
       );
     }
-
-    await propertiesStore.fetchRoomTenant(propertyId, roomId);
   } catch (e) {
     console.error("Error al cargar la habitación:", e);
   }
 });
-
-const onStatusChanged = (newStatus: string) => {
-  console.log("Estado de la habitación cambiado a:", newStatus);
-};
 
 const toggleForm = () => {
   showForm.value = !showForm.value;
@@ -112,8 +104,6 @@ const toggleForm = () => {
 const handleInvitationSent = (msg: string) => {
   successMessage.value = msg;
   showForm.value = false;
-
-  propertiesStore.fetchRoomTenant(propertyId, roomId);
 };
 </script>
 

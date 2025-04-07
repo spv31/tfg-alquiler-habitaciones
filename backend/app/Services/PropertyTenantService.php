@@ -39,6 +39,18 @@ class PropertyTenantService
 			throw new InvalidRentableTypeException();
 		}
 		$room->update(attributes: ['status' => 'occupied']);
+
+		$property = $room->property;
+		$totalRooms = $property->total_rooms;
+		$occupiedRooms = $property->rooms->where('status', 'occupied')->count();
+
+		if ($occupiedRooms === 0) {
+			$property->update(['status' => 'available']);
+		} elseif ($occupiedRooms < $totalRooms) {
+			$property->update(['status' => 'partially_occupied']);
+		} else {
+			$property->update(['status' => 'occupied']);
+		}
 	}
 
 	public function removeTenant($rentable, User $user)

@@ -159,12 +159,13 @@
             </CircleIconButton>
 
             <CircleIconButton
+              v-if="isStatusChangeable"
               :label="
                 property.status === 'available'
                   ? $t('properties.detail.makeUnavailableButton')
                   : $t('properties.detail.makeAvailableButton')
               "
-              @click="toggleStatus"
+              @click="showChangeStatusModal = true"
             >
               <template #icon>
                 <svg
@@ -218,6 +219,13 @@
       :details="property.details"
       @close="showStats = false"
     />
+
+    <StatusChangeModal
+      :show="showChangeStatusModal"
+      :currentStatus="property.status"
+      @cancel="showChangeStatusModal = false"
+      @confirm="handleChangeStatus"
+    />
   </div>
 </template>
 
@@ -248,6 +256,14 @@ const props = defineProps({
 const showDeleteModal = ref(false);
 const isExpanded = ref(false);
 const showStats = ref(false);
+const showChangeStatusModal = ref(false);
+
+const isStatusChangeable = computed(() => {
+  return (
+    props.property.status === "available" ||
+    props.property.status === "unavailable"
+  );
+});
 
 const handleDeleteProperty = async () => {
   try {
@@ -257,6 +273,22 @@ const handleDeleteProperty = async () => {
     alert($t("deleteError"));
   }
   showDeleteModal.value = false;
+};
+
+const handleChangeStatus = async () => {
+  try {
+    const newStatus =
+      props.property.status === "available" ? "unavailable" : "available";
+    await store.changePropertyStatus(props.property.id, newStatus);
+    showChangeStatusModal.value = false;
+    await store.fetchProperty(props.property.id);
+
+    if (props.property.rental_type === 'per_room') {
+      await store.fetchRooms(props.property.id);
+    }
+  } catch (error) {
+    alert($t("common.errorUpdatingStatus"));
+  }
 };
 </script>
 <style scoped>

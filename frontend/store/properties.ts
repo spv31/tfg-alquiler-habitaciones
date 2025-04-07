@@ -707,14 +707,13 @@ export const usePropertiesStore = defineStore(
       return data;
     };
 
-    
     /**
      * Fetches the tenant for a specific property
      * This endpoint is used when the property is rented as a whole.
      *
      * @async
-     * @param {Property["id"]} propertyId 
-     * @returns {unknown} 
+     * @param {Property["id"]} propertyId
+     * @returns {unknown}
      */
     const fetchPropertyTenant = async (propertyId: Property["id"]) => {
       const { data, error } = await tryCatch(async () => {
@@ -736,7 +735,7 @@ export const usePropertiesStore = defineStore(
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
-      console.log('Datos recibidos: ', data.data[0]);
+      console.log("Datos recibidos: ", data.data[0]);
       const tenant = data.data.length > 0 ? data.data[0] : null;
       currentTenant.value = tenant;
       console.log(currentTenant);
@@ -756,12 +755,12 @@ export const usePropertiesStore = defineStore(
     const fetchRoomTenant = async (
       propertyId: Property["id"],
       roomId: Room["id"]
-    ): Promise<Tenant> => {
+    ): Promise<Tenant | null> => {
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<Tenant>(
+        return await $fetch<{data: Tenant | null}>(
           `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/tenants`,
           {
             method: "GET",
@@ -774,10 +773,16 @@ export const usePropertiesStore = defineStore(
         );
       }, loading);
 
-      if (error) throw error;
+      if (error) {
+        if (error.status === 404) {
+          if (currentTenant.value === null) return null; 
+          currentTenant.value = null;
+        }
+        throw error;
+      }
       if (!data) throw new Error("No data received");
 
-      currentTenant.value = data || null;
+      currentTenant.value = data.data;
       return data;
     };
 

@@ -36,45 +36,36 @@ const route = useRoute();
 const router = useRouter();
 const store = usePropertiesStore();
 
-// Identificador de la propiedad desde la URL (p.ej.: /properties/:id/rooms/add)
 const propertyId = Number(route.params.propertyId);
 
-// Objeto reactivo para el formulario
 const formData = ref<Partial<Room>>({
   description: "",
   rental_price: 0,
   main_image: null,
 });
 
-// Errores de validación
 const errors = ref<Record<string, string>>({});
 
-// Referencia al <RoomForm> para invocar validateAll()
 const roomFormRef = ref<InstanceType<typeof RoomForm> | null>(null);
 
-// Indica si hay errores (para deshabilitar botón, etc.)
 const hasErrors = computed(() => {
   return Object.values(errors.value).some((err) => err !== "");
 });
 
-// Crear habitación
 async function handleSubmit() {
-  // Validamos todos los campos
   roomFormRef.value?.validateAll();
 
   if (hasErrors.value) return;
 
   try {
     await store.createRoom(propertyId, formData.value);
-    alert($t("properties.detail.rooms.room_created"));
-    router.push(`/properties/${propertyId}`);
+    router.push(`/properties/${propertyId}?msg=success`);
   } catch (err: any) {
     console.error("Error al crear habitación:", err);
     errors.value.description = err?.data?.message || $t("errors.generic_error");
   }
 }
 
-// Botón "Volver"
 function handleGoBack() {
   router.go(-1);
 }

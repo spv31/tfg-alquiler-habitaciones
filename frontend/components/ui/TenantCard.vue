@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-white/90 shadow-xl rounded-xl p-8 flex flex-col items-start transition-all hover:shadow-2xl group">
+  <div
+    class="bg-white/90 shadow-xl rounded-xl p-8 flex flex-col items-start transition-all hover:shadow-2xl group"
+  >
     <h2 class="title text-center w-full text-2xl font-bold text-gray-800 mb-6">
       {{ $t("common.tenantData") }}
     </h2>
@@ -17,12 +19,12 @@
         <label class="label text-gray-600">{{ $t("common.name") }}</label>
         <p class="text-base text-gray-900 font-medium">{{ tenant.name }}</p>
       </div>
-      
+
       <div class="space-y-1">
         <label class="label text-gray-600">{{ $t("common.email") }}</label>
         <p class="text-base text-gray-900 break-all">{{ tenant.email }}</p>
       </div>
-      
+
       <div class="space-y-1" v-if="tenant.phone_number">
         <label class="label text-gray-600">{{ $t("common.phone") }}</label>
         <p class="text-base text-gray-900 flex items-center gap-2">
@@ -44,23 +46,28 @@
         </template>
       </CircleIconButton>
 
-      <CircleIconButton :label="$t('common.move')" @click="onMove">
-        <template #icon>
-          <svg
-            class="h-5 w-5 text-purple-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </template>
-      </CircleIconButton>
+      <NuxtLink 
+        :to="$localePath(`/tenants/${tenant.id}/move`)"
+        class="inline-block"
+      >
+        <CircleIconButton :label="$t('common.move')">
+          <template #icon>
+            <svg
+              class="h-5 w-5 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 15l7-7 7 7"
+              />
+            </svg>
+          </template>
+        </CircleIconButton>
+      </NuxtLink>
 
       <CircleIconButton :label="$t('common.remove')" @click="onRemove">
         <template #icon>

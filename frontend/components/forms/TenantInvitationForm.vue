@@ -1,5 +1,5 @@
 <template>
-  <div class="border p-6 mt-4 rounded bg-gray-50 shadow-md w-full max-w-md mx-auto">
+  <div class="border p-6 mt-4 rounded-2xl bg-gray-50 shadow-md w-full max-w-md mx-auto">
     <div class="flex flex-col mb-3">
       <label for="tenantEmail" class="label">
         {{ $t("invitations.emailLabel") }}
@@ -21,9 +21,9 @@
       {{ successMessage }}
     </p>
 
-    <div class="flex">
+    <div class="flex justify-center">
       <button
-        class="button-primary"
+        class="button-primary w-full"
         @click="handleSendInvitation"
         :disabled="loading"
       >

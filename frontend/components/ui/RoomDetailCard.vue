@@ -127,8 +127,12 @@
             </NuxtLink>
 
             <CircleIconButton
-              :label="$t('properties.detail.status')"
-              @click="toggleStatus"
+              :label="
+                room.status === 'available'
+                  ? $t('properties.detail.rooms.makeUnavailableButton')
+                  : $t('properties.detail.rooms.makeAvailableButton')
+              "
+              @click="showChangeStatusModal = true"
             >
               <template #icon>
                 <svg
@@ -152,36 +156,56 @@
     </div>
 
     <RoomStatsCard v-else :room="room" @close="showStats = false" />
+
+    <StatusChangeModal
+      :show="showChangeStatusModal"
+      :currentStatus="room.status"
+      @cancel="showChangeStatusModal = false"
+      @confirm="handleChangeStatus"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { statusBadgeClasses, statusLabel } from "~/utils/badges";
+import { usePropertiesStore } from "../../store/properties";
+
+const propertiesStore = usePropertiesStore();
 
 const props = defineProps<{
   room: any;
   roomImage: {
-    type: String,
-    default: null,
-  }
+    type: String;
+    default: null;
+  };
 }>();
 
 const { t, locale } = useI18n();
 
 const isExpanded = ref(false);
 const showStats = ref(false);
+const showChangeStatusModal = ref(false);
 
 const editRoomLink = computed(() => {
   return `/${locale.value}/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
 });
 
-// Botón de cambio de estado (ejemplo)
-const toggleStatus = () => {
-  const newStatus =
-    props.room.status === "available" ? "occupied" : "available";
- 
-  console.log("Cambiando estado a", newStatus);
+const handleChangeStatus = async () => {
+  try {
+    const newStatus =
+      props.room.status === "available" ? "unavailable" : "available";
+    await propertiesStore.changeRoomStatus(
+      props.room.property_id,
+      props.room.id,
+      newStatus
+    );
+
+    showChangeStatusModal.value = false;
+    await propertiesStore.fetchRoom(props.room.property_id, props.room.id);
+  } catch (error) {
+    alert(t("common.errorUpdatingStatus"));
+  }
 };
 </script>
 

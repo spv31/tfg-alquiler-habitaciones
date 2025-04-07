@@ -4,7 +4,12 @@
       <TenantCard v-if="currentTenant" :tenant="currentTenant" />
     </div>
 
-    <div v-else>
+    <div
+      v-else-if="
+        (roomId && currentRoom?.status === 'available') ||
+        (!roomId && currentProperty.data.status === 'available')
+      "
+    >
       <button class="button-primary" @click="toggleForm">
         <span v-if="!showForm">
           {{ $t("invitations.inviteTenantButton") }}
@@ -38,27 +43,16 @@
 import { usePropertiesStore } from "~/store/properties";
 import type { Tenant } from "~/types/tenant";
 
-const props = defineProps<{
-  property: {
-    id: number;
-    [key: string]: any;
-  };
-  room?: {
-    id: number;
-    [key: string]: any;
-  };
-}>();
-
 const { t: $t } = useI18n();
 const route = useRoute();
 const propertiesStore = usePropertiesStore();
-const { currentTenant } = storeToRefs(propertiesStore);
+const { currentProperty, currentTenant, currentRoom } = storeToRefs(propertiesStore);
 
 const showForm = ref(false);
 const successMessage = ref("");
 
-const propertyId = route.params.propertyId;
-const roomId = route.params.roomId ?? null;
+const propertyId = Number(route.params.propertyId);
+const roomId = route.params.roomId ? Number(route.params.roomId) : null;
 
 const toggleForm = () => {
   showForm.value = !showForm.value;
@@ -74,11 +68,11 @@ const handleInvitationSent = (message: string) => {
 
 onMounted(async () => {
   try {
-    if (props.room) {
-      await propertiesStore.fetchRoomTenant(propertyId, roomId);
+    if (roomId !== null && !isNaN(roomId)) {
     } else {
       await propertiesStore.fetchPropertyTenant(propertyId);
     }
+    console.log("Inquilino: ", currentTenant.value);
   } catch (error) {
     console.error("Error fetching tenant:", error);
   }

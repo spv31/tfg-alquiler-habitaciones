@@ -256,8 +256,8 @@ export default defineI18nConfig(() => ({
           cancelButton: "Cancelar",
           chatButton: "Chat",
           addStatsButton: "Estadísticas",
-          makeUnavailableButton: "Cambiar estado",
-          makeAvailableButton: "Cambiar estado",
+          makeUnavailableButton: "Estado",
+          makeAvailableButton: "Estado",
           addTenantText: "¿Necesitas asignar un inquilino para esta propiedad?",
           addTenantButton: "Añadir Inquilino",
           tenantFormTitle: "Invitar Inquilino",
@@ -284,6 +284,8 @@ export default defineI18nConfig(() => ({
             rentalPrice: "Precio de Alquiler",
             mainImage: "Imagen principal",
             saveRoomButton: "Guardar Habitación",
+            makeUnavailableButton: "Estado",
+            makeAvailableButton: "Estado",
           },
           addRoomHelpText: "Haz clic para registrar una nueva habitación",
           noRoomsPrompt: "¡Comienza añadiendo tu primera habitación!",
@@ -293,6 +295,17 @@ export default defineI18nConfig(() => ({
             "¿Estás seguro de que quieres eliminar esta propiedad? Esta acción no se puede deshacer.",
           propertyDeleted: "Propiedad eliminada con éxito.",
           deleteError: "Error al eliminar la propiedad.",
+          statusChangeModal: {
+            titleAvailable: "Marcar la propiedad como no disponible",
+            titleUnavailable: "Marcar la propiedad como disponible",
+            messageAvailable:
+              "¿Estás seguro de que deseas marcar esta propiedad como no disponible? No podrás asociar inquilinos a esta propiedad.",
+            messageUnavailable:
+              "¿Estás seguro de que deseas marcar esta propiedad como disponible? Podrás asociar inquilinos nuevamente.",
+            confirmAvailable: "Marcar como no disponible",
+            confirmUnavailable: "Marcar como disponible",
+            cancel: "Cancelar",
+          },
         },
       },
       errors: {
@@ -650,8 +663,8 @@ export default defineI18nConfig(() => ({
           cancelButton: "Cancel",
           chatButton: "Chat",
           addStatsButton: "Add Stats",
-          makeUnavailableButton: "Status",
-          makeAvailableButton: "Status",
+          makeUnavailableButton: "Estado",
+          makeAvailableButton: "Estado",
           statusLabel: {
             available: "Available",
             unavailable: "Unavailable",
@@ -673,6 +686,8 @@ export default defineI18nConfig(() => ({
             rentalPrice: "Rental Price",
             mainImage: "Main Image",
             saveRoomButton: "Save Room",
+            makeUnavailableButton: "Mark as unavailable",
+            makeAvailableButton: "Mark as available",
           },
           addRoomHelpText: "Click to register a new room",
           noRoomsPrompt: "Start by adding your first room!",
@@ -682,6 +697,17 @@ export default defineI18nConfig(() => ({
             "Are you sure you want to delete this property? This action cannot be undone.",
           propertyDeleted: "Property successfully deleted.",
           deleteError: "Error deleting the property.",
+          statusChangeModal: {
+            titleAvailable: "Mark the property as unavailable",
+            titleUnavailable: "Mark the property as available",
+            messageAvailable:
+              "Are you sure you want to mark this property as unavailable? It will no longer be bookable.",
+            messageUnavailable:
+              "Are you sure you want to mark this property as available? It will now be bookable again.",
+            confirmAvailable: "Mark as unavailable",
+            confirmUnavailable: "Mark as available",
+            cancel: "Cancel",
+          },
         },
       },
       errors: {

@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/properties/{property}/tenants', [PropertyController::class, 'listPropertyTenants']);
   Route::get('/properties/{property}/rooms/{room}/tenants', [RoomController::class, 'listRoomTenants']);
   // Change status
-  Route::patch('/properties/{property}/status', [PropertyController::class, 'updateStatus']);
+  Route::patch('/properties/{property}/status', [PropertyController::class, 'changeStatus']);
   Route::patch('/properties/{property}/rooms/{room}/status', [RoomController::class, 'changeStatus'])->name('properties.rooms.changeStatus');
   // Routes for creating or updating properties
   Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);

@@ -80,18 +80,14 @@
 import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
 
-// Store e i18n
 const store = usePropertiesStore();
 const { t: $t } = useI18n();
 
-// Control de pasos
 const step = ref(1);
 
-// Alertas
 const alertMessage = ref<string | null>(null);
 const alertType = ref<"error" | "success">("error");
 
-// Datos principales de la propiedad
 const propertyData = ref({
   address: "",
   cadastral_reference: "",
@@ -117,12 +113,10 @@ const propertyData = ref({
   property_size: null,
 });
 
-// Objeto de errores
 const errors = ref<Record<string, string>>({});
 
 const propertyFormRef = ref<InstanceType<typeof PropertyForm> | null>(null);
 
-// Campos opcionales (estadísticos)
 const optionalFields = [
   {
     key: "purchase_price",
@@ -205,10 +199,8 @@ const optionalFields = [
   },
 ];
 
-// Cálculo para saber si hay errores en el step actual
 const hasErrors = computed(() => {
   if (step.value === 1) {
-    // Solo valida errores de campos obligatorios
     return Object.keys(errors.value).some(
       (key) =>
         [
@@ -219,37 +211,29 @@ const hasErrors = computed(() => {
         ].includes(key) && errors.value[key] !== ""
     );
   }
-  // Paso 2: valora todos los errores
   return Object.values(errors.value).some((err) => err !== "");
 });
 
-// Avanzar al paso 2
 function nextStep() {
   propertyFormRef.value?.validateAll();
 
-  // Si no hay errores, pasamos al step 2
   if (!hasErrors.value) {
     step.value = 2;
   }
 }
 
-// Volver al paso 1
 function prevStep() {
   step.value = 1;
 }
 
-// Manejar el submit final
 async function handleSubmit() {
-  // Podrías validar campos opcionales aquí si quieres
   if (!hasErrors.value) {
     try {
-      // Enviar al store
       await store.createProperty(propertyData.value);
 
       alertMessage.value = $t("properties.success_message");
       alertType.value = "success";
 
-      // Reset
       propertyData.value = {
         address: "",
         cadastral_reference: "",

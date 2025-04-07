@@ -349,7 +349,19 @@ class RoomController extends Controller
     try {
       $this->authorize('view', $property);
 
+      Log::info('Consultando inquilino de la habitación', [
+        'property_id' => $property->id,
+        'room_id'     => $room->id,
+        'room_status' => $room->status,
+        'room_data'   => $room->toArray(),
+      ]);
+
       $room->load('tenant.tenant');
+
+      Log::info('Datos después de cargar tenant', [
+        'room_id'     => $room->id,
+        'tenant_data' => $room->tenant ? $room->tenant->toArray() : null
+      ]);
 
       if (!$room->tenant || !$room->tenant->tenant) {
         return response()->json(['error_key' => 'tenant_not_found'], 404);
