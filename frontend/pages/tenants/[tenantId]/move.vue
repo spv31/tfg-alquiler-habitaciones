@@ -13,21 +13,27 @@
     <!-- Progress steps -->
     <div class="hidden md:flex justify-evenly items-center mb-8 px-4">
       <div class="flex flex-col items-center text-gray-600">
-        <div class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2">
+        <div
+          class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2"
+        >
           1
         </div>
         <span class="text-sm font-medium">Origen</span>
       </div>
       <ArrowRightIcon class="h-6 w-6 text-gray-400" />
       <div class="flex flex-col items-center text-gray-600">
-        <div class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2">
+        <div
+          class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2"
+        >
           2
         </div>
         <span class="text-sm font-medium">Destino</span>
       </div>
       <ArrowRightIcon class="h-6 w-6 text-gray-400" />
       <div class="flex flex-col items-center text-gray-600">
-        <div class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2">
+        <div
+          class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2"
+        >
           3
         </div>
         <span class="text-sm font-medium">Resumen</span>
@@ -35,9 +41,13 @@
     </div>
 
     <!-- Main content -->
-    <div class="relative flex flex-col xl:flex-row gap-6 xl:gap-8 items-stretch">
+    <div
+      class="relative flex flex-col xl:flex-row gap-6 xl:gap-8 items-stretch"
+    >
       <!-- COLUMN 1: ORIGIN -->
-      <section class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4">
+      <section
+        class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
+      >
         <h2 class="text-lg font-semibold mb-4 text-center text-gray-700">
           ¿De dónde?
         </h2>
@@ -54,7 +64,9 @@
 
           <!-- Current room card (only if per_room type) -->
           <div
-            v-if="currentProperty?.data.rental_type === 'per_room' && currentRoom"
+            v-if="
+              currentProperty?.data.rental_type === 'per_room' && currentRoom
+            "
             class="ml-4 pl-4 mt-2 space-y-2 border-l-2 border-gray-100"
           >
             <MiniReassignCard
@@ -73,7 +85,9 @@
       </section>
 
       <!-- COLUMN 2: DESTINATIONS -->
-      <section class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4">
+      <section
+        class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
+      >
         <h2 class="text-lg font-semibold mb-4 text-center text-gray-700">
           ¿A dónde?
         </h2>
@@ -84,9 +98,11 @@
             <MiniReassignCard
               :item="prop"
               :type="prop.rental_type === 'full' ? 'property' : 'property-info'"
-              :title="prop.rental_type === 'full'
+              :title="
+                prop.rental_type === 'full'
                   ? 'Propiedad disponible (alquiler completo)'
-                  : 'Propiedad por habitaciones (selecciona una habitación)'"
+                  : 'Propiedad por habitaciones (selecciona una habitación)'
+              "
               class="mb-2 rounded-lg transition-all"
               :class="{
                 'bg-gray-50 border-2 border-transparent hover:border-info cursor-pointer':
@@ -94,7 +110,10 @@
                 'bg-gray-50 opacity-70 cursor-not-allowed':
                   prop.rental_type === 'per_room',
               }"
-              @click="prop.rental_type === 'full' && selectDestination(prop, 'property')"
+              @click="
+                prop.rental_type === 'full' &&
+                  selectDestination(prop, 'property')
+              "
             />
 
             <!-- Show available rooms for per_room properties -->
@@ -121,7 +140,9 @@
       </section>
 
       <!-- COLUMN 3: SUMMARY -->
-      <section class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4">
+      <section
+        class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
+      >
         <h2 class="text-lg font-semibold mb-4 text-center text-gray-700">
           Resumen
         </h2>
@@ -239,7 +260,18 @@ function onReassignTenant() {
     `Reassigning tenant ${selectedTenant.value.name} =>`,
     destination.value
   );
-  // Call your API here
+  propertiesStore
+    .reassignTenant(
+      selectedTenant.value.id,
+      destination.value.id,
+      destinationType.value
+    )
+    .then(() => {
+      console.log("Tenant reassigned successfully");
+    })
+    .catch((err) => {
+      console.error("Error reassigning tenant:", err);
+    });
 }
 </script>
 

@@ -20,7 +20,7 @@ export const usePropertiesStore = defineStore(
 
     const properties = ref<Property[]>([]);
     const rooms = ref<Room[]>([]);
-    const roomsMap = ref<{ [propertyId: number]: Room[] }>({})
+    const roomsMap = ref<{ [propertyId: number]: Room[] }>({});
     const currentProperty = ref<Property | null>(null);
     const currentRoom = ref<Room | null>(null);
     const tenants = ref<Tenant[] | null>([]);
@@ -363,7 +363,7 @@ export const usePropertiesStore = defineStore(
       }
 
       rooms.value = data.rooms;
-      roomsMap.value[propertyId] = data.rooms
+      roomsMap.value[propertyId] = data.rooms;
     };
 
     /**
@@ -762,7 +762,7 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<{data: Tenant | null}>(
+        return await $fetch<{ data: Tenant | null }>(
           `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/tenants`,
           {
             method: "GET",
@@ -777,7 +777,7 @@ export const usePropertiesStore = defineStore(
 
       if (error) {
         if (error.status === 404) {
-          if (currentTenant.value === null) return null; 
+          if (currentTenant.value === null) return null;
           currentTenant.value = null;
         }
         throw error;
@@ -786,6 +786,49 @@ export const usePropertiesStore = defineStore(
 
       currentTenant.value = data.data;
       return data;
+    };
+
+    /**
+     * Reassigns a tenant to a new rentable (property or room).
+     *
+     * @async
+     * @param {number} tenantId - The tenant's ID.
+     * @param {number} newRentableId - ID of the new property or room.
+     * @param {"property" | "room"} newRentableType - Type of the new rentable.
+     */
+    const reassignTenant = async (
+      tenantId: number,
+      newRentableId: number,
+      newRentableType: "property" | "room"
+    ): Promise<void> => {
+      const { data, error } = await tryCatch(async () => {
+        const csrfToken = await getCsrfToken();
+        if (!csrfToken) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<{
+          message?: string;
+          error_key?: string;
+        }>(`${apiBaseUrl}/tenant-assignments/reassign`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: {
+            tenant_id: tenantId,
+            new_rentable_id: newRentableId,
+            new_rentable_type: newRentableType,
+          },
+        });
+      }, loading);
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) throw new Error("No data received for tenant reassignment");
     };
 
     /**
@@ -882,6 +925,7 @@ export const usePropertiesStore = defineStore(
       fetchPropertyTenants,
       fetchPropertyTenant,
       fetchRoomTenant,
+      reassignTenant,
       loading,
       error,
       roomsWarning,
