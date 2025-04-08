@@ -1,6 +1,6 @@
 <template>
   <div class="py-8 px-4 max-w-7xl mx-auto relative">
-    <!-- Encabezado principal -->
+    <!-- Main heading -->
     <div class="text-center mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
         Reasignar Inquilino
@@ -10,128 +10,123 @@
       </p>
     </div>
 
-    <!-- “Barra” o “Steps” (opcional) -->
+    <!-- Progress steps -->
     <div class="hidden md:flex justify-evenly items-center mb-8 px-4">
       <div class="flex flex-col items-center text-gray-600">
-        <div
-          class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2"
-        >
+        <div class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2">
           1
         </div>
         <span class="text-sm font-medium">Origen</span>
       </div>
       <ArrowRightIcon class="h-6 w-6 text-gray-400" />
       <div class="flex flex-col items-center text-gray-600">
-        <div
-          class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2"
-        >
+        <div class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2">
           2
         </div>
         <span class="text-sm font-medium">Destino</span>
       </div>
       <ArrowRightIcon class="h-6 w-6 text-gray-400" />
       <div class="flex flex-col items-center text-gray-600">
-        <div
-          class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2"
-        >
+        <div class="w-10 h-10 rounded-full bg-info text-white flex items-center justify-center font-bold mb-2">
           3
         </div>
         <span class="text-sm font-medium">Resumen</span>
       </div>
     </div>
 
-    <!-- Contenedor principal -->
-    <div
-      class="relative flex flex-col xl:flex-row gap-6 xl:gap-8 items-stretch"
-    >
-      <!-- COLUMNA 1: ORIGEN -->
-      <section
-        class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
-      >
+    <!-- Main content -->
+    <div class="relative flex flex-col xl:flex-row gap-6 xl:gap-8 items-stretch">
+      <!-- COLUMN 1: ORIGIN -->
+      <section class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4">
         <h2 class="text-lg font-semibold mb-4 text-center text-gray-700">
           ¿De dónde?
         </h2>
+
         <div class="space-y-3">
+          <!-- Current property card -->
           <MiniReassignCard
-            v-if="currentOrigin"
-            :item="currentOrigin"
-            :type="originType"
-            title="Origen actual"
-            class="hover:bg-gray-50 cursor-default"
+            v-if="currentProperty?.data"
+            :item="currentProperty.data"
+            type="property-orig"
+            title="Propiedad actual"
+            class="cursor-default"
           />
+
+          <!-- Current room card (only if per_room type) -->
+          <div
+            v-if="currentProperty?.data.rental_type === 'per_room' && currentRoom"
+            class="ml-4 pl-4 mt-2 space-y-2 border-l-2 border-gray-100"
+          >
+            <MiniReassignCard
+              :item="currentRoom"
+              type="room-orig"
+              title="Habitación actual"
+              class="cursor-default"
+            />
+          </div>
         </div>
 
-        <!-- Flecha entre columnas en móvil -->
+        <!-- Arrow between columns for mobile -->
         <div class="md:hidden text-center mt-4 text-gray-400">
           <ArrowDownIcon class="h-6 w-6 inline-block" />
         </div>
       </section>
 
-      <!-- COLUMNA 2: DESTINOS POSIBLES -->
-      <section
-        class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
-      >
+      <!-- COLUMN 2: DESTINATIONS -->
+      <section class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4">
         <h2 class="text-lg font-semibold mb-4 text-center text-gray-700">
           ¿A dónde?
         </h2>
 
         <div class="space-y-4">
-          <!-- Recorremos las propiedades disponibles -->
-          <div
-            v-for="prop in availableProperties"
-            :key="prop.id"
-            class="pb-2"
-          >
-            <!-- Si la propiedad es "per_room", NO la hacemos seleccionable,
-                 solo informativa. Si es "full", sí se puede clicar. -->
+          <!-- Loop through available properties -->
+          <div v-for="prop in filteredProperties" :key="prop.id" class="pb-2">
             <MiniReassignCard
               :item="prop"
-              type="property"
+              :type="prop.rental_type === 'full' ? 'property' : 'property-info'"
+              :title="prop.rental_type === 'full'
+                  ? 'Propiedad disponible (alquiler completo)'
+                  : 'Propiedad por habitaciones (selecciona una habitación)'"
               class="mb-2 rounded-lg transition-all"
               :class="{
                 'bg-gray-50 border-2 border-transparent hover:border-info cursor-pointer':
                   prop.rental_type === 'full',
-                'bg-gray-50 opacity-70 cursor-not-allowed': prop.rental_type === 'per_room'
+                'bg-gray-50 opacity-70 cursor-not-allowed':
+                  prop.rental_type === 'per_room',
               }"
               @click="prop.rental_type === 'full' && selectDestination(prop, 'property')"
-              :title="prop.rental_type === 'per_room' 
-                ? 'Propiedad por habitaciones (selecciona una habitación)' 
-                : 'Propiedad seleccionable'"
             />
 
-            <!-- Si la propiedad es "per_room", mostramos sus habitaciones,
-                 y solo se pueden seleccionar éstas. -->
+            <!-- Show available rooms for per_room properties -->
             <div
               v-if="prop.rental_type === 'per_room'"
               class="ml-4 pl-4 mt-2 space-y-2 border-l-2 border-gray-100"
             >
               <MiniReassignCard
-                v-for="room in getRoomsByProperty(prop.id)"
+                v-for="room in getAvailableRooms(prop.id)"
                 :key="room.id"
                 :item="room"
                 type="room"
-                @click="selectDestination(room, 'room')"
                 class="bg-gray-50 border-2 border-transparent hover:border-info rounded-lg cursor-pointer transition-all"
+                @click="selectDestination(room, 'room')"
               />
             </div>
           </div>
         </div>
 
-        <!-- Flecha entre columnas en móvil -->
+        <!-- Arrow between columns for mobile -->
         <div class="md:hidden text-center mt-4 text-gray-400">
           <ArrowDownIcon class="h-6 w-6 inline-block" />
         </div>
       </section>
 
-      <!-- COLUMNA 3: RESUMEN -->
-      <section
-        class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
-      >
+      <!-- COLUMN 3: SUMMARY -->
+      <section class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4">
         <h2 class="text-lg font-semibold mb-4 text-center text-gray-700">
           Resumen
         </h2>
         <div class="space-y-4">
-          <!-- Inquilino seleccionado -->
+          <!-- Tenant -->
           <MiniReassignCard
             v-if="selectedTenant"
             :item="selectedTenant"
@@ -140,7 +135,7 @@
             class="bg-gray-50 cursor-default"
           />
 
-          <!-- Destino elegido -->
+          <!-- Selected destination -->
           <div v-if="destination" class="relative">
             <MiniReassignCard
               :item="destination"
@@ -148,7 +143,6 @@
               title="Nuevo destino"
               class="bg-gray-50 border-l-4 border-info"
             />
-            <!-- Botón para deseleccionar -->
             <button
               class="absolute top-2 right-2 text-red-500 text-sm hover:underline"
               @click="clearDestination"
@@ -160,7 +154,7 @@
       </section>
     </div>
 
-    <!-- Botón de confirmación -->
+    <!-- Confirm button -->
     <div class="mt-8 flex justify-center relative z-10">
       <button
         class="button-primary disabled:bg-gray-300"
@@ -174,147 +168,78 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowRightIcon, ArrowDownIcon } from "@heroicons/vue/24/outline"
+import { ArrowRightIcon, ArrowDownIcon } from "@heroicons/vue/24/outline";
+import { usePropertiesStore } from "~/store/properties";
 
-// Tipos
-import type { Tenant } from "~/types/tenant"
-import type { Property } from "~/types/property"
-import type { Room } from "~/types/room"
+import type { Tenant } from "~/types/tenant";
+import type { Property } from "~/types/property";
+import type { Room } from "~/types/room";
 
-// Obtenemos el tenantId de la URL
-const route = useRoute()
-const tenantId = Number(route.params.tenantId)
+const route = useRoute();
+const tenantId = Number(route.params.tenantId);
 
-// Estados
-const selectedTenant = ref<Tenant | null>(null)
-const currentOrigin = ref<Property | Room | null>(null)
-const originType = ref<"property" | "room" | "">("")
+const propertiesStore = usePropertiesStore();
 
-const availableProperties = ref<Property[]>([])
-const roomsMap = ref<{ [propertyId: number]: Room[] }>({})
-
-const destination = ref<Property | Room | null>(null)
-const destinationType = ref<"property" | "room" | "">("")
+const selectedTenant = ref<Tenant | null>(null);
+const currentProperty = computed(() => propertiesStore.currentProperty);
+const currentRoom = computed(() => propertiesStore.currentRoom);
 
 onMounted(async () => {
-  await fetchTenantAndOrigin()
-  await fetchAvailableProperties()
-})
+  selectedTenant.value = propertiesStore.currentTenant;
 
-async function fetchTenantAndOrigin() {
-  // Simulación de fetch de un inquilino
-  selectedTenant.value = {
-    id: tenantId,
-    name: "Inquilino de ejemplo",
-    email: "test@example.com",
-    user_type: "individual",
-    profile_picture: "",
-    phone_number: "666999111",
-    room_id: "2",
+  if (!propertiesStore.properties.length) {
+    await propertiesStore.fetchProperties();
   }
 
-  // Simulamos que ese inquilino está en la habitación con id=2
-  currentOrigin.value = {
-    id: 2,
-    property_id: 10,
-    room_number: 2,
-    description: "Habitación con balcón",
-    rental_price: 350,
-    status: "occupied",
-    main_image: "",
-    images: [],
-    tenant: selectedTenant.value,
-    invitations: [],
-    created_at: "",
-    updated_at: "",
+  for (const prop of propertiesStore.properties) {
+    if (prop.rental_type === "per_room") {
+      await propertiesStore.fetchRooms(prop.id);
+    }
   }
-  originType.value = "room"
+});
+
+// Used only if needed
+const originType = computed<"property" | "room" | "">(() => {
+  if (!currentProperty.value) return "";
+  return currentProperty.value.rental_type === "full" ? "property" : "room";
+});
+
+const destination = ref<Property | Room | null>(null);
+const destinationType = ref<"property" | "room" | "">("");
+
+function clearDestination() {
+  destination.value = null;
+  destinationType.value = "";
 }
 
-async function fetchAvailableProperties() {
-  // Simulación de fetch de propiedades
-  availableProperties.value = [
-    {
-      id: 10,
-      address: "Calle Mayor 123",
-      cadastral_reference: "ABC123",
-      description: "Propiedad grande (alquiler por habitaciones)",
-      rental_type: "per_room",
-      status: "partially_occupied",
-      total_rooms: 5,
-      main_image_url: "",
-      images: [],
-      created_at: "",
-      updated_at: "",
-    },
-    {
-      id: 11,
-      address: "Avenida Sol 45",
-      cadastral_reference: "XYZ456",
-      description: "Piso completo disponible",
-      rental_type: "full",
-      status: "available",
-      total_rooms: 3,
-      main_image_url: "",
-      images: [],
-      created_at: "",
-      updated_at: "",
-    },
-  ]
+const filteredProperties = computed(() => {
+  if (!propertiesStore.properties.length) return [];
+  const currentId = currentProperty.value?.id;
+  return propertiesStore.properties
+    .filter((p) => p.id !== currentId)
+    .filter((p) => {
+      if (p.rental_type === "full") return p.status === "available";
+      return p.status === "available" || p.status === "partially_occupied";
+    });
+});
 
-  roomsMap.value[10] = [
-    {
-      id: 1001,
-      property_id: 10,
-      room_number: 1,
-      description: "Habitación 1 (disponible)",
-      rental_price: 300,
-      status: "available",
-      main_image: "",
-      images: [],
-      tenant: null,
-      invitations: [],
-      created_at: "",
-      updated_at: "",
-    },
-    {
-      id: 1002,
-      property_id: 10,
-      room_number: 2,
-      description: "Habitación 2 (ocupada)",
-      rental_price: 320,
-      status: "occupied",
-      main_image: "",
-      images: [],
-      tenant: null,
-      invitations: [],
-      created_at: "",
-      updated_at: "",
-    },
-  ]
-}
-
-function getRoomsByProperty(propertyId: number): Room[] {
-  return roomsMap.value[propertyId] || []
+function getAvailableRooms(propertyId: number): Room[] {
+  const allRooms = propertiesStore.roomsMap[propertyId] || [];
+  return allRooms.filter((r) => r.status === "available");
 }
 
 function selectDestination(item: Property | Room, type: "property" | "room") {
-  destination.value = item
-  destinationType.value = type
-}
-
-function clearDestination() {
-  destination.value = null
-  destinationType.value = ""
+  destination.value = item;
+  destinationType.value = type;
 }
 
 function onReassignTenant() {
-  if (!selectedTenant.value || !destination.value) return
+  if (!selectedTenant.value || !destination.value) return;
   console.log(
-    `Reasignando inquilino ${selectedTenant.value.name} =>`,
+    `Reassigning tenant ${selectedTenant.value.name} =>`,
     destination.value
-  )
-  // Aquí llamarías a tu API
+  );
+  // Call your API here
 }
 </script>
 

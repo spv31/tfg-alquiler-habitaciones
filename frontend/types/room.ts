@@ -9,7 +9,7 @@ export interface Room {
   rental_price: number,
   status: "available" | "unavailable" | "occupied",
 
-  main_image: string,
+  main_image_url: string,
   images: string[],
 
   tenant?: Tenant,

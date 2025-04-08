@@ -20,6 +20,7 @@ export const usePropertiesStore = defineStore(
 
     const properties = ref<Property[]>([]);
     const rooms = ref<Room[]>([]);
+    const roomsMap = ref<{ [propertyId: number]: Room[] }>({})
     const currentProperty = ref<Property | null>(null);
     const currentRoom = ref<Room | null>(null);
     const tenants = ref<Tenant[] | null>([]);
@@ -362,6 +363,7 @@ export const usePropertiesStore = defineStore(
       }
 
       rooms.value = data.rooms;
+      roomsMap.value[propertyId] = data.rooms
     };
 
     /**
@@ -865,6 +867,7 @@ export const usePropertiesStore = defineStore(
       changePropertyStatus,
       fetchPropertyImage,
       rooms,
+      roomsMap,
       currentRoom,
       fetchRooms,
       fetchRoom,
