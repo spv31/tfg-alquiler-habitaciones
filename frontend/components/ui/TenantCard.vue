@@ -46,28 +46,23 @@
         </template>
       </CircleIconButton>
 
-      <NuxtLink 
-        :to="$localePath(`/tenants/${tenant.id}/move`)"
-        class="inline-block"
-      >
-        <CircleIconButton :label="$t('common.move')">
-          <template #icon>
-            <svg
-              class="h-5 w-5 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 15l7-7 7 7"
-              />
-            </svg>
-          </template>
-        </CircleIconButton>
-      </NuxtLink>
+      <CircleIconButton :label="$t('common.move')" @click="moveTenant">
+        <template #icon>
+          <svg
+            class="h-5 w-5 text-purple-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 15l7-7 7 7"
+            />
+          </svg>
+        </template>
+      </CircleIconButton>
 
       <CircleIconButton :label="$t('common.remove')" @click="onRemove">
         <template #icon>
@@ -100,9 +95,28 @@
 import type { Tenant } from "~/types/tenant";
 import defaultAvatar from "~/assets/images/default.jpg";
 
+const { locale } = useI18n();
+
 const props = defineProps<{
   tenant: Tenant;
 }>();
+
+onMounted(() => {
+  console.log("Tenant ID: ", props.tenant.id);
+});
+
+const onChat = () => {};
+
+const onRemove = () => {
+  try {
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const moveTenant = () => {
+  navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
+}
 </script>
 
 <style scoped>

@@ -77,7 +77,7 @@
       </div>
 
       <NuxtLink
-        :to="`/properties/${property.id}`"
+        :to="`properties/${property.id}`"
         class="button-card mt-4 block text-center"
       >
         {{ $t("properties.detail.seeComplete") }}

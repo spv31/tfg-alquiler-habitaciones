@@ -51,10 +51,10 @@
         :propertyImage="propertyImage"
       />
 
-      <TenantFormSection v-if="currentProperty.data.rental_type === 'full'" />
+      <TenantFormSection v-if="currentProperty.data.rental_type === 'full'"/>
 
       <RoomsSection
-        v-else-if="currentProperty.data.rental_type === 'per_room'"
+        v-if="currentProperty.data.rental_type === 'per_room'"
         :rooms="rooms"
         :propertyId="propertyId"
         :warning="roomsWarning"
@@ -66,6 +66,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
+import type { Tenant } from '../../../types/tenant';
 
 const { t: $t, locale } = useI18n();
 const propertiesStore = usePropertiesStore();
@@ -83,11 +84,16 @@ onMounted(async () => {
     if (route.query.msg === "success") {
       alertMessage.value = $t("properties.update_success_message");
       alertType.value = "success";
-      navigateTo(`/properties/${propertyId}`, { replace: true });
+      navigateTo(`/${locale.value}/properties/${propertyId}`, {
+        replace: true,
+      });
     }
 
     await propertiesStore.fetchProperty(propertyId);
-    await propertiesStore.fetchRooms(propertyId);
+
+    if (currentProperty.value.data.rental_type === "per_room") {
+      await propertiesStore.fetchRooms(propertyId);
+    }
 
     if (currentProperty.value?.data?.main_image_url) {
       const filename =

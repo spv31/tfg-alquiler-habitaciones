@@ -54,9 +54,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useI18n } from "vue-i18n";
-
 const { t: $t } = useI18n();
 
 const emits = defineEmits(["update:propertyData", "update:errors"]);
@@ -82,7 +79,7 @@ const localErrors = computed({
   set: (val) => emits("update:errors", val),
 });
 
-function validateField(key: string, type: string) {
+const validateField = (key: string, type: string) => {
   const value = localPropertyData.value[key];
   if (type === "number") {
     if (value !== null && value !== "") {

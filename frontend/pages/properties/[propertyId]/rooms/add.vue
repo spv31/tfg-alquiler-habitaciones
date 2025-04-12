@@ -31,7 +31,7 @@ import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
 import type { Room } from "~/types/room";
 
-const { t: $t } = useI18n();
+const { t: $t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = usePropertiesStore();
@@ -59,7 +59,7 @@ async function handleSubmit() {
 
   try {
     await store.createRoom(propertyId, formData.value);
-    router.push(`/properties/${propertyId}?msg=success`);
+    router.push(`/${locale.value}/properties/${propertyId}?msg=success`);
   } catch (err: any) {
     console.error("Error al crear habitación:", err);
     errors.value.description = err?.data?.message || $t("errors.generic_error");

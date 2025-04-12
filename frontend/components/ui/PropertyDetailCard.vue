@@ -114,7 +114,7 @@
 
           <!-- Acciones -->
           <div class="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-            <NuxtLink :to="`/properties/${property.id}/edit`">
+            <NuxtLink :to="`${property.id}/edit`">
               <CircleIconButton :label="$t('common.edit')">
                 <template #icon>
                   <svg
@@ -290,6 +290,15 @@ const handleChangeStatus = async () => {
     alert($t("common.errorUpdatingStatus"));
   }
 };
+
+const deleteProperty = () => {
+  try {
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 </script>
 <style scoped>
 </style>

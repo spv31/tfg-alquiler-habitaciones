@@ -1,5 +1,13 @@
 <template>
   <div class="py-8 px-4 max-w-7xl mx-auto relative">
+    <!-- Alert -->
+    <div ref="alertContainer" v-if="alertMessage" class="mb-6 mx-auto">
+      <Alert
+        :message="alertMessage"
+        :type="alertType"
+        @close="alertMessage = ''"
+      />
+    </div>
     <!-- Main heading -->
     <div class="text-center mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
@@ -175,8 +183,12 @@
       </section>
     </div>
 
-    <!-- Confirm button -->
-    <div class="mt-8 flex justify-center relative z-10">
+    <!-- Buttons -->
+    <div class="mt-8 flex justify-center space-x-4 relative z-10">
+      <button class="button-outline" @click="$router.go(-1)">
+        Volver atrás
+      </button>
+
       <button
         class="button-primary disabled:bg-gray-300"
         :disabled="!destination"
@@ -200,6 +212,9 @@ const route = useRoute();
 const tenantId = Number(route.params.tenantId);
 
 const propertiesStore = usePropertiesStore();
+
+const alertMessage = ref("");
+const alertType = ref<"success" | "error">("success");
 
 const selectedTenant = ref<Tenant | null>(null);
 const currentProperty = computed(() => propertiesStore.currentProperty);
@@ -228,11 +243,12 @@ const originType = computed<"property" | "room" | "">(() => {
 const destination = ref<Property | Room | null>(null);
 const destinationType = ref<"property" | "room" | "">("");
 
-function clearDestination() {
+const clearDestination = () => {
   destination.value = null;
   destinationType.value = "";
-}
+};
 
+// We only get available or partially_occupied properties for reassignment
 const filteredProperties = computed(() => {
   if (!propertiesStore.properties.length) return [];
   const currentId = currentProperty.value?.id;
@@ -244,22 +260,29 @@ const filteredProperties = computed(() => {
     });
 });
 
-function getAvailableRooms(propertyId: number): Room[] {
+// Given a property id, we return its available rooms to rent
+const getAvailableRooms = (propertyId: number): Room[] => {
   const allRooms = propertiesStore.roomsMap[propertyId] || [];
   return allRooms.filter((r) => r.status === "available");
-}
+};
 
-function selectDestination(item: Property | Room, type: "property" | "room") {
+// Its marks destination
+const selectDestination = (
+  item: Property | Room,
+  type: "property" | "room"
+) => {
   destination.value = item;
   destinationType.value = type;
-}
+};
 
-function onReassignTenant() {
+// It calls store method to reassign tenant
+const onReassignTenant = () => {
   if (!selectedTenant.value || !destination.value) return;
   console.log(
     `Reassigning tenant ${selectedTenant.value.name} =>`,
     destination.value
   );
+
   propertiesStore
     .reassignTenant(
       selectedTenant.value.id,
@@ -267,12 +290,26 @@ function onReassignTenant() {
       destinationType.value
     )
     .then(() => {
-      console.log("Tenant reassigned successfully");
+      alertMessage.value = "Inquilino reasignado correctamente";
+      alertType.value = "success";
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     })
     .catch((err) => {
       console.error("Error reassigning tenant:", err);
+      alertMessage.value =
+        "Error al reasignar el inquilino. Por favor, inténtelo de nuevo.";
+      alertType.value = "error";
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     });
-}
+};
 </script>
 
 <style scoped>

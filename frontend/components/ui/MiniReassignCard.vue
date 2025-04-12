@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full border rounded-lg p-3 flex flex-col gap-2 transition relative"
+    class="w-full rounded-xl bg-primary p-3 flex flex-col gap-2 transition-all duration-300 relative hover:border-gray-300 hover:shadow-lg group shadow-sm hover:-translate-y-0.5 transform-gpu active:scale-95 active:shadow-inner focus-within:ring-2 focus-within:ring-primary-100"
     :title="title"
   >
     <div class="flex items-center gap-4">
@@ -13,10 +13,61 @@
           alt="Imagen"
           class="w-12 h-12 rounded object-cover"
         />
-        <span v-else class="text-gray-400 text-xl">
-          <template v-if="type.startsWith('property')">🏠</template>
-          <template v-else-if="type.startsWith('room')">🛏️</template>
-          <template v-else-if="type === 'tenant'">🧑</template>
+        <span v-else class="text-gray-400">
+          <template v-if="type.startsWith('property')">
+            <!-- Icono de casa -->
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+          </template>
+          <template v-else-if="type.startsWith('room')">
+            <!-- Icono de cama -->
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 8h16M4 12h16M4 16h16"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </template>
+          <template v-else-if="type === 'tenant'">
+            <!-- Icono de usuario -->
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </template>
         </span>
       </div>
 

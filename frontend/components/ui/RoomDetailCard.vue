@@ -188,7 +188,7 @@ const showStats = ref(false);
 const showChangeStatusModal = ref(false);
 
 const editRoomLink = computed(() => {
-  return `/${locale.value}/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
+  return `${locale.value}/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
 });
 
 const handleChangeStatus = async () => {

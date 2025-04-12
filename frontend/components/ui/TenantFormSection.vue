@@ -46,7 +46,8 @@ import type { Tenant } from "~/types/tenant";
 const { t: $t } = useI18n();
 const route = useRoute();
 const propertiesStore = usePropertiesStore();
-const { currentProperty, currentTenant, currentRoom } = storeToRefs(propertiesStore);
+const { currentProperty, currentTenant, currentRoom } =
+  storeToRefs(propertiesStore);
 
 const showForm = ref(false);
 const successMessage = ref("");
@@ -67,6 +68,13 @@ const handleInvitationSent = (message: string) => {
 };
 
 onMounted(async () => {
+  const instance = getCurrentInstance();
+  console.log(
+    "TenantFormSection montado. uid:",
+    instance?.uid,
+    " route:",
+    route.fullPath
+  );
   try {
     if (roomId !== null && !isNaN(roomId)) {
     } else {

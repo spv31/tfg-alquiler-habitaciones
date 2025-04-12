@@ -14,7 +14,7 @@
 
 				<!-- Añadir Propiedad -->
 				<NuxtLink
-					:to="$localePath('/properties/add')"
+					:to="$localePath('properties/add')"
 					class="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 hover:bg-gray-700 hover:border-gray-500 transition duration-300 ease-in-out"
 				>
 					<h2 class="text-xl font-semibold text-white">{{ $t('dashboard.add_property.title') }}</h2>

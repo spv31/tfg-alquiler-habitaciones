@@ -32,7 +32,7 @@
               {{ $t("navbar.login") }}
             </NuxtLink>
             <NuxtLink
-              :to="$localePath('/register/owner')"
+              :to="$localePath('register/owner')"
               class="font-medium text-base hover:text-info_dark transition-colors duration-200"
             >
               {{ $t("navbar.register") }}
@@ -190,7 +190,7 @@
           <ul v-if="authStore.user?.role === 'owner'" class="space-y-2">
             <li>
               <NuxtLink
-                to="/properties"
+                :to="$localePath('properties')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.properties") }}
@@ -198,7 +198,7 @@
             </li>
             <li>
               <NuxtLink
-                to="/statistics"
+                :to="$localePath('statistics')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.statistics") }}
@@ -206,7 +206,7 @@
             </li>
             <li>
               <NuxtLink
-                to="/contracts"
+                :to="$localePath('contracts')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.contracts") }}
@@ -214,7 +214,7 @@
             </li>
             <li>
               <NuxtLink
-                to="/chats"
+                :to="$localePath('chats')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.chats") }}
@@ -222,7 +222,7 @@
             </li>
             <li>
               <NuxtLink
-                to="/profile"
+                :to="$localePath('profile')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.profile") }}
@@ -251,9 +251,6 @@
 
 
 <script setup lang="ts">
-definePageMeta({
-  middleware: ["authRedirect"],
-});
 import { useAuthStore } from "~/store/auth";
 
 const authStore = useAuthStore();

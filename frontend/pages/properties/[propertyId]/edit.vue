@@ -75,7 +75,7 @@
 import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
 
-const { t: $t } = useI18n();
+const { t: $t, locale } = useI18n();
 const route = useRoute();
 const store = usePropertiesStore();
 
@@ -267,7 +267,7 @@ if (!hasErrors.value) {
       alertMessage.value = $t("properties.update_success_message");
       alertType.value = "success";
 
-      navigateTo(`/properties/${propertyData.id}?msg=success`);
+      navigateTo(`/${locale.value}/properties/${propertyData.id}?msg=success`);
     } catch (error: any) {
       console.error("Error al actualizar la propiedad:", error);
 

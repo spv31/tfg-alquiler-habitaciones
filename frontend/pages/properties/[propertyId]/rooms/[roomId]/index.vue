@@ -53,9 +53,6 @@
           :room="currentRoom" 
           :roomImage="roomImage"
         />
-
-        <TenantFormSection
-        />
       </div>
     </div>
   </div>
@@ -81,6 +78,7 @@ onMounted(async () => {
     await propertiesStore.fetchRoom(propertyId, roomId);
     await propertiesStore.fetchRoomTenant(propertyId, roomId);
     
+    console.log('Propiedad jeje: ', currentRoom.value);
     if (currentRoom.value?.main_image_url) {
       const filename = currentRoom.value.main_image_url.split("/").pop() || "";
       roomImage.value = await propertiesStore.fetchRoomImageUrl(
