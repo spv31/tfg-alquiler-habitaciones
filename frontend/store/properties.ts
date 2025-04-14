@@ -35,6 +35,12 @@ export const usePropertiesStore = defineStore(
     });
     const propertyImagesCache = ref<Record<string, string>>({});
 
+    // TTL For caching
+    const PROPERTIES_TTL = 15 * 60 * 1000;
+    const ROOMS_TTL = 15 * 60 * 1000; 
+    const lastFetchedPropertiesAt = ref<number | null>(null);
+    const lastFetchedRoomsAt = ref<Record<number, number | null>>({});
+
     /**
      * Sends request to get properties
      *
@@ -42,6 +48,16 @@ export const usePropertiesStore = defineStore(
      * @returns {*}
      */
     const fetchProperties = async (): Promise<Property[]> => {
+      const now = Date.now();
+
+      if (
+        properties.value.length > 0 &&
+        lastFetchedPropertiesAt.value &&
+        now - lastFetchedPropertiesAt.value < PROPERTIES_TTL
+      ) {
+        return properties.value;
+      }
+
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
@@ -70,6 +86,8 @@ export const usePropertiesStore = defineStore(
         links: data.links,
         meta: data.meta,
       };
+
+      lastFetchedPropertiesAt.value = now;
 
       return data.data;
     };
@@ -320,7 +338,7 @@ export const usePropertiesStore = defineStore(
         );
         if (!response.ok) throw new Error("Failed to fetch image");
         return await response.blob();
-      }, loading);
+      });
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
@@ -336,6 +354,22 @@ export const usePropertiesStore = defineStore(
      * @returns {*}
      */
     const fetchRooms = async (propertyId: Property["id"]) => {
+      const now = Date.now();
+
+      if (!lastFetchedRoomsAt.value[propertyId]) {
+        lastFetchedRoomsAt.value[propertyId] = null;
+      }
+      if (!roomsMap.value[propertyId]) {
+        roomsMap.value[propertyId] = [];
+      }
+
+      if (roomsMap.value[propertyId].length > 0 &&
+          lastFetchedRoomsAt.value[propertyId] &&
+          now - (lastFetchedRoomsAt.value[propertyId] as number) < ROOMS_TTL
+      ) {
+        return roomsMap.value[propertyId];
+      }
+
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
@@ -361,6 +395,8 @@ export const usePropertiesStore = defineStore(
       } else {
         roomsWarning.value = null;
       }
+
+      lastFetchedRoomsAt.value[propertyId] = now;
 
       rooms.value = data.rooms;
       roomsMap.value[propertyId] = data.rooms;
