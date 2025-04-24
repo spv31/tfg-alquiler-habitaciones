@@ -92,4 +92,14 @@ class User extends Authenticatable
       ? route('image.user.show ', ['user' => $this->id, 'filename' => $this->profileImage->image_path])
       : null;
   }
+
+  /**
+   * Contract templates created by user
+   * 
+   * @return \Illuminate\Database\Eloquent\Relations\HasMany<ContractTemplate, User>
+   */
+  public function contractTemplates(): \Illuminate\Database\Eloquent\Relations\HasMany
+  {
+    return $this->hasMany(ContractTemplate::class);
+  }
 }

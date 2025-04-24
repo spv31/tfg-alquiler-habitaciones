@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     "@nuxtjs/i18n",
     "@nuxtjs/color-mode",
     '@nuxtjs/tailwindcss',
+    'nuxt-tiptap-editor'
   ],
   colorMode: {
     preference: 'system',
@@ -26,7 +27,6 @@ export default defineNuxtConfig({
     server: {
       hmr: true,
     }
-    // plugins: [tailwindcss()],
   },
   components: [
     {
@@ -48,6 +48,7 @@ export default defineNuxtConfig({
     },
     display: "swap",
   },
+  tiptap: { prefix: 'Tiptap' },
   runtimeConfig: {
     app: {
       apiBaseURL: "http://localhost:8000/api"
