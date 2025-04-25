@@ -190,6 +190,34 @@ onBeforeUnmount(() => editor?.destroy());
   background: #fff7d6;
 }
 
+/* To indicate token in editor */
+.ProseMirror span[data-token] {
+  position: relative;
+  cursor: help;
+}
+.ProseMirror span[data-token]::after {
+  content: attr(data-token);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  white-space: nowrap;
+  background: #333;
+  color: #fff;
+  padding: 2px 5px;
+  font-size: 10px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  pointer-events: none;
+}
+.ProseMirror span[data-token]:hover::after {
+  opacity: 1;
+  transform: translateY(-10px);
+}
+
 /* PDF tokens */
 @media print {
   .tt-token[data-token] {

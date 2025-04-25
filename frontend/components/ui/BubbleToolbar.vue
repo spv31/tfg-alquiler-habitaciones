@@ -54,7 +54,7 @@
         <button
           v-for="tok in predefinedTokens"
           :key="tok.token"
-          @click="applyToken(tok.token)"
+          @mousedown.prevent.stop="applyToken(tok.token)"
           class="px-2 py-1 w-full text-left hover:bg-gray-100 text-sm"
         >
           {{ tok.label }}
@@ -91,7 +91,23 @@ const cmd = (name: string, arg?: any) => {
 }
 
 const applyToken = (k: string) => {
-  props.applyToken(k);
+  if (!ed.value) return;
+  const { state } = ed.value;
+  const hasSelection = !state.selection.empty;
+
+  ed.value.chain().focus();
+
+  if (hasSelection) {
+    ed.value.chain().setMark('token', { key: k }).run();
+  } else {
+    ed.value.chain()
+      .insertContent({
+        type: 'text',
+        text: '__________',
+        marks: [{ type: 'token', attrs: { key: k } }],
+      })
+      .run();
+  }
 }
 
 </script>
