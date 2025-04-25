@@ -29,7 +29,6 @@
       ><Code size="18"
     /></ToolbarBtn>
 
-    <!-- Encabezados -->
     <Dropdown
       label="H"
       :items="[
@@ -115,7 +114,6 @@
       </button>
     </Dropdown>
 
-    <!-- Listas -->
     <ToolbarBtn
       :active="editor.isActive('bulletList')"
       @click="editor.chain().focus().toggleBulletList().run()"
@@ -127,7 +125,6 @@
       ><ListOrdered size="18"
     /></ToolbarBtn>
 
-    <!-- Alineación -->
     <Dropdown icon>
       <template #button>
         <AlignLeft size="18" />
@@ -167,7 +164,6 @@
       </button>
     </Dropdown>
 
-    <!-- Bloques -->
     <ToolbarBtn
       :active="editor.isActive('blockquote')"
       @click="editor.chain().focus().toggleBlockquote().run()"
@@ -190,7 +186,6 @@
 
     <ToolbarSep />
 
-    <!-- Limpiar -->
     <ToolbarBtn @click="editor.chain().focus().unsetAllMarks().run()"
       ><Eraser size="18"
     /></ToolbarBtn>
@@ -203,7 +198,6 @@
         <Table size="18" />
       </template>
 
-      <!-- Crear / eliminar -->
       <button
         @click="insertDefaultTable"
         class="px-3 py-1 w-full text-left hover:bg-gray-100"
@@ -220,7 +214,6 @@
 
       <hr class="my-1 border-gray-200" />
 
-      <!-- Filas -->
       <button
         :disabled="!inTable()"
         @click="addRowBefore"
@@ -270,7 +263,6 @@
 
       <hr class="my-1 border-gray-200" />
 
-      <!-- Cabecera + merge / split -->
       <button
         :disabled="!inTable()"
         @click="toggleHeaderRow"
@@ -300,9 +292,28 @@
     >
       <FileMinus size="18" />
     </ToolbarBtn>
+
+    <Dropdown icon>
+      <template #button>
+        <TextCursorInput size="18" />
+      </template>
+
+      <div class="max-h-48 overflow-y-auto">
+        <button
+          v-for="tok in predefinedTokens"
+          :key="tok.token"
+          @click="applyToken(tok.token)"
+          class="px-3 py-1 w-full text-left hover:bg-gray-100"
+          style="font-family: Arial, Helvetica, sans-serif; font-size: 12pt"
+        >
+          {{ tok.label }}
+        </button>
+      </div>
+    </Dropdown>
   </div>
 </template>
 <script setup lang="ts">
+import { predefinedTokens } from "~/utils/tokens";
 import {
   Type,
   TextCursorInput,
@@ -397,32 +408,62 @@ const setSize = (size: string | null) => {
   }
 };
 
-function insertToken(tok: string) {
-  props.editor.chain().focus().insertContent(`%${tok}%`).run();
+/**
+ * Function to apply different kind of tokens to sections of the contract template
+ * 
+ * @param tokenKey 
+ */
+const applyToken = (tokenKey: string) => {
+  const { state } = props.editor
+  const hasSelection = !state.selection.empty
+
+  if (hasSelection) {
+    props.editor
+      .chain()
+      .focus()
+      .setMark('token', { key: tokenKey })
+      .run()
+  } else {
+    const placeholder = '__________'     
+    props.editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'text',
+        text: placeholder,
+        marks: [ { type: 'token', attrs: { key: tokenKey } } ],
+      })
+      .run()
+  }
 }
+
 
 const insertSignatureSection = () => {
   props.editor
     .chain()
     .focus()
     .insertTable({ rows: 1, cols: 2, withHeaderRow: false })
-    .insertContent(`
+    .insertContent(
+      `
       <p class="text-center">
         El Arrendador<br/><br/>
         ___________________________<br/>
         Nombre y firma
       </p>
-    `)
+    `
+    )
     .goToNextCell()
-    .insertContent(`
+    .insertContent(
+      `
       <p class="text-center">
         El Arrendatario<br/><br/>
         ___________________________<br/>
         Nombre y firma
       </p>
-    `)
-    .run()
-}
+    `
+    )
+    .run();
+};
 
 const insertDefaultTable = () =>
   props.editor
@@ -445,7 +486,6 @@ const mergeCells = () => props.editor.chain().focus().mergeCells().run();
 const splitCell = () => props.editor.chain().focus().splitCell().run();
 const deleteTable = () => props.editor.chain().focus().deleteTable().run();
 
-/* Helpers para habilitar / deshabilitar */
 const inTable = () => props.editor.can().deleteTable();
 const canMerge = () => props.editor.can().mergeCells();
 const canSplit = () => props.editor.can().splitCell();

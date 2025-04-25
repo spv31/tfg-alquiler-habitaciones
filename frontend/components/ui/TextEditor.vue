@@ -1,23 +1,29 @@
 <template>
   <ClientOnly>
+    <BubbleMenu
+      :editor="editor"
+      :tippy-options="{ offset: [0, 8] }"
+      v-if="editor"
+    >
+      <BubbleToolbar :editor="editor" :applyToken="applyToken" />
+    </BubbleMenu>
+
     <div class="flex justify-center gap-4">
       <div
         class="flex flex-col border rounded-2xl w-full max-w-2xl min-h-[400px]"
       >
         <Toolbar :editor="editor" />
         <div class="min-h-[600px] bg-white p-14 rounded-b-2xl">
-          <TiptapEditorContent
+          <EditorContent
             :editor="editor"
-            class="prose max-w-none grow overflow-y-auto 
-                   prose-p:my-0"
+            class="prose max-w-none grow overflow-y-auto prose-p:my-0"
           />
         </div>
       </div>
-      <!-- <TokenSidebar :tokens="tokens" @insert="insert" class="shrink-0" /> -->
     </div>
   </ClientOnly>
 </template>
-	
+
 <script setup lang="ts">
 import { useEditor } from "#imports";
 import StarterKit from "@tiptap/starter-kit";
@@ -26,53 +32,57 @@ import Underline from "@tiptap/extension-underline";
 import FontFamily from "@tiptap/extension-font-family";
 import TextStyle from "@tiptap/extension-text-style";
 import TextAlign from "@tiptap/extension-text-align";
-import { Table as TipTapTable, type TableOptions } from '@tiptap/extension-table'
+import {
+  Table as TipTapTable,
+  type TableOptions,
+} from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableHeader from "@tiptap/extension-table-header";
 import TableCell from "@tiptap/extension-table-cell";
+import { EditorContent, BubbleMenu } from "@tiptap/vue-3";
+import BubbleMenuExtension from "@tiptap/extension-bubble-menu";
 
 import Toolbar from "./Toolbar.vue";
 import TokenSidebar from "./TokenSidebar.vue";
+import { TokenMark } from "~/utils/tokenMark";
 
 const CustomTable = TipTapTable.extend<TableOptions>({
-  name: 'table',
+  name: "table",
   addOptions() {
     return {
       ...this.parent?.(),
       resizable: true,
-      HTMLAttributes: { class: 'tt-table' },
-    }
+      HTMLAttributes: { class: "tt-table" },
+    };
   },
   addNodeView() {
-    const original = this.parent?.()!.addNodeView?.()
-    return props => {
-      const view = original?.(props)
-      if (view && view.dom.nodeName === 'TABLE') {
-        view.dom.classList.add('tt-table')
+    const original = this.parent?.()!.addNodeView?.();
+    return (props) => {
+      const view = original?.(props);
+      if (view && view.dom.nodeName === "TABLE") {
+        view.dom.classList.add("tt-table");
       }
-      return view
-    }
+      return view;
+    };
   },
-})
+});
 const FontSize = TextStyle.extend({
   addAttributes() {
     return {
       fontSize: {
         default: null,
-        parseHTML: element => element.style.fontSize || null,
-        renderHTML: attributes => {
+        parseHTML: (element) => element.style.fontSize || null,
+        renderHTML: (attributes) => {
           if (!attributes.fontSize) return {};
           return { style: `font-size: ${attributes.fontSize}` };
         },
-      }
+      },
     };
-  }
-})
+  },
+});
 
 const props = defineProps<{
   modelValue: string;
-  placeholder?: string;
-  tokens?: string[];
 }>();
 
 const emit = defineEmits(["update:modelValue"]);
@@ -82,30 +92,54 @@ const editor = useEditor({
   extensions: [
     StarterKit,
     Placeholder,
-    Underline, 
-    TextStyle, 
-    FontFamily,  
+    Underline,
+    TextStyle,
+    FontFamily,
     FontSize,
     TextAlign.configure({
-      types: ['heading', 'paragraph']
+      types: ["heading", "paragraph"],
     }),
     CustomTable,
     TableRow,
     TableHeader,
     TableCell,
+    TokenMark,
+    BubbleMenuExtension.configure({
+      tippyOptions: { offset: [0, 8] },
+    }),
   ],
   editorProps: {
     attributes: {
-      class: `focus:outline-none whitespace-normal`,
+      class: `focus:outline-none`,
     },
   },
   onUpdate: ({ editor }) => emit("update:modelValue", editor.getHTML()),
 });
 
-// // insert token desde TokenSidebar
-// function insert(token: string) {
-//   editor?.commands.insertContent(`%${token}%`);
-// }
+/**
+ * Function to apply different kind of tokens to sections of the contract template
+ *
+ * @param tokenKey
+ */
+const applyToken = (tokenKey: string) => {
+  const { state } = editor;
+  const hasSelection = !state.selection.empty;
+
+  if (hasSelection) {
+    editor.chain().focus().setMark("token", { key: tokenKey }).run();
+  } else {
+    const placeholder = "__________";
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "text",
+        text: placeholder,
+        marks: [{ type: "token", attrs: { key: tokenKey } }],
+      })
+      .run();
+  }
+};
 
 onBeforeUnmount(() => editor?.destroy());
 </script>
@@ -113,16 +147,32 @@ onBeforeUnmount(() => editor?.destroy());
 <style>
 .prose {
   font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
   font-size: 12pt;
 }
 
-.tt-table       { width:100%; border-collapse:collapse; margin:1rem 0; }
+.tt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
 .tt-table th,
-.tt-table td    { border:1px solid #d1d5db; padding:6px 8px; }
-.tt-table th    { background:#f3f4f6; font-weight:600; text-align:left; }
-.tt-table tbody tr:nth-child(even) { background:#fafafa; }
+.tt-table td {
+  border: 1px solid #d1d5db;
+  padding: 6px 8px;
+}
+.tt-table th {
+  background: #f3f4f6;
+  font-weight: 600;
+  text-align: left;
+}
+.tt-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
 
-.tt-table-wrapper { overflow:auto; }
+.tt-table-wrapper {
+  overflow: auto;
+}
 
 /* Needed for text alignment */
 .ProseMirror [style*="text-align:justify"] {
@@ -132,6 +182,25 @@ onBeforeUnmount(() => editor?.destroy());
 }
 .ProseMirror p {
   white-space: normal !important;
-  text-align: inherit; 
+  text-align: inherit;
+}
+
+/* Needed for tokens */
+.tt-token[data-token] {
+  background: #fff7d6;
+}
+
+/* PDF tokens */
+@media print {
+  .tt-token[data-token] {
+    background: transparent;
+  }
+}
+
+#bubble-menu .dropdown-panel {
+  @apply shadow-md bg-white rounded-lg;
+}
+#bubble-menu button {
+  @apply p-1 rounded hover:bg-gray-100;
 }
 </style>

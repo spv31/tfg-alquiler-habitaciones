@@ -19,6 +19,7 @@
     "@nuxtjs/i18n": "9.1.5",
     "@pinia/nuxt": "0.9.0",
     "@tailwindcss/line-clamp": "^0.4.4",
+    "@tiptap/extension-bubble-menu": "^2.11.7",
     "@tiptap/extension-font-family": "^2.11.7",
     "@tiptap/extension-highlight": "^2.11.7",
     "@tiptap/extension-image": "^2.11.7",
