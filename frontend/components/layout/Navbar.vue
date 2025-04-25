@@ -179,7 +179,7 @@
             {{ $t("navbar.login") }}
           </NuxtLink>
           <NuxtLink
-            :to="$localePath('register')"
+            :to="$localePath('register/owner')"
             class="font-medium text-base hover:text-info_dark transition-colors duration-200"
           >
             {{ $t("navbar.register") }}
