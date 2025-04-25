@@ -29,7 +29,6 @@
       ><Code size="18"
     /></ToolbarBtn>
 
-    <!-- Encabezados -->
     <Dropdown
       label="H"
       :items="[
@@ -41,7 +40,7 @@
         { label: 'Encabezado 6', level: 6 },
       ]"
       :active="isHeadingActive"
-      :isActive="(l) => editor.isActive('heading', { level: l })"
+      :isActive="(l: any) => editor.isActive('heading', { level: l })"
       @select="(l) => editor.chain().focus().toggleHeading({ level: l }).run()"
     />
 
@@ -115,7 +114,6 @@
       </button>
     </Dropdown>
 
-    <!-- Listas -->
     <ToolbarBtn
       :active="editor.isActive('bulletList')"
       @click="editor.chain().focus().toggleBulletList().run()"
@@ -127,9 +125,6 @@
       ><ListOrdered size="18"
     /></ToolbarBtn>
 
-    <!-- <ToolbarSep /> -->
-
-    <!-- Alineación -->
     <Dropdown icon>
       <template #button>
         <AlignLeft size="18" />
@@ -139,6 +134,7 @@
         @click="editor.chain().focus().setTextAlign('left').run()"
         :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'left' }) }"
         class="px-3 py-1 w-full text-left hover:bg-gray-100"
+        :style="{ fontFamily: currentFont }"
       >
         <AlignLeft size="18" class="inline mr-2" /> Izquierda
       </button>
@@ -146,6 +142,7 @@
         @click="editor.chain().focus().setTextAlign('center').run()"
         :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'center' }) }"
         class="px-3 py-1 w-full text-left hover:bg-gray-100"
+        :style="{ fontFamily: currentFont }"
       >
         <AlignCenter size="18" class="inline mr-2" /> Centro
       </button>
@@ -153,6 +150,7 @@
         @click="editor.chain().focus().setTextAlign('right').run()"
         :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'right' }) }"
         class="px-3 py-1 w-full text-left hover:bg-gray-100"
+        :style="{ fontFamily: currentFont }"
       >
         <AlignRight size="18" class="inline mr-2" /> Derecha
       </button>
@@ -160,14 +158,12 @@
         @click="editor.chain().focus().setTextAlign('justify').run()"
         :class="{ 'bg-gray-200': editor.isActive({ textAlign: 'justify' }) }"
         class="px-3 py-1 w-full text-left hover:bg-gray-100"
+        :style="{ fontFamily: currentFont }"
       >
         <AlignJustify size="18" class="inline mr-2" /> Justificado
       </button>
     </Dropdown>
 
-    <!-- <ToolbarSep /> -->
-
-    <!-- Bloques -->
     <ToolbarBtn
       :active="editor.isActive('blockquote')"
       @click="editor.chain().focus().toggleBlockquote().run()"
@@ -176,17 +172,6 @@
     <ToolbarBtn @click="editor.chain().focus().setHorizontalRule().run()"
       ><Minus size="18"
     /></ToolbarBtn>
-
-    <!-- Imagen -->
-    <ToolbarBtn class="relative">
-      <Image size="18" />
-      <input
-        type="file"
-        accept="image/*"
-        class="absolute inset-0 opacity-0 cursor-pointer"
-        @change="onImageUpload"
-      />
-    </ToolbarBtn>
 
     <ToolbarBtn
       :disabled="!editor.can().undo()"
@@ -201,21 +186,137 @@
 
     <ToolbarSep />
 
-    <!-- Limpiar -->
     <ToolbarBtn @click="editor.chain().focus().unsetAllMarks().run()"
       ><Eraser size="18"
     /></ToolbarBtn>
     <ToolbarBtn @click="editor.chain().focus().clearNodes().run()"
       ><Layout size="18"
     /></ToolbarBtn>
+
+    <Dropdown icon :active="inTable()">
+      <template #button>
+        <Table size="18" />
+      </template>
+
+      <button
+        @click="insertDefaultTable"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100"
+      >
+        <Table size="16" class="inline mr-2" /> Insertar tabla
+      </button>
+      <button
+        :disabled="!inTable()"
+        @click="deleteTable"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Trash2 size="16" class="inline mr-2" /> Eliminar tabla
+      </button>
+
+      <hr class="my-1 border-gray-200" />
+
+      <button
+        :disabled="!inTable()"
+        @click="addRowBefore"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Rows size="16" class="inline mr-2" /> Fila arriba
+      </button>
+      <button
+        :disabled="!inTable()"
+        @click="addRowAfter"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Rows3 size="16" class="inline mr-2" /> Fila abajo
+      </button>
+      <button
+        :disabled="!inTable()"
+        @click="deleteRow"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Trash2 size="16" class="inline mr-2" /> Borrar fila
+      </button>
+
+      <hr class="my-1 border-gray-200" />
+
+      <!-- Columnas -->
+      <button
+        :disabled="!inTable()"
+        @click="addColBefore"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Columns size="16" class="inline mr-2" /> Columna izq.
+      </button>
+      <button
+        :disabled="!inTable()"
+        @click="addColAfter"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Columns3 size="16" class="inline mr-2" /> Columna der.
+      </button>
+      <button
+        :disabled="!inTable()"
+        @click="deleteCol"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Trash2 size="16" class="inline mr-2" /> Borrar columna
+      </button>
+
+      <hr class="my-1 border-gray-200" />
+
+      <button
+        :disabled="!inTable()"
+        @click="toggleHeaderRow"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <Bold size="16" class="inline mr-2" /> Cabecera on/off
+      </button>
+      <button
+        :disabled="!canMerge()"
+        @click="mergeCells"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <TableCellsMerge size="16" class="inline mr-2" /> Combinar celdas
+      </button>
+      <button
+        :disabled="!canSplit()"
+        @click="splitCell"
+        class="px-3 py-1 w-full text-left hover:bg-gray-100 disabled:opacity-40"
+      >
+        <TableCellsSplit size="16" class="inline mr-2" /> Dividir celda
+      </button>
+    </Dropdown>
+
+    <ToolbarBtn
+      tooltip="Insertar zona de firmas"
+      @click="insertSignatureSection"
+    >
+      <FileMinus size="18" />
+    </ToolbarBtn>
+
+    <Dropdown icon>
+      <template #button>
+        <TextCursorInput size="18" />
+      </template>
+
+      <div class="max-h-48 overflow-y-auto">
+        <button
+          v-for="tok in predefinedTokens"
+          :key="tok.token"
+          @click="applyToken(tok.token)"
+          class="px-3 py-1 w-full text-left hover:bg-gray-100"
+          style="font-family: Arial, Helvetica, sans-serif; font-size: 12pt"
+        >
+          {{ tok.label }}
+        </button>
+      </div>
+    </Dropdown>
   </div>
 </template>
 <script setup lang="ts">
+import { predefinedTokens } from "~/utils/tokens";
 import {
   Type,
-  Text,
   TextCursorInput,
-  Braces,
   Bold,
   Italic,
   Underline,
@@ -223,14 +324,10 @@ import {
   Code,
   List,
   ListOrdered,
-  CheckSquare2,
   Quote,
-  FileCode,
   Minus,
   Undo2,
   Redo2,
-  Link,
-  Link2Off,
   Image,
   AlignLeft,
   AlignCenter,
@@ -238,9 +335,22 @@ import {
   AlignJustify,
   Eraser,
   Layout,
+  Table,
+  Rows,
+  Rows3,
+  Columns,
+  Columns3,
+  TableCellsMerge,
+  TableCellsSplit,
+  Trash2,
+  Trash,
+  FileMinus,
 } from "lucide-vue-next";
 
 const props = defineProps<{ editor: any }>();
+
+const currentFont = ref<string | null>(null);
+const currentSize = ref<string | null>(null);
 
 // Needed for heading icon
 const isHeadingActive = computed(() =>
@@ -281,26 +391,13 @@ function promptForLink() {
       .setLink({ href: url })
       .run();
 }
-function removeLink() {
-  props.editor.chain().focus().unsetLink().run();
-}
-function onImageUpload(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-  const r = new FileReader();
-  r.onload = () =>
-    props.editor
-      .chain()
-      .focus()
-      .setImage({ src: r.result as string })
-      .run();
-  r.readAsDataURL(file);
-}
 
-const setFont = (family: string) => {
+// Helper to set font family
+const setFont = (family: string | null) => {
   props.editor.chain().focus().setFontFamily(family).run();
 };
 
+// Helper to set font size
 const setSize = (size: string | null) => {
   const chain = props.editor.chain().focus();
 
@@ -311,12 +408,87 @@ const setSize = (size: string | null) => {
   }
 };
 
-function insertToken(tok: string) {
-  props.editor.chain().focus().insertContent(`%${tok}%`).run();
+/**
+ * Function to apply different kind of tokens to sections of the contract template
+ * 
+ * @param tokenKey 
+ */
+const applyToken = (tokenKey: string) => {
+  const { state } = props.editor
+  const hasSelection = !state.selection.empty
+
+  if (hasSelection) {
+    props.editor
+      .chain()
+      .focus()
+      .setMark('token', { key: tokenKey })
+      .run()
+  } else {
+    const placeholder = '__________'     
+    props.editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'text',
+        text: placeholder,
+        marks: [ { type: 'token', attrs: { key: tokenKey } } ],
+      })
+      .run()
+  }
 }
 
-const currentFont = ref<string | null>(null);
-const currentSize = ref<string | null>(null);
+
+const insertSignatureSection = () => {
+  props.editor
+    .chain()
+    .focus()
+    .insertTable({ rows: 1, cols: 2, withHeaderRow: false })
+    .insertContent(
+      `
+      <p class="text-center">
+        El Arrendador<br/><br/>
+        ___________________________<br/>
+        Nombre y firma
+      </p>
+    `
+    )
+    .goToNextCell()
+    .insertContent(
+      `
+      <p class="text-center">
+        El Arrendatario<br/><br/>
+        ___________________________<br/>
+        Nombre y firma
+      </p>
+    `
+    )
+    .run();
+};
+
+const insertDefaultTable = () =>
+  props.editor
+    .chain()
+    .focus()
+    .insertTable({ rows: 2, cols: 2, withHeaderRow: true })
+    .run();
+
+const addRowBefore = () => props.editor.chain().focus().addRowBefore().run();
+const addRowAfter = () => props.editor.chain().focus().addRowAfter().run();
+const deleteRow = () => props.editor.chain().focus().deleteRow().run();
+
+const addColBefore = () => props.editor.chain().focus().addColumnBefore().run();
+const addColAfter = () => props.editor.chain().focus().addColumnAfter().run();
+const deleteCol = () => props.editor.chain().focus().deleteColumn().run();
+
+const toggleHeaderRow = () =>
+  props.editor.chain().focus().toggleHeaderRow().run();
+const mergeCells = () => props.editor.chain().focus().mergeCells().run();
+const splitCell = () => props.editor.chain().focus().splitCell().run();
+const deleteTable = () => props.editor.chain().focus().deleteTable().run();
+
+const inTable = () => props.editor.can().deleteTable();
+const canMerge = () => props.editor.can().mergeCells();
+const canSplit = () => props.editor.can().splitCell();
 
 watchEffect(() => {
   if (!props.editor) return;
@@ -325,7 +497,6 @@ watchEffect(() => {
   currentSize.value = attrs.fontSize || null;
 });
 </script>
-
 
 <style scoped>
 button {

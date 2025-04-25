@@ -7,8 +7,8 @@ export default defineNuxtRouteMiddleware((to) => {
   const login = $localePath('login');
   const register = $localePath('register');
   const resetPassword = $localePath('reset-password');
-  const registerOwner = $localePath('register/owner');
-  const registerTenant = $localePath('register/tenant');
+  const registerOwner = $localePath('/register/owner');
+  const registerTenant = $localePath('/register/tenant');
   const dashboard = $localePath('dashboard');
 
   const authPages = [login, register, resetPassword, registerOwner, registerTenant];

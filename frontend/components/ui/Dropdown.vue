@@ -20,7 +20,11 @@
             'bg-blue-100 text-blue-600': isActive && isActive(it.level || it),
           }"
         >
-          <component :is="'h' + (it.level || 1)">
+          <component
+            :is="'h' + (it.level || 1)"
+            :class="headingClass[it.level || 1]"
+            style="font-family: Arial, Helvetica, sans-serif;"
+          >
             {{ it.label }}
           </component>
         </button>
@@ -37,4 +41,14 @@ const props = defineProps<{
   active?: boolean;
 }>();
 const emit = defineEmits(["select"]);
+
+// Classes for headings
+const headingClass: Record<number, string> = {
+  1: "text-2xl font-bold",
+  2: "text-xl  font-bold",
+  3: "text-lg  font-semibold",
+  4: "text-base font-semibold",
+  5: "text-sm  font-medium",
+  6: "text-xs  font-medium",
+};
 </script>
