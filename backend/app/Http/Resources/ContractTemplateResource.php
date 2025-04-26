@@ -21,6 +21,7 @@ class ContractTemplateResource extends JsonResource
             'type' => $this->type,
             'is_default' => $this->is_default,
             'user_id' => $this->user_id,
+            'preview_path' => $this->preview_path,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

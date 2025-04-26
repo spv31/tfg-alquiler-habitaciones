@@ -1,3 +1,4 @@
+import { useContractsStore } from '../../store/contracts';
 <template>
   <div class="min-h-screen max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex flex-col justify-center md:flex-row md:items-center gap-4 mb-6">
@@ -16,30 +17,26 @@
 
     <TextEditor
       v-model="form.content"
-      :tokens="tokens"
-      placeholder="Escribe o pega tu contrato aquí…"
     />
   </div>
 </template>
 <script setup lang="ts">
+import { useContractsStore } from "~/store/contracts";
+
+const contractsStore = useContractsStore();
+
 const form = ref({
   name: "",
-  type: "vivienda_completa",
+  type: "",
   content: "",
 });
 
-const tokens = [
-  "precio_mensual",
-  "fianza",
-  "fecha_inicio",
-  "fecha_fin",
-  "propietario_nombre",
-  "inquilino_nombre",
-];
-
-async function save() {
-  await $fetch("/api/contract-templates", { method: "POST", body: form.value });
-  await navigateTo("/contract-templates");
+const saveTemplate = async () => {
+  try {
+    await contractsStore.saveContractTemplate(form);
+  } catch (error) {
+    // Show error
+  } 
 }
 </script>
 

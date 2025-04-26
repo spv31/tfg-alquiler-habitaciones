@@ -33,6 +33,7 @@ class ContractResource extends JsonResource
             'pdf_path' => $this->pdf_path,
             'pdf_path_signed' => $this->pdf_path_signed,
             'final_content' => $this->final_content,
+            'token_values' => $this->token_values,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

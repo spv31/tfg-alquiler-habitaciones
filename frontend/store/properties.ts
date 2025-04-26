@@ -79,8 +79,6 @@ export const usePropertiesStore = defineStore(
 
       if (!data) throw new Error("No data received");
 
-      console.log(data.data);
-
       properties.value = data.data;
       pagination.value = {
         links: data.links,
