@@ -1,4 +1,7 @@
-import type { ContractTemplate } from "~/types/contractTemplate";
+import type {
+  ContractTemplate,
+  ApiErrorResponse,
+} from "~/types/contractTemplate";
 import type { Contract } from "~/types/contract";
 
 export const useContractsStore = defineStore(
@@ -83,11 +86,10 @@ export const useContractsStore = defineStore(
       }, loading);
 
       if (error) throw error;
-      if (!data) throw new Error("No data received");
 
       // Depending if we also return key with message
       // contractTemplates.value.push(data.contractTemplate);
-      contractTemplates.value.push(data);
+      contractTemplates.value.push(data!);
     };
 
     const updateContractTemplate = async (
@@ -117,17 +119,15 @@ export const useContractsStore = defineStore(
       }, loading);
 
       if (error) throw error;
-      if (!data) throw new Error("No data received");
 
-      if (data) {
-        const index = contractTemplates.value.findIndex(
-          (contractTemplate) => contractTemplate.id === id
-        );
-        if (index != -1) {
-          // IT WOULD CHANGE DEPENDING ON VALUE RETURNED
-          contractTemplates.value[index] = data;
-        }
+      const index = contractTemplates.value.findIndex(
+        (contractTemplate) => contractTemplate.id === id
+      );
+      if (index != -1) {
+        // IT WOULD CHANGE DEPENDING ON VALUE RETURNED
+        contractTemplates.value[index] = data!;
       }
+
       return data;
     };
 
@@ -147,15 +147,11 @@ export const useContractsStore = defineStore(
       });
 
       if (error) throw error;
-      if (!data) throw new Error("No data received");
 
-      if (data) {
-        contractTemplates.value = contractTemplates.value.filter(
-          (contractTemplate) => contractTemplate.id !== id
-        );
-      }
+      contractTemplates.value = contractTemplates.value.filter(
+        (contractTemplate) => contractTemplate.id !== id
+      );
 
-      // Depending if data contains a key with a message
       return data;
     };
 

@@ -9,3 +9,8 @@ export interface ContractTemplate {
 	created_at: string,
 	updated_at: string,
 }
+
+export interface ApiErrorResponse {
+	error_key: string,
+	message?: string,
+}

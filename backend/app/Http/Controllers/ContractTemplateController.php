@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Response;
 
 class ContractTemplateController extends Controller
 {
@@ -54,10 +55,9 @@ class ContractTemplateController extends Controller
         try {
             $template = $this->contractTemplateServices->createContractTemplate($request->validated());
 
-            return response()->json([
-                'message_key' => 'contract_template_created',
-                'template' => new ContractTemplateResource($template)
-            ], 201);
+            return (new ContractTemplateResource($template))
+                ->response()
+                ->setStatusCode(201);
         } catch (Exception $e) {
             return response()->json([
                 'error_key' => 'create_contract_template_failed',
@@ -90,10 +90,7 @@ class ContractTemplateController extends Controller
         try {
             $updatedTemplate = $this->contractTemplateServices->updateContractTemplate($contractTemplate, $request->validated());
 
-            return response()->json([
-                'message_key' => 'contract_template_updated',
-                'template' => new ContractTemplateResource($updatedTemplate)
-            ]);
+            return new ContractTemplateResource($updatedTemplate);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error_key' => 'contract_template_not_found'
@@ -114,9 +111,7 @@ class ContractTemplateController extends Controller
         try {
             $this->contractTemplateServices->deleteContractTemplate($contractTemplate);
 
-            return response()->json([
-                'message_key' => 'contract_template_deleted'
-            ], 200);
+            return response()->noContent();
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error_key' => 'contract_template_not_found'
