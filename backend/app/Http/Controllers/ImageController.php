@@ -14,29 +14,17 @@ class ImageController extends Controller
   {
     $path = storage_path("app/private/images/properties/{$filename}");
 
-    Log::info("Acceso a imagen de propiedad", [
+    if (!file_exists($path)) {
+      Log::warning("Imagen no encontrada", [
         'property_id' => $property->id,
         'filename' => $filename,
         'path' => $path,
-    ]);
+      ]);
 
-    if (!file_exists($path)) {
-        Log::warning("Imagen no encontrada", [
-            'property_id' => $property->id,
-            'filename' => $filename,
-            'path' => $path,
-        ]);
-
-        return response()->json(['error_key' => 'image_not_found'], 404);
+      return response()->json(['error_key' => 'image_not_found'], 404);
     }
 
     $mime = mime_content_type($path);
-
-    Log::info("Imagen encontrada y enviada", [
-        'property_id' => $property->id,
-        'filename' => $filename,
-        'mime_type' => $mime,
-    ]);
 
     return response()->file($path, ['Content-Type' => $mime]);
   }

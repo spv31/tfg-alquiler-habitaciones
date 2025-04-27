@@ -126,4 +126,13 @@ class ContractTemplateController extends Controller
             ], 500);
         }
     }
+
+    public function preview(ContractTemplate $contractTemplate)
+    {
+        $file = $this->contractTemplateServices->getPreviewFile($contractTemplate);
+        return response($file['content'], 200, [
+            'Content-Type'        => $file['mime'],
+            'Content-Disposition' => 'inline; filename="'.$file['name'].'"',
+        ]);
+    }
 }

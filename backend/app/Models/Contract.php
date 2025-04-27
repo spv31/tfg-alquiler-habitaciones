@@ -29,6 +29,7 @@ class Contract extends Model
         'pdf_path',
         'pdf_path_signed',
         'final_content',
+        'token_values',
     ];
 
     /**

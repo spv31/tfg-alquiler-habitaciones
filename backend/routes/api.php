@@ -27,23 +27,23 @@ Route::middleware('auth:sanctum')->group(function () {
   // See tenants
   Route::get('/properties/{property}/tenants', [PropertyController::class, 'listPropertyTenants']);
   Route::get('/properties/{property}/rooms/{room}/tenants', [RoomController::class, 'listRoomTenants']);
-  
+
   // Change status
   Route::patch('/properties/{property}/status', [PropertyController::class, 'changeStatus']);
   Route::patch('/properties/{property}/rooms/{room}/status', [RoomController::class, 'changeStatus'])->name('properties.rooms.changeStatus');
-  
+
   // Routes for creating or updating properties
   Route::get('/properties/{id}/details', [PropertyDetailController::class, 'show']);
   Route::put('/properties/{id}/details', [PropertyDetailController::class, 'updateOrCreate']);
-  
+
   // Invitations
   Route::middleware(ExpireInvitationsMiddleware::class)->group(function () {
     Route::apiResource('invitations', InvitationController::class);
-    
+
     // Regenerate Invitation
     Route::post('/invitations/{invitation}/regenerate', [InvitationController::class, 'regenerate']);
   });
-  
+
   // Reassignment of tenants/properties/rooms 
   Route::post('tenant-assignments/reassign', [TenantAssignmentController::class, 'reassign']);
 
@@ -52,7 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
   // Tenant View
   Route::get('/assigned-rentable', [TenantAssignmentController::class, 'getAssignedRentable']);
-  
+
   // Property images
   Route::get('/properties/{property}/images/{filename}', [ImageController::class, 'showPropertyImage'])
     ->name('image.property.show');
@@ -67,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
   // Contract Templates
   Route::apiResource('contract-templates', ContractTemplateController::class);
+  Route::get('/contract-templates/{contractTemplate}/preview', [ContractTemplateController::class, 'preview'])->name('contract-templates.preview');
   // Contract
   Route::apiResource('contracts', ContractController::class);
 });

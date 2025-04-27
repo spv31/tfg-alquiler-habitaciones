@@ -14,6 +14,7 @@ class ContractTemplate extends Model
     protected $fillable = [
         'name',
         'content',
+        'preview_path',
         'type',
         'is_default',
         'user_id',
