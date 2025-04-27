@@ -140,8 +140,6 @@ const applyToken = (tokenKey: string) => {
       .run();
   }
 };
-
-onBeforeUnmount(() => editor?.destroy());
 </script>
 
 <style>

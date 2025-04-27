@@ -1,7 +1,4 @@
-import type {
-  ContractTemplate,
-  ApiErrorResponse,
-} from "~/types/contractTemplate";
+import type { ContractTemplate } from "~/types/contractTemplate";
 import type { Contract } from "~/types/contract";
 
 export const useContractsStore = defineStore(
@@ -18,16 +15,20 @@ export const useContractsStore = defineStore(
 
     const loading = ref(false);
 
+    const templatePreviewCache = ref<Record<number, string>>({});
+    const lastFetchedPreviewAt = ref<Record<number, number>>({});
+    const PREVIEW_TTL = 30 * 60 * 1000;
+
     const fetchContractTemplates = async () => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
 
         return $fetch<ContractTemplate[]>(`${apiBaseUrl}/contract-templates`, {
           method: "GET",
           credentials: "include",
           headers: {
-            "X-XSRF-TOKEN": csrfToken,
+            "X-XSRF-TOKEN": csrf,
             Accept: "application/json",
           },
         });
@@ -42,8 +43,8 @@ export const useContractsStore = defineStore(
 
     const fetchContractTemplate = async (id: number) => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
 
         return $fetch<ContractTemplate>(
           `${apiBaseUrl}/contract-templates/${id}`,
@@ -51,7 +52,7 @@ export const useContractsStore = defineStore(
             method: "GET",
             credentials: "include",
             headers: {
-              "X-XSRF-TOKEN": csrfToken,
+              "X-XSRF-TOKEN": csrf,
               Accept: "application/json",
             },
           }
@@ -71,15 +72,15 @@ export const useContractsStore = defineStore(
       content: string;
     }) => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
 
         return $fetch<ContractTemplate>(`${apiBaseUrl}/contract-templates`, {
           method: "POST",
           body: form,
           credentials: "include",
           headers: {
-            "X-XSRF-TOKEN": csrfToken,
+            "X-XSRF-TOKEN": csrf,
             Accept: "application/json",
           },
         });
@@ -101,8 +102,8 @@ export const useContractsStore = defineStore(
       }
     ) => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
 
         return $fetch<ContractTemplate>(
           `${apiBaseUrl}/contract-templates/${id}`,
@@ -111,7 +112,7 @@ export const useContractsStore = defineStore(
             body: form,
             credentials: "include",
             headers: {
-              "X-XSRF-TOKEN": csrfToken,
+              "X-XSRF-TOKEN": csrf,
               Accept: "application/json",
             },
           }
@@ -133,14 +134,14 @@ export const useContractsStore = defineStore(
 
     const deleteContractTemplate = async (id: number) => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
 
         return $fetch(`${apiBaseUrl}/contract-templates/${id}`, {
           method: "DELETE",
           credentials: "include",
           headers: {
-            "X-XSRF-TOKEN": csrfToken,
+            "X-XSRF-TOKEN": csrf,
             Accept: "application/json",
           },
         });
@@ -157,42 +158,74 @@ export const useContractsStore = defineStore(
 
     const fetchContracts = async () => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
       });
     };
 
     const fetchContract = async () => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
       });
     };
 
     const saveContract = async () => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
       });
     };
 
     const updateContract = async () => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
       });
     };
 
     const deleteContract = async (id: number) => {
       const { data, error } = await tryCatch(async () => {
-        const csrfToken = await getCsrfToken();
-        if (!csrfToken) throw new Error("Error getting CSRF Token");
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
       });
     };
 
-    const fetchContractTemplatePdf = async () => {};
+    const fetchContractTemplatePdf = async (id: number) => {
+      await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+      });
+    };
 
-    const fetchContractPdf = async () => {};
+    const fetchContractPdf = async (id: number) => {
+      const now = Date.now();
+      const last = lastFetchedPreviewAt.value[id] ?? 0;
+      if (templatePreviewCache.value[id] && now - last < PREVIEW_TTL) {
+        return templatePreviewCache.value[id];
+      }
+
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+        return $fetch<Blob>(`${apiBaseUrl}/contract-templates/${id}/preview`, {
+          method: "GET",
+          responseType: "blob",
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrf,
+            Accept: "application/pdf",
+          },
+        });
+      });
+
+      if (error) throw error;
+
+      const blobUrl = URL.createObjectURL(data!);
+      templatePreviewCache.value[id] = blobUrl;
+      lastFetchedPreviewAt.value[id] = now;
+      return blobUrl;
+    };
 
     const fetchSignedContractPdf = async () => {};
 

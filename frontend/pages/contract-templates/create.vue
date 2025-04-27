@@ -9,7 +9,7 @@ import { useContractsStore } from '../../store/contracts';
       />
 
       <div class="w-full md:w-auto flex justify-center md:justify-end">
-        <button class="px-4 py-2 button-primary shrink-0" @click="save">
+        <button class="px-4 py-2 button-primary shrink-0" @click="saveTemplate">
           Guardar plantilla
         </button>
       </div>
@@ -33,9 +33,10 @@ const form = ref({
 
 const saveTemplate = async () => {
   try {
-    await contractsStore.saveContractTemplate(form);
+    const data = await contractsStore.saveContractTemplate(form.value);
+    console.log(data);
   } catch (error) {
-    // Show error
+    console.log(error);
   } 
 }
 </script>
