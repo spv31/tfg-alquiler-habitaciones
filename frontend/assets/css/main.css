@@ -70,6 +70,12 @@ body {
 	@apply py-2 px-4 bg-secondary font-bold text-dark text-sm rounded-3xl
 }
 
+.button-danger {
+  @apply py-2 px-4 bg-red-600 hover:bg-red-700 transition-colors
+         font-bold text-white text-sm rounded-3xl;
+}
+
+
 .button-outline {
   @apply py-2 px-4 bg-white border-2 border-info text-info hover:bg-info hover:text-white hover:border-transparent transition-colors font-semibold text-sm rounded-3xl;
 }

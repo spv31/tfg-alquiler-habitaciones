@@ -192,10 +192,47 @@ export const useContractsStore = defineStore(
     };
 
     const fetchContractTemplatePdf = async (id: number) => {
-      await tryCatch(async () => {
+      const now = Date.now();
+      const last = lastFetchedPreviewAt.value[id] ?? 0;
+      if (templatePreviewCache.value[id] && now - last < PREVIEW_TTL) {
+        return templatePreviewCache.value[id];
+      }
+
+      const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
+        return $fetch<Blob>(`${apiBaseUrl}/contract-templates/${id}/preview`, {
+          method: "GET",
+          responseType: "blob",
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrf,
+            Accept: "application/pdf",
+          },
+        });
       });
+
+      if (error) throw error;
+
+      const blobUrl = URL.createObjectURL(data!);
+      templatePreviewCache.value[id] = blobUrl;
+      lastFetchedPreviewAt.value[id] = now;
+      return blobUrl;
+    };
+
+    const fetchContractTemplatePdfBlob = async (id: number) => {
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+        return $fetch<Blob>(`${apiBaseUrl}/contract-templates/${id}/preview`, {
+          method: "GET",
+          responseType: "blob",
+          credentials: "include",
+          headers: { "X-XSRF-TOKEN": csrf, Accept: "application/pdf" },
+        });
+      });
+      if (error) throw error;
+      return data!;
     };
 
     const fetchContractPdf = async (id: number) => {
@@ -251,6 +288,7 @@ export const useContractsStore = defineStore(
       updateContract,
       deleteContract,
       fetchContractTemplatePdf,
+      fetchContractTemplatePdfBlob,
       fetchContractPdf,
       fetchSignedContractPdf,
       downloadContractTemplatePdf,

@@ -23,6 +23,7 @@ import { useContractsStore } from '../../store/contracts';
 <script setup lang="ts">
 import { useContractsStore } from "~/store/contracts";
 
+const router = useRouter();
 const contractsStore = useContractsStore();
 
 const form = ref({
@@ -33,10 +34,10 @@ const form = ref({
 
 const saveTemplate = async () => {
   try {
-    const data = await contractsStore.saveContractTemplate(form.value);
-    console.log(data);
+    await contractsStore.saveContractTemplate(form.value);
+    router.push({ name: "contract-templates" });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   } 
 }
 </script>
