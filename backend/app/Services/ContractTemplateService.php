@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ContractTemplate;
+use Auth;
 use DB;
 use Exception;
 use Log;
@@ -17,6 +18,22 @@ class ContractTemplateService
 		$this->pdfGenerator = $pdfGeneratorService;
 	}
 
+	private function replacePreviewPdf(ContractTemplate $contractTemplate, string $newHtml, ?string $name = null)
+	{
+		try {
+			if ($contractTemplate->preview_path) {
+				Storage::disk('private')->delete($contractTemplate->preview_path);
+			}
+			$newPath = $this->pdfGenerator
+				->generatePdfFromHtml($newHtml, 'contract-templates', $name);
+
+			$contractTemplate->preview_path = $newPath;
+			return $newPath;
+		} catch (Exception $e) {
+			throw $e;
+		}
+	}
+
 	/**
 	 * It creates new contract template
 	 * 
@@ -28,6 +45,7 @@ class ContractTemplateService
 		DB::beginTransaction();
 
 		try {
+			$validatedData['user_id'] = Auth::id();
 			$template = ContractTemplate::create($validatedData);
 
 			$pdfPath = $this->pdfGenerator->generatePdfFromHtml(
@@ -56,11 +74,24 @@ class ContractTemplateService
 	 */
 	public function updateContractTemplate(ContractTemplate $template, array $validatedData): ContractTemplate
 	{
-		return DB::transaction(function () use ($template, $validatedData) {
-			$template->update($validatedData);
+		DB::beginTransaction();
 
-			return $template;
-		});
+		try {
+
+			// We generate another pdf if content has changed
+			if (array_key_exists('content', $validatedData) && $validatedData['content'] !== $template->content) {
+				$this->replacePreviewPdf($template, $validatedData['content'], $validatedData['name'] ?? $template->name);
+			}
+
+			$template->fill($validatedData);
+			$template->save();
+
+			DB::commit();
+			return $template->fresh();
+		} catch (Exception $e) {
+			DB::rollBack();
+			throw $e;
+		}
 	}
 
 	/**
@@ -71,7 +102,11 @@ class ContractTemplateService
 	 */
 	public function deleteContractTemplate(ContractTemplate $template): bool
 	{
-		return DB::transaction(function () use ($template) {
+		return DB::transaction(function () use ($template): bool|null {
+			if ($template->preview_path) {
+				Storage::disk('private')->delete($template->preview_path);
+			}
+
 			$deleted = $template->delete();
 
 			return $deleted;

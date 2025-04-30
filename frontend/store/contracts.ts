@@ -88,8 +88,6 @@ export const useContractsStore = defineStore(
 
       if (error) throw error;
 
-      // Depending if we also return key with message
-      // contractTemplates.value.push(data.contractTemplate);
       contractTemplates.value.push(data!);
     };
 
@@ -104,11 +102,13 @@ export const useContractsStore = defineStore(
       const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
-
+        console.log('id: ', id);
+        console.log('Formulario: ', form.name);
+        
         return $fetch<ContractTemplate>(
           `${apiBaseUrl}/contract-templates/${id}`,
           {
-            method: "POST",
+            method: "PUT",
             body: form,
             credentials: "include",
             headers: {
@@ -121,11 +121,11 @@ export const useContractsStore = defineStore(
 
       if (error) throw error;
 
+      console.log('QUE ES: ', contractTemplates.value);
       const index = contractTemplates.value.findIndex(
         (contractTemplate) => contractTemplate.id === id
       );
       if (index != -1) {
-        // IT WOULD CHANGE DEPENDING ON VALUE RETURNED
         contractTemplates.value[index] = data!;
       }
 
