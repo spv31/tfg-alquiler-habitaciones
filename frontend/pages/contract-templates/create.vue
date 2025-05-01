@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mx-auto max-w-2xl">
+    <div class="mx-auto max-w-3xl">
       <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr_auto] gap-3 mb-6">
         <input
           v-model="form.name"

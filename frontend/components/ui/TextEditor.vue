@@ -10,7 +10,7 @@
 
     <div class="flex justify-center gap-4">
       <div
-        class="flex flex-col border rounded-2xl w-full max-w-2xl min-h-[400px]"
+        class="flex flex-col border rounded-2xl w-full max-w-3xl min-h-[400px]"
       >
         <Toolbar :editor="editor" />
         <div class="min-h-[600px] bg-white p-14 rounded-b-2xl">
