@@ -74,10 +74,16 @@ class ContractTemplateService
 	 */
 	public function updateContractTemplate(ContractTemplate $template, array $validatedData): ContractTemplate
 	{
+		if ($template->is_default) {
+			$validatedData['type'] = $template->type;
+			$validatedData['name'] = $validatedData['name'] . ' Personalizado';
+			$newTemplate = $this->createContractTemplate($validatedData);
+			return $newTemplate;
+		} 
+
 		DB::beginTransaction();
 
 		try {
-
 			// We generate another pdf if content has changed
 			if (array_key_exists('content', $validatedData) && $validatedData['content'] !== $template->content) {
 				$this->replacePreviewPdf($template, $validatedData['content'], $validatedData['name'] ?? $template->name);
@@ -102,6 +108,10 @@ class ContractTemplateService
 	 */
 	public function deleteContractTemplate(ContractTemplate $template): bool
 	{
+		if ($template->is_default) {
+			throw new Exception("A default contract template cannot be deleted");
+		}
+		
 		return DB::transaction(function () use ($template): bool|null {
 			if ($template->preview_path) {
 				Storage::disk('private')->delete($template->preview_path);
