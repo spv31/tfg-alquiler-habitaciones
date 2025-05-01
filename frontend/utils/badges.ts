@@ -45,3 +45,39 @@ export const rentalTypeLabel = (
 ): string => {
   return t(`badges.rental_type.${type}`, "Desconocido");
 };
+
+export type ContractType = 
+  | "vivienda_habitual" 
+  | "habitacional_temporal" 
+  | "habitacion" 
+  | "vacacional" 
+  | "turistico" 
+  | string;
+
+export const contractTypeBadgeClasses = (type: ContractType): string => {
+  switch (type) {
+    case "vivienda_habitual":
+      return "bg-green-100 text-green-800";
+    case "habitacional_temporal":
+      return "bg-blue-100 text-blue-800";
+    case "habitacion":
+      return "bg-purple-100 text-purple-800";
+    case "vacacional":
+      return "bg-yellow-100 text-yellow-800";
+    case "turistico":
+      return "bg-indigo-100 text-indigo-800";
+    default:
+      return "bg-gray-200 text-gray-700";
+  }
+};
+
+export const contractTypeLabel = (type: ContractType): string => {
+  const labels: Record<string, string> = {
+    "vivienda_habitual": "Vivienda habitual",
+    "habitacional_temporal": "Temporal",
+    "habitacion": "Habitación",
+    "vacacional": "Vacacional",
+    "turistico": "Turístico"
+  };
+  return labels[type] || "Otro tipo";
+};
