@@ -51,6 +51,7 @@ import { useContractsStore } from "~/store/contracts";
 const route = useRoute();
 const router = useRouter();
 const store = useContractsStore();
+const { t: $t, locale } = useI18n();
 
 const id = Number(route.params.contractTemplateId);
 const loaded = ref(false);
@@ -71,7 +72,7 @@ onMounted(async () => {
 const updateTemplate = async () => {
   try {
     await store.updateContractTemplate(id, form);
-    router.push({ name: "contract-templates" });
+    navigateTo(`/${locale.value}/contract-templates?msg=updated`);
   } catch (error) {
     console.error(error);
   }

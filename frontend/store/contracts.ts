@@ -24,20 +24,23 @@ export const useContractsStore = defineStore(
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
 
-        return $fetch<ContractTemplate[]>(`${apiBaseUrl}/contract-templates`, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": csrf,
-            Accept: "application/json",
-          },
-        });
+        return $fetch<{ data: ContractTemplate[] }>(
+          `${apiBaseUrl}/contract-templates`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrf,
+              Accept: "application/json",
+            },
+          }
+        );
       }, loading);
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      contractTemplates.value = data;
+      contractTemplates.value = data.data;
       return data;
     };
 
@@ -46,7 +49,7 @@ export const useContractsStore = defineStore(
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
 
-        return $fetch<ContractTemplate>(
+        return $fetch<{ data: ContractTemplate }>(
           `${apiBaseUrl}/contract-templates/${id}`,
           {
             method: "GET",
@@ -62,7 +65,7 @@ export const useContractsStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      currentContractTemplate.value = data;
+      currentContractTemplate.value = data.data;
       return data;
     };
 
@@ -75,20 +78,24 @@ export const useContractsStore = defineStore(
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
 
-        return $fetch<ContractTemplate>(`${apiBaseUrl}/contract-templates`, {
-          method: "POST",
-          body: form,
-          credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": csrf,
-            Accept: "application/json",
-          },
-        });
+        return $fetch<{ data: ContractTemplate }>(
+          `${apiBaseUrl}/contract-templates`,
+          {
+            method: "POST",
+            body: form,
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrf,
+              Accept: "application/json",
+            },
+          }
+        );
       }, loading);
 
       if (error) throw error;
+      if (!data) throw new Error("No data received");
 
-      contractTemplates.value.push(data!);
+      contractTemplates.value.push(data.data);
     };
 
     const updateContractTemplate = async (
@@ -102,10 +109,10 @@ export const useContractsStore = defineStore(
       const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
-        console.log('id: ', id);
-        console.log('Formulario: ', form.name);
-        
-        return $fetch<ContractTemplate>(
+        console.log("id: ", id);
+        console.log("Formulario: ", form.name);
+
+        return $fetch<{ data: ContractTemplate }>(
           `${apiBaseUrl}/contract-templates/${id}`,
           {
             method: "PUT",
@@ -120,13 +127,13 @@ export const useContractsStore = defineStore(
       }, loading);
 
       if (error) throw error;
+      if (!data) throw new Error("No data received");
 
-      console.log('QUE ES: ', contractTemplates.value);
       const index = contractTemplates.value.findIndex(
         (contractTemplate) => contractTemplate.id === id
       );
       if (index != -1) {
-        contractTemplates.value[index] = data!;
+        contractTemplates.value[index] = data.data;
       }
 
       return data;

@@ -50,6 +50,7 @@ import { useContractsStore } from "~/store/contracts";
 
 const router = useRouter();
 const contractsStore = useContractsStore();
+const { t: $t, locale } = useI18n();
 
 const form = ref({
   name: "",
@@ -60,7 +61,7 @@ const form = ref({
 const saveTemplate = async () => {
   try {
     await contractsStore.saveContractTemplate(form.value);
-    router.push({ name: "contract-templates" });
+    navigateTo(`/${locale.value}/contract-templates?msg=created`);
   } catch (error) {
     console.error(error);
   } 

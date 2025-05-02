@@ -1,40 +1,45 @@
 <template>
-  <div class="mt-4 flex flex-col items-center">
-    <div v-if="currentTenant">
-      <TenantCard v-if="currentTenant" :tenant="currentTenant" />
-    </div>
-
-    <div
-      v-else-if="
-        (roomId && currentRoom?.status === 'available') ||
-        (!roomId && currentProperty.data.status === 'available')
-      "
-    >
-      <button class="button-primary" @click="toggleForm">
-        <span v-if="!showForm">
-          {{ $t("invitations.inviteTenantButton") }}
-        </span>
-        <span v-else>
-          {{ $t("invitations.closeFormButton") }}
-        </span>
-      </button>
-    </div>
-
-    <transition name="fade">
-      <div v-if="showForm" class="w-full max-w-md mx-auto mt-4">
-        <TenantInvitationForm
-          :property-id="propertyId"
-          :room-id="roomId"
-          @invitationSent="handleInvitationSent"
-        />
+  <div class="mt-8 w-full max-w-2xl mx-auto">
+     <div v-if="currentTenant">
+        <TenantCard :tenant="currentTenant" />
       </div>
-    </transition>
+    <div v-else class="p-6 bg-white/90 rounded-2xl shadow-lg border border-gray-100">
+     
 
-    <div
-      v-if="successMessage"
-      class="mt-2 text-green-600 bg-green-100 p-3 rounded"
-    >
-      {{ successMessage }}
+      <div class="text-center space-y-6">
+        <div class="inline-block p-4 bg-info/10 rounded-full">
+          <svg class="w-12 h-12 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+        </div>
+        
+        <h3 class="text-xl font-semibold text-gray-800">
+          {{ $t("invitations.noTenantTitle") }}
+        </h3>
+        <p class="text-gray-600 max-w-md mx-auto">
+          {{ $t("invitations.noTenantDescription") }}
+        </p>
+        
+        <button 
+          @click="toggleForm"
+          class="button-primary px-8 py-3 rounded-xl flex items-center gap-2 mx-auto"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+          {{ $t("invitations.inviteTenantButton") }}
+        </button>
+      </div>
+
+      <transition name="slide-fade">
+        <div v-if="showForm" class="mt-8 pt-8 border-t border-gray-200">
+          <TenantInvitationForm
+            :property-id="propertyId"
+            :room-id="roomId"
+            @invitationSent="handleInvitationSent"
+          />
+        </div>
+      </transition>
     </div>
   </div>
 </template>

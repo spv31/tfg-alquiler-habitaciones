@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div v-if="alertMessage" class="mb-4 mx-auto max-w-3xl">
+    <div v-if="alertMessage" ref="alertRef" class="mb-4 mx-auto">
       <Alert
         :message="alertMessage"
         :type="alertType"
@@ -33,11 +33,7 @@
       v-if="!loading"
       class="grid gap-8 mt-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
     >
-      <div
-        v-for="tpl in contractTemplates.data"
-        :key="tpl.id"
-        class="flex flex-col"
-      >
+      <div v-for="tpl in contractTemplates" :key="tpl.id" class="flex flex-col">
         <div
           class="group relative bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-100 flex-1 flex flex-col"
         >
@@ -245,15 +241,20 @@
 
 <script setup lang="ts">
 import { useContractsStore } from "~/store/contracts";
+import { contractTypeBadgeClasses, contractTypeLabel } from "~/utils/badges";
 
 const contractsStore = useContractsStore();
 const { contractTemplates, loading } = storeToRefs(contractsStore);
 import { useI18n } from "vue-i18n";
 const { locale } = useI18n();
-import { contractTypeBadgeClasses, contractTypeLabel } from "~/utils/badges";
+const route = useRoute();
 
 const showId = ref<number | null>(null);
 const pdfUrl = ref<string>("");
+
+const alertMessage = ref("");
+const alertType = ref<"success" | "error" | null>(null);
+const alertRef = ref<HTMLElement | null>(null);
 
 const PdfViewer = defineAsyncComponent(
   () => import("~/components/ui/PdfViewer.vue")
@@ -273,12 +274,46 @@ const routeToEdit = (id: number) =>
 
 const deleteTemplate = async (id: number) => {
   if (!confirm("¿Eliminar la plantilla?")) return;
-  await contractsStore.deleteContractTemplate(id);
+  try {
+    await contractsStore.deleteContractTemplate(id);
+    await contractsStore.fetchContractTemplates();
+
+    alertMessage.value = "Plantilla eliminada correctamente";
+    alertType.value = "success";
+
+    nextTick(() => {
+      setTimeout(() => {
+        const offset = alertRef.value?.offsetTop ?? 0;
+        window.scrollTo({ top: offset - 100, behavior: "smooth" });
+      }, 50);
+    });
+  } catch (error) {
+    console.error(error);
+    alertMessage.value = "Error al eliminar la plantilla";
+    alertType.value = "error";
+  }
 };
 
 onMounted(async () => {
   try {
     await contractsStore.fetchContractTemplates();
+
+    const { msg } = route.query;
+    if (msg) {
+      const messages: Record<string, string> = {
+        created: "Plantilla creada correctamente",
+        updated: "Plantilla actualizada correctamente",
+        deleted: "Plantilla eliminada correctamente",
+      };
+      alertMessage.value = messages[msg as string] ?? "";
+      alertType.value = msg === "deleted" ? "success" : "success";
+      navigateTo(route.path, { replace: true });
+      nextTick(() => {
+        document
+          .querySelector('div[role="alert"]')
+          ?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
   } catch (error) {
     console.error(error);
   }
