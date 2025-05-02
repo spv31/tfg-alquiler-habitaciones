@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\DB;
 
 class ContractService
 {
-		/**
-		 * It creates new contract 
-		 * 
-		 * @param array $validatedData
-		 * @return TModel|\Eloquent
-		 */
+    /**
+     * It creates new contract 
+     * 
+     * @param array $validatedData
+     * @return TModel|\Eloquent
+     */
     public function createContract(array $validatedData): Contract
     {
         DB::beginTransaction();
@@ -34,13 +34,13 @@ class ContractService
         }
     }
 
-		/**
-		 * It updates a contract
-		 * 
-		 * @param \App\Models\Contract $contract
-		 * @param array $validatedData
-		 * @return Contract
-		 */
+    /**
+     * It updates a contract
+     * 
+     * @param \App\Models\Contract $contract
+     * @param array $validatedData
+     * @return Contract
+     */
     public function updateContract(Contract $contract, array $validatedData): Contract
     {
         DB::beginTransaction();
@@ -56,12 +56,12 @@ class ContractService
         }
     }
 
-		/**
-		 * It deletes a contract
-		 * 
-		 * @param \App\Models\Contract $contract
-		 * @return bool|null
-		 */
+    /**
+     * It deletes a contract
+     * 
+     * @param \App\Models\Contract $contract
+     * @return bool|null
+     */
     public function deleteContract(Contract $contract): bool
     {
         DB::beginTransaction();
