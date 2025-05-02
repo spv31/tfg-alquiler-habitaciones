@@ -37,9 +37,24 @@ export const usePropertiesStore = defineStore(
 
     // TTL For caching
     const PROPERTIES_TTL = 15 * 60 * 1000;
-    const ROOMS_TTL = 15 * 60 * 1000; 
+    const ROOMS_TTL = 15 * 60 * 1000;
     const lastFetchedPropertiesAt = ref<number | null>(null);
     const lastFetchedRoomsAt = ref<Record<number, number | null>>({});
+
+    // Wrapper for API Responses
+    const unwrapProperty = (p: any): Property => {
+      if (p?.property?.data) return p.property.data as Property;
+      if (p?.property) return p.property as Property; 
+      if (p?.data) return p.data as Property;
+      return p as Property;
+    };
+    
+
+    const unwrapRoom = (r: any): Room => {
+      if (r?.room?.data) return r.room.data as Room;
+      if (r?.data) return r.data as Room;
+      return r as Room;
+    };
 
     /**
      * Sends request to get properties
@@ -107,7 +122,7 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<Property>(`${apiBaseUrl}/properties/${id}`, {
+        return await $fetch<any>(`${apiBaseUrl}/properties/${id}`, {
           method: "GET",
           credentials: "include",
           headers: {
@@ -121,9 +136,8 @@ export const usePropertiesStore = defineStore(
 
       if (!data) throw new Error("No data received");
 
-      currentProperty.value = data;
-
-      return data;
+      currentProperty.value = unwrapProperty(data);
+      return currentProperty.value;
     };
 
     /**
@@ -150,25 +164,23 @@ export const usePropertiesStore = defineStore(
           }
         });
 
-        return await $fetch<CreatePropertyResponse>(
-          `${apiBaseUrl}/properties`,
-          {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-            headers: {
-              "X-XSRF-TOKEN": csrfToken,
-              Accept: "application/json",
-            },
-          }
-        );
+        return await $fetch<any>(`${apiBaseUrl}/properties`, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "application/json",
+          },
+        });
       }, loading);
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      properties.value.push(data.property);
-      return data;
+      const prop = unwrapProperty(data.property ?? data);
+      properties.value.push(prop);
+      return prop;
     };
 
     /**
@@ -200,7 +212,7 @@ export const usePropertiesStore = defineStore(
           }
         });
 
-        return await $fetch<Property>(`${apiBaseUrl}/properties/${id}`, {
+        return await $fetch<any>(`${apiBaseUrl}/properties/${id}`, {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -215,17 +227,14 @@ export const usePropertiesStore = defineStore(
         throw error;
       }
 
-      if (data) {
-        currentProperty.value = data;
+      const property = unwrapProperty(data);
+      currentProperty.value = property;
 
-        const index = properties.value.findIndex(
-          (property) => property.id === id
-        );
-        if (index !== -1) {
-          properties.value[index] = data;
-        }
-        return data;
+      const index = properties.value.findIndex((p) => p.id === id);
+      if (index !== -1) {
+        properties.value[index] = property;
       }
+      return property;
     };
 
     /**
@@ -283,7 +292,7 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<Property>(
+        return await $fetch<any>(
           `${apiBaseUrl}/properties/${propertyId}/status`,
           {
             method: "PATCH",
@@ -301,14 +310,14 @@ export const usePropertiesStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      currentProperty.value = data;
-      const index = properties.value.findIndex(
-        (property) => property.id === propertyId
-      );
+      const property = unwrapProperty(data);
+      currentProperty.value = property;
+
+      const index = properties.value.findIndex((p) => p.id === propertyId);
       if (index !== -1) {
-        properties.value[index] = data;
+        properties.value[index] = property;
       }
-      return data;
+      return property;
     };
 
     /**
@@ -361,10 +370,12 @@ export const usePropertiesStore = defineStore(
         roomsMap.value[propertyId] = [];
       }
 
-      if (roomsMap.value[propertyId].length > 0 &&
-          lastFetchedRoomsAt.value[propertyId] &&
-          now - (lastFetchedRoomsAt.value[propertyId] as number) < ROOMS_TTL
+      if (
+        roomsMap.value[propertyId].length > 0 &&
+        lastFetchedRoomsAt.value[propertyId] &&
+        now - (lastFetchedRoomsAt.value[propertyId] as number) < ROOMS_TTL
       ) {
+        rooms.value = roomsMap.value[propertyId];
         return roomsMap.value[propertyId];
       }
 
@@ -396,8 +407,8 @@ export const usePropertiesStore = defineStore(
 
       lastFetchedRoomsAt.value[propertyId] = now;
 
-      rooms.value = data.rooms;
-      roomsMap.value[propertyId] = data.rooms;
+      rooms.value = data.rooms.map(unwrapRoom);
+      roomsMap.value[propertyId] = rooms.value;
     };
 
     /**
@@ -416,7 +427,7 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<Room>(
+        return await $fetch<any>(
           `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}`,
           {
             method: "GET",
@@ -432,8 +443,8 @@ export const usePropertiesStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      currentRoom.value = data;
-      return data;
+      currentRoom.value = unwrapRoom(data);
+      return currentRoom.value;
     };
 
     /**
@@ -465,7 +476,7 @@ export const usePropertiesStore = defineStore(
           }
         });
 
-        return await $fetch<Room>(
+        return await $fetch<any>(
           `${apiBaseUrl}/properties/${propertyId}/rooms`,
           {
             method: "POST",
@@ -482,9 +493,11 @@ export const usePropertiesStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      rooms.value.push(data);
-      await fetchRooms(propertyId);
-      return data;
+      const room = unwrapRoom(data);
+      rooms.value.push(room);
+      roomsMap.value[propertyId] = [];
+      lastFetchedRoomsAt.value[propertyId] = null;
+      return room;
     };
 
     /**
@@ -520,7 +533,7 @@ export const usePropertiesStore = defineStore(
           }
         });
 
-        return await $fetch<Room>(
+        return await $fetch<any>(
           `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/update`,
           {
             method: "POST",
@@ -537,14 +550,22 @@ export const usePropertiesStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      const index = rooms.value.findIndex((room) => room.id === roomId);
-      if (index !== -1) {
-        rooms.value[index] = data;
-      }
+      const room = unwrapRoom(data);
+      const idx = rooms.value.findIndex((r) => r.id === room.id);
+      if (idx !== -1) rooms.value[idx] = room;
+      if (currentRoom.value?.id === room.id) currentRoom.value = room;
+
+      roomsMap.value[propertyId] = [];
+      lastFetchedRoomsAt.value[propertyId] = null;
       if (currentRoom.value && currentRoom.value.id === roomId) {
         currentRoom.value = data;
       }
-      return data;
+      if (roomsMap.value[propertyId]) {
+        roomsMap.value[propertyId] = [];
+      }
+      lastFetchedRoomsAt.value[propertyId] = null;
+
+      return room;
     };
 
     /**
@@ -603,7 +624,7 @@ export const usePropertiesStore = defineStore(
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        return await $fetch<Room>(
+        return await $fetch<any>(
           `${apiBaseUrl}/properties/${propertyId}/rooms/${roomId}/status`,
           {
             method: "PATCH",
@@ -621,14 +642,13 @@ export const usePropertiesStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      if (currentRoom.value && currentRoom.value.id === roomId) {
-        currentRoom.value = data;
-      }
-      const index = rooms.value.findIndex((room) => room.id === roomId);
-      if (index !== -1) {
-        rooms.value[index] = data;
-      }
-      return data;
+      const room = unwrapRoom(data);
+      if (currentRoom.value?.id === room.id) currentRoom.value = room;
+      const idx = rooms.value.findIndex((r) => r.id === room.id);
+      if (idx !== -1) rooms.value[idx] = room;
+      roomsMap.value[propertyId] = [];
+      lastFetchedRoomsAt.value[propertyId] = null;
+      return room;
     };
 
     /**
@@ -771,10 +791,8 @@ export const usePropertiesStore = defineStore(
 
       if (error) throw error;
       if (!data) throw new Error("No data received");
-      console.log("Datos recibidos: ", data.data[0]);
       const tenant = data.data.length > 0 ? data.data[0] : null;
       currentTenant.value = tenant;
-      console.log(currentTenant);
       return data;
     };
 
@@ -807,19 +825,20 @@ export const usePropertiesStore = defineStore(
             },
           }
         );
-      }, loading);
+      });
 
       if (error) {
         if (error.status === 404) {
           if (currentTenant.value === null) return null;
           currentTenant.value = null;
+        } else {
+          throw error;
         }
-        throw error;
       }
       if (!data) throw new Error("No data received");
 
       currentTenant.value = data.data;
-      return data;
+      return data.data;
     };
 
     /**

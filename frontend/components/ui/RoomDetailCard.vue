@@ -155,8 +155,6 @@
       </div>
     </div>
 
-    <RoomStatsCard v-else :room="room" @close="showStats = false" />
-
     <StatusChangeModal
       :show="showChangeStatusModal"
       :currentStatus="room.status"
@@ -188,7 +186,7 @@ const showStats = ref(false);
 const showChangeStatusModal = ref(false);
 
 const editRoomLink = computed(() => {
-  return `${locale.value}/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
+  return `/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
 });
 
 const handleChangeStatus = async () => {

@@ -49,10 +49,8 @@
       </div>
 
       <div v-else-if="currentRoom" class="space-y-8">
-        <RoomDetailCard 
-          :room="currentRoom" 
-          :roomImage="roomImage"
-        />
+        <RoomDetailCard :room="currentRoom" :roomImage="roomImage" />
+        <RoomTenantSection v-if="currentRoom" :key="currentRoom.id" />
       </div>
     </div>
   </div>
@@ -61,10 +59,11 @@
 import { usePropertiesStore } from "~/store/properties";
 
 const propertiesStore = usePropertiesStore();
-const { t } = useI18n();
+const { t: $t } = useI18n();
 const route = useRoute();
 
-const { currentProperty, currentRoom, currentTenant, loading, error } = storeToRefs(propertiesStore);
+const { currentProperty, currentRoom, currentTenant, loading, error } =
+  storeToRefs(propertiesStore);
 
 const roomImage = ref<string | null>(null);
 const successMessage = ref("");
@@ -73,12 +72,20 @@ const showForm = ref(false);
 const propertyId = Number(route.params.propertyId);
 const roomId = Number(route.params.roomId);
 
+const alertMessage = ref("");
+const alertType = ref<"error" | "success">("success");
+
 onMounted(async () => {
   try {
     await propertiesStore.fetchRoom(propertyId, roomId);
-    await propertiesStore.fetchRoomTenant(propertyId, roomId);
-    
-    console.log('Propiedad jeje: ', currentRoom.value);
+
+    const msg = route.query.msg;
+
+     if (msg === "room_updated") {
+       alertMessage.value = $t("properties.detail.rooms.roomUpdated");
+       alertType.value    = "success";
+     }
+
     if (currentRoom.value?.main_image_url) {
       const filename = currentRoom.value.main_image_url.split("/").pop() || "";
       roomImage.value = await propertiesStore.fetchRoomImageUrl(

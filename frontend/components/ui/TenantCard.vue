@@ -134,10 +134,6 @@ const props = defineProps<{
   tenant: Tenant;
 }>();
 
-onMounted(() => {
-  console.log("Tenant ID: ", props.tenant.id);
-});
-
 const onChat = () => {};
 
 const onRemove = () => {

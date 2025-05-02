@@ -63,6 +63,9 @@ export default defineI18nConfig(() => ({
         invitationSuccess: "Invitación enviada con éxito.",
         invitationError:
           "Hubo un error al enviar la invitación. Inténtalo de nuevo.",
+        noTenantTitle: "Sin inquilino asignado",
+        noTenantDescription:
+          "Esta propiedad aún no tiene un inquilino. Puedes asignar uno enviando una invitación.",
       },
       dashboard: {
         title: "Bienvenido al Dashboard",
@@ -327,7 +330,7 @@ export default defineI18nConfig(() => ({
           property_created: "Propiedad creada.",
           property_status_updated: "Estado de la propiedad actualizado.",
           property_details_updated: "Detalles de la propiedad actualizados.",
-          room_created: "Habitación creada.",
+          room_created: "Habitación creada con éxito.",
           room_status_updated: "Estado de la habitación actualizado.",
           room_deleted: "Habitación eliminada.",
           tenant_reassigned: "Inquilino reasignado.",
@@ -472,6 +475,9 @@ export default defineI18nConfig(() => ({
         invitationSuccess: "Invitation sent successfully.",
         invitationError:
           "There was an error sending the invitation. Please try again.",
+        noTenantTitle: "No tenant assigned",
+        noTenantDescription:
+          "This property doesn't have a tenant yet. You can assign one by sending an invitation.",
       },
       dashboard: {
         title: "Welcome to the Dashboard",

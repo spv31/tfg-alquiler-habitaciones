@@ -59,7 +59,7 @@ async function handleSubmit() {
 
   try {
     await store.createRoom(propertyId, formData.value);
-    router.push(`/${locale.value}/properties/${propertyId}?msg=success`);
+    router.push(`/${locale.value}/properties/${propertyId}?msg=room_created`);
   } catch (err: any) {
     console.error("Error al crear habitación:", err);
     errors.value.description = err?.data?.message || $t("errors.generic_error");

@@ -21,6 +21,7 @@
         </p>
         
         <button 
+          v-if="currentProperty?.status === 'available'"
           @click="toggleForm"
           class="button-primary px-8 py-3 rounded-xl flex items-center gap-2 mx-auto"
         >
@@ -73,19 +74,11 @@ const handleInvitationSent = (message: string) => {
 };
 
 onMounted(async () => {
-  const instance = getCurrentInstance();
-  console.log(
-    "TenantFormSection montado. uid:",
-    instance?.uid,
-    " route:",
-    route.fullPath
-  );
   try {
     if (roomId !== null && !isNaN(roomId)) {
     } else {
       await propertiesStore.fetchPropertyTenant(propertyId);
     }
-    console.log("Inquilino: ", currentTenant.value);
   } catch (error) {
     console.error("Error fetching tenant:", error);
   }

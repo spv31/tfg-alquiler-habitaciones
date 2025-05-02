@@ -47,14 +47,14 @@
     <!-- Property -->
     <div v-else-if="currentProperty" class="space-y-8">
       <PropertyDetailCard
-        :property="currentProperty.data"
+        :property="currentProperty"
         :propertyImage="propertyImage"
       />
 
-      <TenantFormSection v-if="currentProperty.data.rental_type === 'full'"/>
+      <TenantFormSection v-if="currentProperty.rental_type === 'full'"/>
 
       <RoomsSection
-        v-if="currentProperty.data.rental_type === 'per_room'"
+        v-if="currentProperty.rental_type === 'per_room'"
         :rooms="rooms"
         :propertyId="propertyId"
         :warning="roomsWarning"
@@ -81,28 +81,37 @@ const propertyImage = ref<string | null>(null);
 
 onMounted(async () => {
   try {
-    if (route.query.msg === "success") {
+    const msg = route.query.msg;
+
+    if (msg === "room_created") {
+      alertMessage.value = $t("api.success.room_created");
+      alertType.value = "success";
+    } else if (msg === "property_updated") {
       alertMessage.value = $t("properties.update_success_message");
       alertType.value = "success";
-      navigateTo(`/${locale.value}/properties/${propertyId}`, {
-        replace: true,
-      });
     }
 
     await propertiesStore.fetchProperty(propertyId);
-
-    if (currentProperty.value.data.rental_type === "per_room") {
+    if (currentProperty.value?.rental_type === "per_room") {
       await propertiesStore.fetchRooms(propertyId);
     }
 
-    if (currentProperty.value?.data?.main_image_url) {
+    if (currentProperty.value?.main_image_url) {
       const filename =
-        currentProperty.value.data.main_image_url.split("/").pop() || "";
+        currentProperty.value?.main_image_url.split("/").pop() || "";
       propertyImage.value = await propertiesStore.fetchPropertyImageUrl(
         propertyId,
         filename
       );
-      console.log(propertyImage);
+    }
+
+    // Limpiar la query después del fetch
+    if (msg) {
+      nextTick(() => {
+        navigateTo(`/${locale.value}/properties/${propertyId}`, {
+          replace: true,
+        });
+      });
     }
   } catch (e) {
     console.error("Error al obtener la propiedad:", e);
@@ -122,7 +131,7 @@ const addStats = () => {
 const toggleStatus = () => {};
 
 const toggleStatusLabel = computed(() => {
-  if (currentProperty.data?.status === "available") {
+  if (currentProperty.value?.status === "available") {
     return $t("properties.detail.makeUnavailableButton");
   } else {
     return $t("properties.detail.makeAvailableButton");

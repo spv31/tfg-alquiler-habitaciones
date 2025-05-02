@@ -10,7 +10,7 @@
 
       <div class="text-center md:text-right">
         <NuxtLink
-          :to="$localePath('properties/add')"
+          :to="$localePath('/properties/add')"
           class="button-primary inline-block"
         >
           Añadir una nueva propiedad

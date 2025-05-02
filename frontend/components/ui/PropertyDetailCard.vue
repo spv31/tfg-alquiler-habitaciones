@@ -293,7 +293,6 @@ const handleChangeStatus = async () => {
 
 const deleteProperty = () => {
   try {
-
   } catch (error) {
     console.error(error);
   }

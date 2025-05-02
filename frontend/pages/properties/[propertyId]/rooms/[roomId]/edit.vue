@@ -7,7 +7,9 @@
     </div>
 
     <div v-if="loading" class="flex justify-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"
+      ></div>
     </div>
 
     <div v-else-if="error" class="text-center text-red-600">
@@ -38,7 +40,7 @@ import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
 import type { Room } from "~/types/room";
 
-const { t: $t } = useI18n();
+const { t: $t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = usePropertiesStore();
@@ -56,7 +58,9 @@ const formData = ref<Partial<Room>>({
 const errors = ref<Record<string, string>>({});
 const roomFormRef = ref<InstanceType<typeof RoomForm> | null>(null);
 
-const hasErrors = computed(() => Object.values(errors.value).some((err) => err !== ""));
+const hasErrors = computed(() =>
+  Object.values(errors.value).some((err) => err !== "")
+);
 
 onMounted(async () => {
   try {
@@ -78,8 +82,10 @@ const handleSubmit = async () => {
 
   try {
     await store.updateRoom(propertyId, roomId, formData.value);
-    alert($t("properties.detail.rooms.roomUpdated"));
-    router.push(`/properties/${propertyId}`);
+    navigateTo({
+      path: `/${locale.value}/properties/${propertyId}/rooms/${roomId}`,
+      query: { msg: "room_updated" },
+    });
   } catch (err: any) {
     console.error("Error al actualizar la habitación:", err);
     errors.value.description = err?.data?.message || $t("errors.generic_error");
