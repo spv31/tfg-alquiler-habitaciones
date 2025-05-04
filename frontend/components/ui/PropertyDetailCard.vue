@@ -208,7 +208,7 @@
 
           <ConfirmDeleteModal
             :show="showDeleteModal"
-            @confirm="deleteProperty"
+            @confirm="handleDeleteProperty"
             @cancel="showDeleteModal = false"
           />
         </div>
@@ -290,13 +290,6 @@ const handleChangeStatus = async () => {
     alert($t("common.errorUpdatingStatus"));
   }
 };
-
-const deleteProperty = () => {
-  try {
-  } catch (error) {
-    console.error(error);
-  }
-}
 
 </script>
 <style scoped>

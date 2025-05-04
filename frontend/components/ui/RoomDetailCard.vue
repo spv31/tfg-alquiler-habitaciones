@@ -150,6 +150,33 @@
                 </svg>
               </template>
             </CircleIconButton>
+
+            <CircleIconButton
+              :label="$t('properties.detail.deleteButton')"
+              @click="showDeleteModal = true"
+            >
+              <template #icon>
+                <svg
+                  class="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </template>
+            </CircleIconButton>
+
+            <ConfirmDeleteModal
+              :show="showDeleteModal"
+              @confirm="handleDeleteRoom"
+              @cancel="showDeleteModal = false"
+            />
           </div>
         </div>
       </div>
@@ -184,10 +211,22 @@ const { t, locale } = useI18n();
 const isExpanded = ref(false);
 const showStats = ref(false);
 const showChangeStatusModal = ref(false);
+const showDeleteModal = ref(false);
 
 const editRoomLink = computed(() => {
   return `/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
 });
+
+const handleDeleteRoom = async () => {
+  try {
+    await propertiesStore.deleteRoom(props.room.property_id, props.room.id);
+    showDeleteModal.value = false;
+
+    navigateTo(`/${locale.value}/properties/${props.room.property_id}?msg=room_deleted`);
+  } catch (error) {
+    alert(t("common.errorDeleting"));
+  }
+};
 
 const handleChangeStatus = async () => {
   try {

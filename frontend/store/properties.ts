@@ -20,7 +20,12 @@ export const usePropertiesStore = defineStore(
 
     const properties = ref<Property[]>([]);
     const rooms = ref<Room[]>([]);
-    const roomsMap = ref<{ [propertyId: number]: Room[] }>({});
+    const roomsMap = ref<{
+      [propertyId: number]: {
+        rooms: Room[];
+        warning: { key: string; parms?: any } | null;
+      };
+    }>({});
     const currentProperty = ref<Property | null>(null);
     const currentRoom = ref<Room | null>(null);
     const tenants = ref<Tenant[] | null>([]);
@@ -44,11 +49,10 @@ export const usePropertiesStore = defineStore(
     // Wrapper for API Responses
     const unwrapProperty = (p: any): Property => {
       if (p?.property?.data) return p.property.data as Property;
-      if (p?.property) return p.property as Property; 
+      if (p?.property) return p.property as Property;
       if (p?.data) return p.data as Property;
       return p as Property;
     };
-    
 
     const unwrapRoom = (r: any): Room => {
       if (r?.room?.data) return r.room.data as Room;
@@ -317,6 +321,15 @@ export const usePropertiesStore = defineStore(
       if (index !== -1) {
         properties.value[index] = property;
       }
+      roomsMap.value[propertyId].rooms.forEach((room) => {
+        if (
+          (property.status === "available" ||
+            property.status === "unavailable") &&
+          room.status !== property.status
+        ) {
+          room.status = property.status;
+        }
+      });
       return property;
     };
 
@@ -366,17 +379,14 @@ export const usePropertiesStore = defineStore(
       if (!lastFetchedRoomsAt.value[propertyId]) {
         lastFetchedRoomsAt.value[propertyId] = null;
       }
-      if (!roomsMap.value[propertyId]) {
-        roomsMap.value[propertyId] = [];
-      }
-
       if (
-        roomsMap.value[propertyId].length > 0 &&
+        roomsMap.value[propertyId]?.rooms?.length > 0 &&
         lastFetchedRoomsAt.value[propertyId] &&
         now - (lastFetchedRoomsAt.value[propertyId] as number) < ROOMS_TTL
       ) {
-        rooms.value = roomsMap.value[propertyId];
-        return roomsMap.value[propertyId];
+        rooms.value = roomsMap.value[propertyId].rooms;
+        roomsWarning.value = roomsMap.value[propertyId].warning ?? null;
+        return rooms.value;
       }
 
       const { data, error } = await tryCatch(async () => {
@@ -408,7 +418,11 @@ export const usePropertiesStore = defineStore(
       lastFetchedRoomsAt.value[propertyId] = now;
 
       rooms.value = data.rooms.map(unwrapRoom);
-      roomsMap.value[propertyId] = rooms.value;
+      roomsMap.value[propertyId] = {
+        rooms: rooms.value,
+        warning: data.warning ?? null,
+      };
+      roomsWarning.value = data.warning ?? null;
     };
 
     /**
@@ -495,7 +509,10 @@ export const usePropertiesStore = defineStore(
 
       const room = unwrapRoom(data);
       rooms.value.push(room);
-      roomsMap.value[propertyId] = [];
+      roomsMap.value[propertyId] = {
+        rooms: [],
+        warning: null,
+      };
       lastFetchedRoomsAt.value[propertyId] = null;
       return room;
     };
@@ -555,14 +572,15 @@ export const usePropertiesStore = defineStore(
       if (idx !== -1) rooms.value[idx] = room;
       if (currentRoom.value?.id === room.id) currentRoom.value = room;
 
-      roomsMap.value[propertyId] = [];
       lastFetchedRoomsAt.value[propertyId] = null;
       if (currentRoom.value && currentRoom.value.id === roomId) {
         currentRoom.value = data;
       }
-      if (roomsMap.value[propertyId]) {
-        roomsMap.value[propertyId] = [];
-      }
+      roomsMap.value[propertyId] = {
+        rooms: [],
+        warning: null,
+      };
+
       lastFetchedRoomsAt.value[propertyId] = null;
 
       return room;
@@ -602,6 +620,37 @@ export const usePropertiesStore = defineStore(
       if (!data) throw new Error("No data received");
 
       rooms.value = rooms.value.filter((room) => room.id !== roomId);
+      roomsMap.value[propertyId].rooms = roomsMap.value[
+        propertyId
+      ].rooms.filter((room) => room.id !== roomId);
+
+      // const propertyIndex = properties.value.findIndex((property) => property.id === propertyId);
+      // const totalRoomsExpected = properties.value[propertyIndex].total_rooms;
+      const totalRoomsExpected = currentProperty?.value?.total_rooms ?? null;
+      const totalRooms = roomsMap.value[propertyId].rooms.length;
+
+      if (totalRoomsExpected && totalRooms < totalRoomsExpected) {
+        const missing = totalRoomsExpected - totalRooms;
+
+        console.log('expected: ', totalRoomsExpected);
+        console.log('tenemos:' , totalRooms);
+        console.log('faltan: ', missing);
+        roomsWarning.value = {
+          key: missing === 1
+               ? "properties.detail.rooms.missing_rooms_warning_singular"
+               : "properties.detail.rooms.missing_rooms_warning_plural",
+          parms: {
+           expected: totalRoomsExpected,
+           total_expected: totalRoomsExpected,
+            current: totalRooms,
+            missing,
+          },
+        };
+        roomsMap.value[propertyId].warning = roomsWarning.value;
+      } else {
+        roomsWarning.value = null;
+        roomsMap.value[propertyId].warning = null;
+      }
       return data;
     };
 
@@ -646,7 +695,10 @@ export const usePropertiesStore = defineStore(
       if (currentRoom.value?.id === room.id) currentRoom.value = room;
       const idx = rooms.value.findIndex((r) => r.id === room.id);
       if (idx !== -1) rooms.value[idx] = room;
-      roomsMap.value[propertyId] = [];
+      roomsMap.value[propertyId] = {
+        rooms: [],
+        warning: null,
+      };
       lastFetchedRoomsAt.value[propertyId] = null;
       return room;
     };
@@ -852,7 +904,9 @@ export const usePropertiesStore = defineStore(
     const reassignTenant = async (
       tenantId: number,
       newRentableId: number,
-      newRentableType: "property" | "room"
+      newRentableType: "property" | "room",
+      fromProperty: Property,
+      fromRoom?: Room
     ): Promise<void> => {
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
@@ -877,11 +931,66 @@ export const usePropertiesStore = defineStore(
         });
       }, loading);
 
-      if (error) {
-        throw error;
+      if (error) throw error;
+      if (!data) throw new Error("No data received for tenant reassignment");
+
+      /**
+       * First, we change status of rooms (if needed) and property
+       */
+      const propertyIndex = properties.value.findIndex(
+        (property) => property.id === fromProperty.id
+      );
+      if (fromRoom?.status === "occupied") {
+        console.log("Mapa habitaciones: ", roomsMap.value);
+        const roomIndex = roomsMap.value[fromProperty.id].rooms.findIndex(
+          (room) => room.id === fromRoom.id
+        );
+        roomsMap.value[fromProperty.id].rooms[roomIndex].status = "available";
+        const isAnyRoomOccupied = roomsMap.value[fromProperty.id].rooms.some(
+          (room) => room.status === "occupied"
+        );
+        properties.value[propertyIndex].status = isAnyRoomOccupied
+          ? "partially_occupied"
+          : "available";
+      } else {
+        properties.value[propertyIndex].status = "available";
+      }
+      /**
+       * Then, we change status of reassigned property / room
+       */
+      if (newRentableType === "room") {
+        let targetPropertyId: number | null = null;
+        for (const [propId, roomGroup] of Object.entries(roomsMap.value)) {
+          const found = roomGroup.rooms.some((r) => r.id === newRentableId);
+          if (found) {
+            targetPropertyId = parseInt(propId);
+            break;
+          }
+        }
+        const targetRoomIndex = roomsMap.value[
+          targetPropertyId!
+        ].rooms.findIndex((room) => room.id === newRentableId);
+        const targetPropertyIndex = properties.value.findIndex(
+          (property) => property.id === targetPropertyId
+        );
+        roomsMap.value[targetPropertyId!].rooms[targetRoomIndex].status =
+          "occupied";
+
+        const isAnyRoomAvailable2 = roomsMap.value[
+          targetPropertyId!
+        ].rooms.some((room) => room.status === "available");
+        properties.value[targetPropertyIndex!].status = isAnyRoomAvailable2
+          ? "partially_occupied"
+          : "occupied";
+      } else {
+        const targetPropertyIndex2 = properties.value.findIndex(
+          (property) => property.id === newRentableId
+        );
+        properties.value[targetPropertyIndex2].status = "occupied";
       }
 
-      if (!data) throw new Error("No data received for tenant reassignment");
+      currentRoom.value = null;
+      currentProperty.value = null;
     };
 
     /**

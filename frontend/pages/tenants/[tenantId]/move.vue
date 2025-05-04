@@ -1,6 +1,6 @@
 <template>
   <div class="py-8 px-4 max-w-7xl mx-auto relative">
-    <!-- Alert -->
+
     <div ref="alertContainer" v-if="alertMessage" class="mb-6 mx-auto">
       <Alert
         :message="alertMessage"
@@ -8,7 +8,7 @@
         @close="alertMessage = ''"
       />
     </div>
-    <!-- Main heading -->
+
     <div class="text-center mb-8">
       <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
         Reasignar Inquilino
@@ -18,7 +18,6 @@
       </p>
     </div>
 
-    <!-- Progress steps -->
     <div class="hidden md:flex justify-evenly items-center mb-8 px-4">
       <div class="flex flex-col items-center text-gray-600">
         <div
@@ -48,11 +47,9 @@
       </div>
     </div>
 
-    <!-- Main content -->
     <div
       class="relative flex flex-col xl:flex-row gap-6 xl:gap-8 items-stretch"
     >
-      <!-- COLUMN 1: ORIGIN -->
       <section
         class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
       >
@@ -61,19 +58,17 @@
         </h2>
 
         <div class="space-y-3">
-          <!-- Current property card -->
           <MiniReassignCard
-            v-if="currentProperty?.data"
-            :item="currentProperty.data"
+            v-if="currentProperty"
+            :item="currentProperty"
             type="property-orig"
             title="Propiedad actual"
             class="cursor-default"
           />
 
-          <!-- Current room card (only if per_room type) -->
           <div
             v-if="
-              currentProperty?.data.rental_type === 'per_room' && currentRoom
+              currentProperty?.rental_type === 'per_room' && currentRoom
             "
             class="ml-4 pl-4 mt-2 space-y-2 border-l-2 border-gray-100"
           >
@@ -86,13 +81,11 @@
           </div>
         </div>
 
-        <!-- Arrow between columns for mobile -->
         <div class="md:hidden text-center mt-4 text-gray-400">
           <ArrowDownIcon class="h-6 w-6 inline-block" />
         </div>
       </section>
 
-      <!-- COLUMN 2: DESTINATIONS -->
       <section
         class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
       >
@@ -101,7 +94,6 @@
         </h2>
 
         <div class="space-y-4">
-          <!-- Loop through available properties -->
           <div v-for="prop in filteredProperties" :key="prop.id" class="pb-2">
             <MiniReassignCard
               :item="prop"
@@ -141,13 +133,11 @@
           </div>
         </div>
 
-        <!-- Arrow between columns for mobile -->
         <div class="md:hidden text-center mt-4 text-gray-400">
           <ArrowDownIcon class="h-6 w-6 inline-block" />
         </div>
       </section>
 
-      <!-- COLUMN 3: SUMMARY -->
       <section
         class="flex-1 bg-white relative z-10 shadow-md rounded-xl border border-gray-100 p-4"
       >
@@ -155,7 +145,6 @@
           Resumen
         </h2>
         <div class="space-y-4">
-          <!-- Tenant -->
           <MiniReassignCard
             v-if="selectedTenant"
             :item="selectedTenant"
@@ -164,7 +153,6 @@
             class="bg-gray-50 cursor-default"
           />
 
-          <!-- Selected destination -->
           <div v-if="destination" class="relative">
             <MiniReassignCard
               :item="destination"
@@ -183,7 +171,6 @@
       </section>
     </div>
 
-    <!-- Buttons -->
     <div class="mt-8 flex justify-center space-x-4 relative z-10">
       <button class="button-outline" @click="$router.go(-1)">
         Volver atrás
@@ -209,8 +196,7 @@ import type { Property } from "~/types/property";
 import type { Room } from "~/types/room";
 
 const route = useRoute();
-const tenantId = Number(route.params.tenantId);
-
+const { locale } = useI18n();;
 const propertiesStore = usePropertiesStore();
 
 const alertMessage = ref("");
@@ -236,7 +222,7 @@ onMounted(async () => {
 
 // Used only if needed
 const originType = computed<"property" | "room" | "">(() => {
-  if (!currentProperty.value) return "";
+  if (!currentProperty?.value) return "";
   return currentProperty.value.rental_type === "full" ? "property" : "room";
 });
 
@@ -251,19 +237,21 @@ const clearDestination = () => {
 // We only get available or partially_occupied properties for reassignment
 const filteredProperties = computed(() => {
   if (!propertiesStore.properties.length) return [];
-  const currentId = currentProperty.value?.id;
   return propertiesStore.properties
-    .filter((p) => p.id !== currentId)
     .filter((p) => {
-      if (p.rental_type === "full") return p.status === "available";
-      return p.status === "available" || p.status === "partially_occupied";
-    });
+      if (p.rental_type === 'full') {
+        return p.status === 'available';
+      }
+      if (p.rental_type === 'per_room') {
+        return p.status === 'available' || p.status === 'partially_occupied';  
+      }
+    })
 });
 
 // Given a property id, we return its available rooms to rent
 const getAvailableRooms = (propertyId: number): Room[] => {
-  const allRooms = propertiesStore.roomsMap[propertyId] || [];
-  return allRooms.filter((r) => r.status === "available");
+  const roomGroup = propertiesStore.roomsMap[propertyId];
+  return roomGroup?.rooms?.filter((r) => r.status === "available") || [];
 };
 
 // Its marks destination
@@ -287,16 +275,12 @@ const onReassignTenant = () => {
     .reassignTenant(
       selectedTenant.value.id,
       destination.value.id,
-      destinationType.value
+      destinationType.value,
+      currentProperty.value,
+      currentRoom.value,
     )
     .then(() => {
-      alertMessage.value = "Inquilino reasignado correctamente";
-      alertType.value = "success";
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      navigateTo(`/${locale.value}/properties?msg=tenant_reassigned`);
     })
     .catch((err) => {
       console.error("Error reassigning tenant:", err);

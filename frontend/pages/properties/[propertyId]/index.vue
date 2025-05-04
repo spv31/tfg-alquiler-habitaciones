@@ -51,10 +51,10 @@
         :propertyImage="propertyImage"
       />
 
-      <TenantFormSection v-if="currentProperty.rental_type === 'full'"/>
+      <TenantFormSection v-if="currentProperty.rental_type === 'full'" />
 
       <RoomsSection
-        v-if="currentProperty.rental_type === 'per_room'"
+        v-if="currentProperty.rental_type === 'per_room' && roomsReady"
         :rooms="rooms"
         :propertyId="propertyId"
         :warning="roomsWarning"
@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
-import type { Tenant } from '../../../types/tenant';
+import type { Tenant } from "../../../types/tenant";
 
 const { t: $t, locale } = useI18n();
 const propertiesStore = usePropertiesStore();
@@ -78,6 +78,7 @@ const propertyId = Number(route.params.propertyId);
 const alertMessage = ref("");
 const alertType = ref<"error" | "success">("success");
 const propertyImage = ref<string | null>(null);
+const roomsReady = ref(false);
 
 onMounted(async () => {
   try {
@@ -94,6 +95,9 @@ onMounted(async () => {
     await propertiesStore.fetchProperty(propertyId);
     if (currentProperty.value?.rental_type === "per_room") {
       await propertiesStore.fetchRooms(propertyId);
+      roomsReady.value = true;
+    } else {
+      roomsReady.value = true;
     }
 
     if (currentProperty.value?.main_image_url) {
@@ -144,7 +148,6 @@ const addRoom = () => {
   navigateTo(url);
 };
 </script>
-
 
 <style scoped>
 .line-clamp-2 {

@@ -163,7 +163,6 @@ onMounted(async () => {
         }
       }
 
-      // Asignar detalles si existen
       if (fetched.details && typeof fetched.details === "object") {
         for (const key in fetched.details) {
           if (key in propertyData) {
@@ -193,10 +192,7 @@ const handleSubmit = async () => {
     try {
       await store.updateProperty(propertyData.id, propertyData);
 
-      alertMessage.value = $t("properties.update_success_message");
-      alertType.value = "success";
-
-      navigateTo(`/${locale.value}/properties/${propertyData.id}?msg=success`);
+      navigateTo(`/${locale.value}/properties/${propertyData.id}?msg=property_updated`);
     } catch (error: any) {
       console.error("Error al actualizar la propiedad:", error);
 
