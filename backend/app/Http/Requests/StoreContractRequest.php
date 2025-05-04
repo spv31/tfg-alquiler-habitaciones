@@ -38,6 +38,7 @@ class StoreContractRequest extends FormRequest
             'status' => ['required', 'in:pending_signature,active,finished'],
             'pdf_path' => ['nullable', 'string'],
             'pdf_path_signed' => ['nullable', 'string'],
+            'token_values' => ['required', 'array'],
             'final_content' => ['nullable', 'string'],
         ];
     }

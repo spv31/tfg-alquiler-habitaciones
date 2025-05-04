@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Arr;
 use Illuminate\Database\Eloquent\Model;
 
 class Contract extends Model
@@ -45,6 +46,7 @@ class Contract extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'extension_date' => 'date',
+        'token_values' => 'array',
     ];
 
     /**

@@ -127,16 +127,170 @@
         <h2 class="text-2xl font-bold text-gray-900">
           {{ t("contracts.stepFillTokens") }}
         </h2>
+
         <p class="text-lg text-gray-600">
           {{ selectedTemplate!.name }}
           <span class="text-sm text-blue-600 ml-2"
             >({{ tokens.length }} campos)</span
           >
         </p>
+
+        <!-- Formulario de datos del contrato -->
+        <div
+          class="bg-white border border-gray-200 rounded-xl shadow-lg p-6 space-y-6"
+        >
+          <h3
+            class="font-semibold text-lg text-gray-800 flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            {{ t("contracts.contractData") }}
+          </h3>
+
+          <div class="grid md:grid-cols-3 gap-4">
+            <!-- Primera fila: 3 inputs -->
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              v-model.number="business.price"
+              class="custom-input"
+              :placeholder="t('contracts.price') + ' *'"
+            />
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              v-model.number="business.deposit"
+              class="custom-input"
+              :placeholder="t('contracts.deposit') + ' *'"
+            />
+
+            <input
+              type="date"
+              v-model="business.start_date"
+              class="custom-input [&::-webkit-calendar-picker-indicator]:bg-gray-400 hover:[&::-webkit-calendar-picker-indicator]:bg-gray-500"
+              :placeholder="t('contracts.startDate') + ' *'"
+            />
+
+            <!-- Segunda fila: fecha fin + checkbox + select -->
+            <div class="md:col-span-3 grid md:grid-cols-3 gap-4">
+              <!-- Columna izquierda - Fecha fin -->
+              <div class="md:col-span-1">
+                <input
+                  type="date"
+                  v-model="business.end_date"
+                  class="custom-input w-full [&::-webkit-calendar-picker-indicator]:bg-gray-400 hover:[&::-webkit-calendar-picker-indicator]:bg-gray-500"
+                  :placeholder="t('contracts.endDate')"
+                />
+              </div>
+
+              <!-- Columna central - Checkbox -->
+              <div class="md:col-span-1 flex items-center justify-center">
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <div class="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      v-model="business.utilities_included"
+                      class="absolute opacity-0 w-0 h-0"
+                    />
+                    <div
+                      class="w-5 h-5 border-2 border-gray-300 rounded-md group-hover:border-blue-300 transition-all flex items-center justify-center"
+                    >
+                      <svg
+                        v-show="business.utilities_included"
+                        class="w-3.5 h-3.5 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="3"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <span
+                    class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors"
+                  >
+                    {{ t("contracts.utilitiesIncluded") }}
+                  </span>
+                </label>
+              </div>
+
+              <!-- Columna derecha - Select -->
+              <div v-if="!business.utilities_included" class="md:col-span-1">
+                <div class="relative w-full">
+                  <select
+                    v-model="business.utilities_payer"
+                    class="custom-input appearance-none pr-8 cursor-pointer w-full"
+                  >
+                    <option :value="null" disabled selected>
+                      {{ t("common.select") }}
+                    </option>
+                    <option value="tenant">
+                      {{ t("contracts.tenant") }}
+                    </option>
+                    <option value="owner">{{ t("contracts.owner") }}</option>
+                    <option value="shared">
+                      {{ t("contracts.shared") }}
+                    </option>
+                  </select>
+                  <svg
+                    class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tercera fila: input porcentaje -->
+            <div
+              v-if="business.utilities_payer === 'shared'"
+              class="md:col-span-3 flex justify-center"
+            >
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                v-model.number="business.utilities_proportion"
+                class="custom-input w-full max-w-xs"
+                :placeholder="t('contracts.sharedPercent')"
+              />
+            </div>
+          </div>
+
+          <small class="text-sm text-gray-500 block text-center">
+            * {{ t("contracts.requiredField") }}
+          </small>
+        </div>
       </div>
 
+      <!-- Sección principal de campos y preview -->
       <div class="grid gap-8 md:grid-cols-2 lg:gap-12">
-        <!-- Card del formulario mejorado -->
+        <!-- Formulario de tokens -->
         <div
           class="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
         >
@@ -171,34 +325,13 @@
                   v-model="tokenValues[key]"
                   type="text"
                   placeholder="Ingrese el valor"
-                  class="custom-input w-full px-4 py-2.5 border-gray-200 hover:border-blue-300 focus:ring-2 focus:ring-blue-200 transition-all"
+                  class="custom-input w-full px-4 py-2.5"
                 />
               </div>
             </form>
           </div>
 
-          <!-- <div class="border-t p-6 bg-gray-50/50">
-            <button
-              @click="step = 2"
-              class="button-primary w-full py-3 text-base font-medium shadow-sm hover:shadow-md transition-all"
-            >
-              {{ t("common.continue") }}
-              <svg
-                class="w-4 h-4 ml-2 inline"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
-            </button>
-          </div> -->
-          <!-- En el div del botón continuar, modificar a: -->
+          <!-- Botones de navegación -->
           <div class="border-t p-6 bg-gray-50/50">
             <div class="flex gap-4">
               <button
@@ -231,7 +364,7 @@
           </div>
         </div>
 
-        <!-- Vista previa más alta y con mejor estilo -->
+        <!-- Vista previa -->
         <div
           class="bg-white border border-gray-200 rounded-xl shadow-lg h-[75vh] flex flex-col"
         >
@@ -274,7 +407,6 @@
       </div>
     </section>
 
-    <!-- Paso 2 · preview final -->
     <!-- Paso 2 · preview final -->
     <section v-else class="space-y-8">
       <div class="text-center space-y-3 mb-8">
@@ -445,6 +577,80 @@ const htmlWithTokensReplaced = computed(() => {
   }
   return html;
 });
+
+interface BusinessForm {
+  price: number | null;
+  deposit: number | null;
+  utilities_included: boolean;
+  utilities_payer: "tenant" | "owner" | "shared" | null;
+  utilities_proportion: number | null;
+  start_date: string;
+  end_date: string;
+}
+
+const business = reactive<BusinessForm>({
+  price: null,
+  deposit: null,
+  utilities_included: false,
+  utilities_payer: null,
+  utilities_proportion: null,
+  start_date: "",
+  end_date: "",
+});
+
+const autoTokenMap: Record<string, keyof BusinessForm> = {
+  renta_anual: "price",
+  fianza_importe: "deposit",
+  gastos_incluidos: "utilities_included",
+  gastos_paga: "utilities_payer",
+  gastos_porcentaje: "utilities_proportion",
+  fecha_inicio: "start_date",
+  fecha_fin: "end_date",
+};
+
+const payerLabel: Record<"owner" | "tenant" | "shared", string> = {
+  owner: t("contracts.owner"),
+  tenant: t("contracts.tenant"),
+  shared: t("contracts.shared"),
+};
+
+watch(
+  business,
+  () => {
+    if (business.utilities_included) {
+      business.utilities_payer = "owner";
+      business.utilities_proportion = 100;
+    } else if (business.utilities_payer !== "shared") {
+      business.utilities_proportion = null;
+    }
+
+    for (const [token, field] of Object.entries(autoTokenMap)) {
+      const v = business[field];
+      tokenValues[token] =
+        v === null || v === undefined || v === ""
+          ? ""
+          : typeof v === "boolean"
+            ? v
+              ? "Sí"
+              : "No"
+            : String(v);
+    }
+
+    tokenValues["gastos_paga"] = business.utilities_payer
+      ? payerLabel[business.utilities_payer]
+      : "";
+
+    tokenValues["gastos_porcentaje"] =
+      business.utilities_payer === "shared" && business.utilities_proportion
+        ? String(business.utilities_proportion)
+        : "";
+
+    tokenValues["renta_mensual"] = business.price
+      ? (business.price / 12).toFixed(2)
+      : "";
+  },
+  { deep: true, immediate: true }
+);
 
 const handleSubmit = () => {};
 </script>
