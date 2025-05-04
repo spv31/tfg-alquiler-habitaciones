@@ -7,7 +7,8 @@ export interface Tenant {
   user_type: "individual" | "company";
   profile_picture: string;
   phone_number: string;
-  room_id?: string | null,
+  property_id: number;
+  room_id?: number | null;
   contract?: Contract | null,
 }
 

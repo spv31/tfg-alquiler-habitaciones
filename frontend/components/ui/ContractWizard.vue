@@ -1,0 +1,479 @@
+<template>
+  <div class="min-h-screen max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Paso 0 · selector de plantilla -->
+    <section v-if="step === 0">
+      <h2 class="text-2xl text-center font-semibold mb-6">
+        {{ t("contracts.selectTemplate") }}
+      </h2>
+
+      <!-- loader -->
+      <div v-if="loading" class="flex justify-center py-10">
+        <span class="loader" />
+      </div>
+
+      <!-- grid -->
+      <div
+        v-else
+        class="grid gap-8 mt-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+      >
+        <div
+          v-for="tpl in contractTemplates"
+          :key="tpl.id"
+          class="flex flex-col"
+        >
+          <div
+            class="group relative bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-blue-100 flex-1 flex flex-col"
+          >
+            <!-- header -->
+            <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+              <h3 class="font-semibold text-gray-900 text-center truncate">
+                {{ tpl.name }}
+              </h3>
+              <p
+                class="text-xs font-medium text-center mt-1"
+                :class="tpl.is_default ? 'text-blue-600' : 'text-gray-600'"
+              >
+                {{
+                  tpl.is_default
+                    ? t("contracts.defaultTemplate")
+                    : t("contracts.customTemplate")
+                }}
+              </p>
+            </div>
+
+            <!-- miniatura -->
+            <div class="relative w-full flex-1">
+              <div class="aspect-[210/297] relative">
+                <span
+                  class="absolute top-2 right-2 z-10 text-xs px-2 py-1 rounded-full shadow-sm"
+                  :class="contractTypeBadgeClasses(tpl.type)"
+                >
+                  {{ contractTypeLabel(tpl.type) }}
+                </span>
+
+                <Suspense>
+                  <template #default>
+                    <PreviewImage
+                      :template-id="tpl.id"
+                      class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
+                  </template>
+                  <template #fallback>
+                    <div
+                      class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-sm text-gray-400"
+                    >
+                      {{ t("contracts.noPreview") }}
+                    </div>
+                  </template>
+                </Suspense>
+              </div>
+            </div>
+
+            <!-- acciones -->
+            <div class="p-3 bg-gray-50 border-t border-gray-100">
+              <div class="grid gap-2 grid-cols-2">
+                <button
+                  class="button-primary px-3 py-2 text-sm rounded-md flex items-center justify-center"
+                  @click="choose(tpl)"
+                >
+                  {{ t("common.select") }}
+                </button>
+
+                <button
+                  class="button-secondary px-3 py-2 text-sm rounded-md flex items-center justify-center"
+                  @click="openViewer(tpl.id)"
+                >
+                  {{ t("common.view") }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- visor PDF -->
+      <teleport to="body">
+        <div
+          v-if="showId"
+          class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          @click.self="closeViewer"
+        >
+          <div
+            class="bg-white w-11/12 md:w-[70%] h-[80vh] rounded-xl shadow-2xl flex flex-col"
+          >
+            <div
+              class="p-3 flex justify-between items-center border-b bg-gray-50 sticky top-0"
+            >
+              <h3 class="font-medium">{{ t("contracts.preview") }}</h3>
+              <button @click="closeViewer" class="p-1 hover:text-red-600">
+                ✕
+              </button>
+            </div>
+            <iframe
+              v-if="pdfUrl"
+              :src="pdfUrl"
+              class="flex-1 w-full border-none"
+            />
+          </div>
+        </div>
+      </teleport>
+    </section>
+
+    <!-- Paso 1 · formulario de tokens -->
+    <!-- Paso 1 · formulario de tokens -->
+    <section v-else-if="step === 1" class="space-y-8">
+      <!-- Título fuera del card con mejor jerarquía -->
+      <div class="text-center space-y-2 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">
+          {{ t("contracts.stepFillTokens") }}
+        </h2>
+        <p class="text-lg text-gray-600">
+          {{ selectedTemplate!.name }}
+          <span class="text-sm text-blue-600 ml-2"
+            >({{ tokens.length }} campos)</span
+          >
+        </p>
+      </div>
+
+      <div class="grid gap-8 md:grid-cols-2 lg:gap-12">
+        <!-- Card del formulario mejorado -->
+        <div
+          class="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <div class="p-6 pb-4">
+            <h3
+              class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              {{ t("contracts.fillData") }}
+            </h3>
+
+            <form
+              class="space-y-5 max-h-[70vh] overflow-y-auto pr-3 custom-scroll"
+            >
+              <div v-for="key in tokens" :key="key" class="space-y-2">
+                <label class="text-sm font-medium text-gray-700 capitalize">
+                  {{ prettyLabel(key) }}
+                </label>
+                <input
+                  v-model="tokenValues[key]"
+                  type="text"
+                  placeholder="Ingrese el valor"
+                  class="custom-input w-full px-4 py-2.5 border-gray-200 hover:border-blue-300 focus:ring-2 focus:ring-blue-200 transition-all"
+                />
+              </div>
+            </form>
+          </div>
+
+          <!-- <div class="border-t p-6 bg-gray-50/50">
+            <button
+              @click="step = 2"
+              class="button-primary w-full py-3 text-base font-medium shadow-sm hover:shadow-md transition-all"
+            >
+              {{ t("common.continue") }}
+              <svg
+                class="w-4 h-4 ml-2 inline"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </button>
+          </div> -->
+          <!-- En el div del botón continuar, modificar a: -->
+          <div class="border-t p-6 bg-gray-50/50">
+            <div class="flex gap-4">
+              <button
+                type="button"
+                @click="step = 0"
+                class="button-secondary flex-1 py-3 px-6 text-base font-medium shadow-sm hover:shadow-md transition-all"
+              >
+                {{ t("common.back") }}
+              </button>
+              <button
+                @click="step = 2"
+                class="button-primary flex-1 py-3 px-6 text-base font-medium shadow-sm hover:shadow-md transition-all flex items-center justify-center"
+              >
+                {{ t("common.continue") }}
+                <svg
+                  class="w-4 h-4 ml-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista previa más alta y con mejor estilo -->
+        <div
+          class="bg-white border border-gray-200 rounded-xl shadow-lg h-[75vh] flex flex-col"
+        >
+          <div class="p-6 pb-4 border-b border-gray-200">
+            <h3
+              class="text-lg font-semibold text-gray-800 flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              {{ t("contracts.livePreview") }}
+            </h3>
+          </div>
+
+          <div
+            class="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white"
+          >
+            <div
+              v-html="htmlWithTokensReplaced"
+              class="prose max-w-none bg-white p-6 rounded-lg shadow-sm border border-gray-100"
+            />
+            <div
+              v-if="!Object.values(tokenValues).some((v) => v)"
+              class="h-full flex items-center justify-center text-gray-400 text-sm"
+            >
+              Completa los campos para ver la previsualización
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Paso 2 · preview final -->
+    <!-- Paso 2 · preview final -->
+    <section v-else class="space-y-8">
+      <div class="text-center space-y-3 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">
+          {{ t("contracts.finalPreview") }}
+        </h2>
+        <div class="flex items-center justify-center gap-2">
+          <p class="text-lg text-gray-600">
+            {{ selectedTemplate!.name }}
+          </p>
+          <span class="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+            {{ tokens.length }} {{ t("contracts.fieldsFilled") }}
+          </span>
+        </div>
+      </div>
+
+      <div class="max-w-4xl mx-auto">
+        <div
+          class="bg-white border-2 border-gray-100 rounded-xl shadow-lg overflow-hidden"
+        >
+          <div class="p-6 bg-gradient-to-b from-gray-50 to-white">
+            <div
+              class="prose max-w-none mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-100 overflow-y-auto max-h-[70vh]"
+              v-html="htmlWithTokensReplaced"
+            />
+          </div>
+
+          <div class="border-t p-6 bg-gray-50/50">
+            <div class="flex flex-col sm:flex-row gap-4 justify-between">
+              <button
+                type="button"
+                @click="step = 1"
+                class="button-secondary px-8 py-3.5 text-base w-full sm:w-auto"
+              >
+                <svg
+                  class="w-5 h-5 mr-2 inline -ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+                {{ t("common.backToEdit") }}
+              </button>
+              <button
+                type="button"
+                class="button-primary px-8 py-3.5 text-base w-full sm:w-auto flex items-center justify-center"
+                @click="submitContract"
+              >
+                {{ t("contracts.generateDocument") }}
+                <svg
+                  class="w-5 h-5 ml-2 -mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>
+
+<script setup lang="ts">
+type ContractWizardProps = {
+  tenantId: number;
+  propertyId: number;
+  roomId: number | null;
+};
+defineProps<ContractWizardProps>();
+
+import { useContractsStore } from "~/store/contracts";
+import { storeToRefs } from "pinia";
+const contractsStore = useContractsStore();
+const { contractTemplates, loading } = storeToRefs(contractsStore);
+
+import { useI18n } from "vue-i18n";
+import type { ContractTemplate } from "~/types/contractTemplate";
+const { t } = useI18n();
+
+import { contractTypeBadgeClasses, contractTypeLabel } from "~/utils/badges";
+
+const PreviewImage = defineAsyncComponent(
+  () => import("~/components/ui/PreviewImage.vue")
+);
+
+const step = ref<0 | 1 | 2>(0);
+const selectedTemplate = ref<ContractTemplate | null>(null);
+
+onMounted(async () => {
+  if (!contractTemplates.value.length) {
+    await contractsStore.fetchContractTemplates();
+  }
+});
+
+const showId = ref<number | null>(null);
+const pdfUrl = ref<string>("");
+
+const openViewer = async (id: number) => {
+  showId.value = id;
+  const blobUrl = await contractsStore.fetchContractTemplatePdf(id);
+  const blob = await fetch(blobUrl).then((r) => r.blob());
+  pdfUrl.value = await blobToDataUrl(blob);
+};
+const closeViewer = () => {
+  showId.value = null;
+  pdfUrl.value = "";
+};
+const blobToDataUrl = (blob: Blob) => {
+  return new Promise<string>((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result as string);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+};
+
+const choose = (tpl: ContractTemplate) => {
+  selectedTemplate.value = tpl;
+  tokens.value = extractTokens(tpl.content);
+
+  tokens.value.forEach((k) => {
+    tokenValues[k] ||= "";
+  });
+  step.value = 1;
+};
+
+const tokens = ref<string[]>([]);
+const tokenValues = reactive<Record<string, string>>({});
+
+const extractTokens = (html: string): string[] => {
+  const re = /data-token="(.*?)"/g;
+  const found = new Set<string>();
+  let match;
+  while ((match = re.exec(html)) !== null) {
+    found.add(match[1]);
+  }
+  return [...found];
+};
+
+const prettyLabel = (key: string) => {
+  return key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const htmlWithTokensReplaced = computed(() => {
+  if (!selectedTemplate.value) return "";
+  let html = selectedTemplate.value.content;
+  for (const [key, val] of Object.entries(tokenValues)) {
+    const rgx = new RegExp(
+      `(data-token="${key}".*?>)([\\s\\S]*?)(<\\/span>)`,
+      "g"
+    );
+    html = html.replace(rgx, `$1${val || "____________"}$3`);
+  }
+  return html;
+});
+
+const handleSubmit = () => {};
+</script>
+
+<style scoped>
+.loader {
+  @apply h-6 w-6 rounded-full border-4 border-blue-500 border-t-transparent animate-spin;
+}
+
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+</style>

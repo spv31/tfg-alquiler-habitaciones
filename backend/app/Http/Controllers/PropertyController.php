@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 class PropertyController extends Controller
 {
@@ -351,24 +352,17 @@ class PropertyController extends Controller
     try {
       $this->authorize('view', $property);
 
-      $tenantsCollection = collect();
+      $propertyTenant = $property->tenants()
+        ->with(['tenant.contract', 'rentable'])
+        ->first();
 
-      if ($property->rental_type === 'full') {
-        // It should only be 1 tenant
-        foreach($property->tenants as $tenant) {
-          if ($tenant->tenant) {
-            $tenantsCollection->push($tenant->tenant);
-          }
-        }
-      } else {
-        foreach($property->rooms as $room) {
-          if ($room->tenant && $room->tenant->tenant) {
-            $tenantsCollection->push($room->tenant->tenant);
-          }
-        }
+      if (!$propertyTenant || !$propertyTenant->tenant) {
+        return TenantResource::collection(collect());
       }
-      $tenantsCollection->load('contract');
-      return TenantResource::collection($tenantsCollection);
+
+      $tenant = tap($propertyTenant->tenant)->setRelation('rental', $propertyTenant);
+
+      return TenantResource::collection(collect([$tenant]));
     } catch (AuthorizationException $e) {
       Log::warning('Acceso no autorizado a la propiedad', ['property_id' => $property->id]);
       return response()->json([
