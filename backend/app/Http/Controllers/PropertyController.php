@@ -367,6 +367,7 @@ class PropertyController extends Controller
           }
         }
       }
+      $tenantsCollection->load('contract');
       return TenantResource::collection($tenantsCollection);
     } catch (AuthorizationException $e) {
       Log::warning('Acceso no autorizado a la propiedad', ['property_id' => $property->id]);

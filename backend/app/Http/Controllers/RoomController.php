@@ -367,7 +367,9 @@ class RoomController extends Controller
         return response()->json(['error_key' => 'tenant_not_found'], 404);
       }
 
-      return new TenantResource($room->tenant->tenant);
+      return new TenantResource(
+        $room->tenant->tenant->load('contract')
+      );
     } catch (AuthorizationException $e) {
       Log::warning('Acceso no autorizado a la habitación', [
         'property_id' => $property->id,

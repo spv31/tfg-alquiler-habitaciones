@@ -23,6 +23,7 @@ class TenantResource extends JsonResource
       'profile_picture' => $this->profile_image_url,
       'phone_number' => $this->phone_number,
       'room_id' => optional($this->rental)->rentable_type === Room::class ? $this->rental->room_number : null,
+      'contract' => $this->whenLoaded('contract', fn () => new ContractResource($this->contract)),
     ];
   }
 }

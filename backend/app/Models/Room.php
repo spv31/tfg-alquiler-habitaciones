@@ -75,4 +75,9 @@ class Room extends Model
   {
     return $this->morphMany(Invitation::class, 'rentable');
   }
+
+  public function contracts()
+  {
+    return $this->hasMany(Contract::class);
+  }
 }

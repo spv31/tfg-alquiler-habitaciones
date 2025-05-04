@@ -1,3 +1,5 @@
+import type { Contract } from "./contract";
+
 export interface Tenant {
   id: number,
   name: string;
@@ -6,6 +8,7 @@ export interface Tenant {
   profile_picture: string;
   phone_number: string;
   room_id?: string | null,
+  contract?: Contract | null,
 }
 
 export interface TenantCollection {

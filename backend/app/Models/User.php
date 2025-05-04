@@ -102,4 +102,16 @@ class User extends Authenticatable
   {
     return $this->hasMany(ContractTemplate::class);
   }
+
+  public function contracts()
+  {
+    return $this->hasMany(Contract::class, 'tenant_id');
+  }
+
+  public function contract()
+  {
+    return $this->hasOne(Contract::class, 'tenant_id')
+      ->whereIn('status', ['pending_signature', 'active'])
+      ->latestOfMany();  
+  }
 }

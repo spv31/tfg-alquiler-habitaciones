@@ -86,4 +86,9 @@ class Contract extends Model
     {
         return $this->belongsTo(User::class, 'tenant_id');
     }
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
 }
