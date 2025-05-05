@@ -1,5 +1,5 @@
 import type { ContractTemplate } from "~/types/contractTemplate";
-import type { Contract } from "~/types/contract";
+import type { Contract, StoreContractPayload } from "~/types/contract";
 
 export const useContractsStore = defineStore(
   "contracts",
@@ -17,6 +17,8 @@ export const useContractsStore = defineStore(
 
     const templatePreviewCache = ref<Record<number, string>>({});
     const lastFetchedPreviewAt = ref<Record<number, number>>({});
+    const contractPreviewCache = ref<Record<number, string>>({});
+    const lastFetchedContractAt = ref<Record<number, number>>({});
     const PREVIEW_TTL = 30 * 60 * 1000;
 
     const fetchContractTemplates = async () => {
@@ -177,11 +179,25 @@ export const useContractsStore = defineStore(
       });
     };
 
-    const saveContract = async () => {
+    const saveContract = async (contract: StoreContractPayload) => {
       const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
+        return $fetch<{ data: Contract }>(`${apiBaseUrl}/contracts`, {
+          method: "POST",
+          body: contract,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrf,
+            Accept: "application/json",
+          },
+        });
       });
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      return data.data;
     };
 
     const updateContract = async () => {
@@ -242,33 +258,39 @@ export const useContractsStore = defineStore(
       return data!;
     };
 
-    const fetchContractPdf = async (id: number) => {
+    const fetchContractPdf = async (id: number): Promise<string> => {
       const now = Date.now();
-      const last = lastFetchedPreviewAt.value[id] ?? 0;
-      if (templatePreviewCache.value[id] && now - last < PREVIEW_TTL) {
-        return templatePreviewCache.value[id];
+      const last = lastFetchedContractAt.value[id] ?? 0;
+
+      if (contractPreviewCache.value[id] && now - last < PREVIEW_TTL) {
+        return contractPreviewCache.value[id];
       }
 
+      const blob = await fetchContractPdfBlob(id);
+      const url = URL.createObjectURL(blob);
+
+      contractPreviewCache.value[id] = url;
+      lastFetchedContractAt.value[id] = now;
+
+      return url;
+    };
+
+    const fetchContractPdfBlob = async (id: number): Promise<Blob> => {
       const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
-        return $fetch<Blob>(`${apiBaseUrl}/contract-templates/${id}/preview`, {
+
+        // ⇩⇩⇩  Ajusta el endpoint si tu backend usa otra ruta
+        return $fetch<Blob>(`${apiBaseUrl}/contracts/${id}/pdf`, {
           method: "GET",
           responseType: "blob",
           credentials: "include",
-          headers: {
-            "X-XSRF-TOKEN": csrf,
-            Accept: "application/pdf",
-          },
+          headers: { "X-XSRF-TOKEN": csrf, Accept: "application/pdf" },
         });
       });
 
       if (error) throw error;
-
-      const blobUrl = URL.createObjectURL(data!);
-      templatePreviewCache.value[id] = blobUrl;
-      lastFetchedPreviewAt.value[id] = now;
-      return blobUrl;
+      return data!;
     };
 
     const fetchSignedContractPdf = async () => {};
@@ -297,6 +319,7 @@ export const useContractsStore = defineStore(
       fetchContractTemplatePdf,
       fetchContractTemplatePdfBlob,
       fetchContractPdf,
+      fetchContractPdfBlob,
       fetchSignedContractPdf,
       downloadContractTemplatePdf,
       downloadContractPdf,

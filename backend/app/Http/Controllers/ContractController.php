@@ -7,18 +7,22 @@ use App\Http\Requests\UpdateContractRequest;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use App\Services\ContractService;
+use App\Services\PdfGeneratorService;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Storage;
 
 class ContractController extends Controller
 {
     private $contractServices;
+    private $pdfGenerator;
 
-    public function __construct(ContractService $contractServices)
+    public function __construct(ContractService $contractServices, PdfGeneratorService $pdfGeneratorService)
     {
         $this->contractServices = $contractServices;
+        $this->pdfGenerator = $pdfGeneratorService;
     }
 
     /**
@@ -30,16 +34,16 @@ class ContractController extends Controller
             $user = auth()->user();
 
             $contracts = Contract::query()
-            ->where('tenant_id', $user->id)
-            ->orWhereHas('property', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-            ->orWhereHas('room.property', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
-            ->get();
+                ->where('tenant_id', $user->id)
+                ->orWhereHas('property', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->orWhereHas('room.property', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->get();
 
-        return ContractResource::collection($contracts);
+            return ContractResource::collection($contracts);
         } catch (Exception $e) {
             return response()->json([
                 'error_key' => 'fetch_contracts_failed',
@@ -151,6 +155,37 @@ class ContractController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'error_key' => 'delete_contract_failed'
+            ], 500);
+        }
+    }
+
+    public function previewPdf(Contract $contract)
+    {
+        try {
+            $html = $contract->final_content;
+
+            $name = 'contract_' . $contract->id;
+
+            $path = $this->pdfGenerator->generatePdfFromHtml(
+                $html,
+                'contracts',   
+                $name
+            );
+
+            $disk    = Storage::disk('private');
+            $content = $disk->get($path);
+            $full    = $disk->path($path);
+            $mime    = mime_content_type($full);
+            $fileName = basename($path);
+
+            return response($content, 200, [
+                'Content-Type'        => $mime,
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'error_key' => 'preview_contract_failed',
+                'message'   => $e->getMessage(),
             ], 500);
         }
     }

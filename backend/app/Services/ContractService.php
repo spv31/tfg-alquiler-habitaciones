@@ -3,10 +3,23 @@
 namespace App\Services;
 
 use App\Models\Contract;
+use App\Models\ContractTemplate;
 use Illuminate\Support\Facades\DB;
 
 class ContractService
 {
+    public function __construct(
+        private PdfGeneratorService $pdfGenerator
+    ) {}
+    private function replaceTokens(string $html, array $tokens): string
+    {
+        foreach ($tokens as $key => $value) {
+            $replacement = $value ?: '____________';
+            $pattern = '/(data-token="' . preg_quote($key, '/') . '".*?>)([\s\S]*?)(<\/span>)/';
+            $html = preg_replace($pattern, '$1' . $replacement . '$3', $html);
+        }
+        return $html;
+    }
     /**
      * It creates new contract 
      * 
@@ -18,15 +31,22 @@ class ContractService
         DB::beginTransaction();
 
         try {
+            $template = ContractTemplate::findOrFail($validatedData['contract_template_id']);
+
+            $htmlFilled = $this->replaceTokens(
+                $template->content,
+                $validatedData['token_values'] ?? []
+            );
+
+            $validatedData['final_content'] = $htmlFilled;        // guardamos HTML “completo”
+
+            $pdfPath = $this->pdfGenerator
+                ->generatePdfFromHtml($htmlFilled, 'contracts', 'contrato-' . ($template->name ?? ''));
+            $validatedData['pdf_path'] = $pdfPath;
+
             $contract = Contract::create($validatedData);
 
-            // Aquí podrías realizar lógica extra: 
-            // - Enlazar registros secundarios, 
-            // - crear notificaciones,
-            // - sustituir placeholders en la plantilla y guardar "final_content", etc.
-
             DB::commit();
-
             return $contract;
         } catch (\Exception $e) {
             DB::rollBack();

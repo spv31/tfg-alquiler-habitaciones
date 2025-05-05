@@ -21,6 +21,7 @@ export default defineI18nConfig(() => ({
         select: "Seleccionar",
         view: "Ver",
         backToEdit: "Volver a editar",
+        saving: "Guardando..."
       },
       contracts: {
         view: "Ver contrato",
@@ -60,6 +61,8 @@ export default defineI18nConfig(() => ({
         shared: "Compartido",
         requiredField: "Campo obligatorio",
         sharedPercent: "Porcentaje que paga el arrendador (%)",
+        created: "Contrato creado con éxito.",
+        viewContract: "Ver contrato"
       },
       badges: {
         status: {
@@ -362,6 +365,7 @@ export default defineI18nConfig(() => ({
         min_rooms: "Debe haber al menos 1 habitación.",
         invalid_number: "Debe ser un número válido.",
         invalid_date: "Debe ser una fecha válida.",
+        contractCreateFailed: "Error al crear el contrato."
       },
       api: {
         success: {
@@ -477,6 +481,7 @@ export default defineI18nConfig(() => ({
         contractStart: "Contract start",
         select: "Select",
         view: "View",
+        saving: "Saving…"
       },
       contracts: {
         view: "View contract",
@@ -516,6 +521,7 @@ export default defineI18nConfig(() => ({
         shared: "Shared",
         requiredField: "Required field",
         sharedPercent: "Percentage paid by landlord (%)",
+        created: "Contract created successfully."
       },
       badges: {
         status: {
@@ -813,6 +819,7 @@ export default defineI18nConfig(() => ({
         invalid_date: "Must be a valid date.",
         total_rooms_too_low:
           "You cannot reduce the total number of rooms below the {minRooms} existing rooms.",
+        contractCreateFailed: "Error creating contract."
       },
       api: {
         success: {

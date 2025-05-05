@@ -1,3 +1,6 @@
+type ContractStatus = "pending_signature" | "active" | "finished";
+type UtilitiesPayer = "tenant" | "owner" | "shared";
+
 export interface Contract {
 	id: number,
 	contract_template_id: number,
@@ -20,4 +23,25 @@ export interface Contract {
   token_values?: Record<string, any>
   created_at: string
   updated_at: string
+}
+
+export interface StoreContractPayload {
+  contract_template_id: number;
+  property_id?: number | null;   
+  room_id?: number | null;
+  tenant_id: number;
+  type?: string | null;          
+  price: number;                 
+  deposit: number;               
+  utilities_included: boolean;
+  utilities_payer?: UtilitiesPayer | null;
+  utilities_proportion?: number | null; 
+  start_date: string;            
+  end_date?: string | null;
+  extension_date?: string | null;
+  status: ContractStatus;       
+  final_content: string;         
+  token_values: Record<string, string>;
+  pdf_path?: string | null;
+  pdf_path_signed?: string | null;
 }

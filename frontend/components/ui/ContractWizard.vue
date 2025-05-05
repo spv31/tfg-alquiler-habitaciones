@@ -408,6 +408,13 @@
 
     <!-- Paso 2 · preview final -->
     <section v-else class="space-y-8">
+      <Alert
+        v-if="alertMessage"
+        :message="alertMessage"
+        type="error"
+        class="mb-4"
+        @close="alertMessage = null"
+      />
       <div class="text-center space-y-3 mb-8">
         <h2 class="text-2xl font-bold text-gray-900">
           {{ t("contracts.finalPreview") }}
@@ -489,18 +496,16 @@ type ContractWizardProps = {
   propertyId: number;
   roomId: number | null;
 };
-defineProps<ContractWizardProps>();
+const props = defineProps<ContractWizardProps>();
 
 import { useContractsStore } from "~/store/contracts";
-import { storeToRefs } from "pinia";
 const contractsStore = useContractsStore();
 const { contractTemplates, loading } = storeToRefs(contractsStore);
+const alertMessage = ref<string | null>(null);
 
 import { useI18n } from "vue-i18n";
 import type { ContractTemplate } from "~/types/contractTemplate";
 const { t } = useI18n();
-
-import { contractTypeBadgeClasses, contractTypeLabel } from "~/utils/badges";
 
 const PreviewImage = defineAsyncComponent(
   () => import("~/components/ui/PreviewImage.vue")
@@ -629,10 +634,10 @@ watch(
         v === null || v === undefined || v === ""
           ? ""
           : typeof v === "boolean"
-            ? v
-              ? "Sí"
-              : "No"
-            : String(v);
+          ? v
+            ? "Sí"
+            : "No"
+          : String(v);
     }
 
     tokenValues["gastos_paga"] = business.utilities_payer
@@ -651,7 +656,103 @@ watch(
   { deep: true, immediate: true }
 );
 
-const handleSubmit = () => {};
+const validate = (): string[] => {
+  const errors: string[] = [];
+
+  if (!selectedTemplate.value) errors.push(t("errors.noTemplateSelected"));
+
+  if (!business.price) errors.push(t("errors.priceRequired"));
+  if (!business.deposit) errors.push(t("errors.depositRequired"));
+  if (!business.start_date) errors.push(t("errors.startDateRequired"));
+
+  if (!business.utilities_included && !business.utilities_payer)
+    errors.push(t("errors.utilitiesPayerRequired"));
+
+  if (
+    business.utilities_payer === "shared" &&
+    (business.utilities_proportion === null ||
+      business.utilities_proportion < 0 ||
+      business.utilities_proportion > 100)
+  )
+    errors.push(t("errors.sharedPercentRequired"));
+
+  return errors;
+};
+
+import type { StoreContractPayload } from "~/types/contract";
+
+const buildPayload = (): StoreContractPayload => ({
+  contract_template_id: selectedTemplate.value!.id,
+  property_id: props.propertyId ?? null,
+  room_id: props.roomId === 0 ? null : props.roomId,
+  tenant_id: props.tenantId,
+
+  type: selectedTemplate.value!.type ?? null,
+
+  price: Number(business.price),
+  deposit: Number(business.deposit),
+
+  utilities_included: business.utilities_included,
+  utilities_payer: business.utilities_payer,
+  utilities_proportion: business.utilities_proportion,
+
+  start_date: business.start_date,
+  end_date: business.end_date || null,
+  extension_date: null,
+
+  status: "pending_signature",
+
+  final_content: htmlWithTokensReplaced.value,
+  token_values: { ...tokenValues },
+});
+
+const saving = ref(false);
+
+const submitContract = async () => {
+  alertMessage.value = null;
+
+  const errors = validate();
+  if (errors.length) {
+    alertMessage.value = errors[0];
+    console.log(errors);
+    return;
+  }
+
+  try {
+    saving.value = true;
+    const payload = buildPayload();
+    console.log('Payload: ', payload);
+    const contract = await contractsStore.saveContract(payload);
+
+    const successQuery = { msg: "contract_created" };
+
+    if (props.roomId) {
+      navigateTo(
+        {
+          name: "properties-propertyId-rooms-roomId-index",
+          params: { propertyId: props.propertyId, roomId: props.roomId },
+          query: successQuery,
+        },
+        { replace: true }
+      );
+    } else {
+      navigateTo(
+        {
+          name: "properties-propertyId-index",
+          params: { propertyId: props.propertyId },
+          query: successQuery,
+        },
+        { replace: true }
+      );
+    }
+  } catch (err: any) {
+    console.error(err);
+    alertMessage.value = err?.data?.message || t("errors.contractCreateFailed");
+    step.value = 2;
+  } finally {
+    saving.value = false;
+  }
+};
 </script>
 
 <style scoped>

@@ -2,7 +2,7 @@
   <div
     class="bg-white/90 shadow-2xl rounded-2xl p-8 space-y-6 transition-all hover:shadow-3xl group"
   >
-  <Alert
+    <Alert
       v-if="!hasContract || isPending"
       :type="!hasContract ? 'info' : 'warning'"
       :message="
@@ -222,47 +222,79 @@
         </template>
       </CircleIconButton>
     </div>
+    <ContractViewerModal
+      v-if="hasContract"
+      :visible="showViewer"
+      :pdfUrl="pdfUrl"
+      :title="$t('contracts.viewContract')"
+      @close="showViewer = false"
+    />
   </div>
 </template>
 <script setup lang="ts">
+import { useContractsStore } from "~/store/contracts";
+
 import type { Tenant } from "~/types/tenant";
 import defaultAvatar from "~/assets/images/default.jpg";
-
-const { locale, t } = useI18n();
 
 const props = defineProps<{
   tenant: Tenant;
 }>();
 
-const contract = computed(() => props.tenant.contract);
-const hasContract = computed(
-  () => contract.value !== undefined && contract.value !== null
-);
-const isActive = computed(() => contract.value?.status === "active");
-const isPending = computed(
-  () => contract.value?.status === "pending_signature"
-);
+const { locale, t } = useI18n();
+const contractsStore = useContractsStore();
 
-const contractStart = computed(() => contract.value?.start_date ?? null);
+const contract       = computed(() => props.tenant.contract);
+const hasContract    = computed(() => !!contract.value);
+const isActive       = computed(() => contract.value?.status === "active");
+const isPending      = computed(() => contract.value?.status === "pending_signature");
+
+const showViewer = ref(false);
+const pdfUrl     = ref("");
+
+const blobToBase64 = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror   = reject;
+    reader.readAsDataURL(blob);
+  });
 
 const startContractFlow = () => {
-  console.log('Datos recibidos de tenant?: ', props.tenant)
   navigateTo({
     path: `/${locale.value}/contracts/create`,
     query: {
-      tenantId: props.tenant.id,
+      tenantId:   props.tenant.id,
       propertyId: props.tenant.property_id,
-      roomId: props.tenant.room_id ?? null,
+      roomId:     props.tenant.room_id ?? null,
     },
-  })
-}
+  });
+};
 
-const viewContract = (id: number) =>
-  navigateTo(`/${locale.value}/contracts/${id}`);
-const onChat = () => {};
-const onRemove = () => {};
+const viewContract = async (id: number) => {
+  try {
+    const blob   = await contractsStore.fetchContractPdfBlob(id);
+    const base64 = await blobToBase64(blob);
+    pdfUrl.value = `data:application/pdf;base64,${base64}`;
+    showViewer.value = true;
+  } catch (err) {
+    console.error("Error loading contract PDF", err);
+  }
+};
+
+const onChat     = () => {};
+const onRemove   = () => {};
 const moveTenant = () =>
   navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
+
+const ContractViewerModal = defineAsyncComponent(
+  () => import("~/components/ui/ContractViewerModal.vue")
+);
+const CircleIconButton = defineAsyncComponent(
+  () => import("~/components/ui/CircleIconButton.vue")
+);
+const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
 </script>
+
 
 <style scoped></style>
