@@ -120,7 +120,6 @@
     </section>
 
     <!-- Paso 1 · formulario de tokens -->
-    <!-- Paso 1 · formulario de tokens -->
     <section v-else-if="step === 1" class="space-y-8">
       <!-- Título fuera del card con mejor jerarquía -->
       <div class="text-center space-y-2 mb-8">
@@ -366,7 +365,7 @@
 
         <!-- Vista previa -->
         <div
-          class="bg-white border border-gray-200 rounded-xl shadow-lg h-[75vh] flex flex-col"
+          class="bg-white border border-gray-200 rounded-xl shadow-lg h-[90vh] flex flex-col"
         >
           <div class="p-6 pb-4 border-b border-gray-200">
             <h3
