@@ -29,7 +29,7 @@
       ><Code size="18"
     /></ToolbarBtn>
 
-    <Dropdown
+    <DropdownToolbar
       label="H"
       :items="[
         { label: 'Encabezado 1', level: 1 },
@@ -50,7 +50,7 @@
       >¶</ToolbarBtn
     >
 
-    <Dropdown icon :active="currentFont !== null">
+    <DropdownToolbar icon :active="currentFont !== null">
       <template #button>
         <Type size="18" />
       </template>
@@ -80,9 +80,9 @@
       >
         Predeterminado (Arial)
       </button>
-    </Dropdown>
+    </DropdownToolbar>
 
-    <Dropdown icon :active="currentSize != null">
+    <DropdownToolbar icon :active="currentSize != null">
       <template #button>
         <TextCursorInput size="18" />
       </template>
@@ -112,7 +112,7 @@
       >
         Predeterminado (12pt)
       </button>
-    </Dropdown>
+    </DropdownToolbar>
 
     <ToolbarBtn
       :active="editor.isActive('bulletList')"
@@ -125,7 +125,7 @@
       ><ListOrdered size="18"
     /></ToolbarBtn>
 
-    <Dropdown icon>
+    <DropdownToolbar icon>
       <template #button>
         <AlignLeft size="18" />
       </template>
@@ -162,7 +162,7 @@
       >
         <AlignJustify size="18" class="inline mr-2" /> Justificado
       </button>
-    </Dropdown>
+    </DropdownToolbar>
 
     <ToolbarBtn
       :active="editor.isActive('blockquote')"
@@ -193,7 +193,7 @@
       ><Layout size="18"
     /></ToolbarBtn>
 
-    <Dropdown icon :active="inTable()">
+    <DropdownToolbar icon :active="inTable()">
       <template #button>
         <Table size="18" />
       </template>
@@ -284,7 +284,7 @@
       >
         <TableCellsSplit size="16" class="inline mr-2" /> Dividir celda
       </button>
-    </Dropdown>
+    </DropdownToolbar>
 
     <ToolbarBtn
       tooltip="Insertar zona de firmas"
@@ -293,7 +293,7 @@
       <FileMinus size="18" />
     </ToolbarBtn>
 
-    <Dropdown icon>
+    <DropdownToolbar icon>
       <template #button>
         <TextCursorInput size="18" />
       </template>
@@ -309,7 +309,7 @@
           {{ tok.label }}
         </button>
       </div>
-    </Dropdown>
+    </DropdownToolbar>
   </div>
 </template>
 <script setup lang="ts">

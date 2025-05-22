@@ -15,6 +15,7 @@ export default defineNuxtRouteMiddleware((to) => {
 
   const isTenantRegistration = to.path.startsWith('/register/tenant');
 
+  console.log('Autenticación: ', authStore.isAuthenticated)
   if (!authStore.isAuthenticated && !authPages.includes(to.path) && !isTenantRegistration) {
     return navigateTo(login);
   }

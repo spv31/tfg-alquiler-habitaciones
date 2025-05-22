@@ -11,12 +11,9 @@ use Storage;
 
 class ContractTemplateService
 {
-	private $pdfGenerator;
-
-	public function __construct(PdfGeneratorService $pdfGeneratorService)
-	{
-		$this->pdfGenerator = $pdfGeneratorService;
-	}
+	public function __construct(
+		private PdfGeneratorService $pdfGenerator
+	) {}
 
 	private function replacePreviewPdf(ContractTemplate $contractTemplate, string $newHtml, ?string $name = null)
 	{
@@ -79,7 +76,7 @@ class ContractTemplateService
 			$validatedData['name'] = $validatedData['name'] . ' Personalizado';
 			$newTemplate = $this->createContractTemplate($validatedData);
 			return $newTemplate;
-		} 
+		}
 
 		DB::beginTransaction();
 
@@ -91,7 +88,6 @@ class ContractTemplateService
 
 			$template->fill($validatedData);
 			$template->save();
-
 			DB::commit();
 			return $template->fresh();
 		} catch (Exception $e) {
@@ -111,7 +107,7 @@ class ContractTemplateService
 		if ($template->is_default) {
 			throw new Exception("A default contract template cannot be deleted");
 		}
-		
+
 		return DB::transaction(function () use ($template): bool|null {
 			if ($template->preview_path) {
 				Storage::disk('private')->delete($template->preview_path);

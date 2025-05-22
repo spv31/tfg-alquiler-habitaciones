@@ -159,34 +159,29 @@
             </CircleIconButton>
 
             <CircleIconButton
-              v-if="isStatusChangeable"
               :label="
                 property.status === 'available'
                   ? $t('properties.detail.makeUnavailableButton')
                   : $t('properties.detail.makeAvailableButton')
               "
-              @click="showChangeStatusModal = true"
+              @click="onStatusClick"
             >
               <template #icon>
-                <svg
-                  class="h-6 w-6 text-red-600 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 20V4M5 11l7-7 7 7"
-                  />
-                </svg>
+                <i
+                  :class="[
+                    'pi',
+                    property.status === 'available'
+                      ? 'pi-lock text-red-500'
+                      : 'pi-unlock text-info',
+                    'text-xl',
+                  ]"
+                ></i>
               </template>
             </CircleIconButton>
 
             <CircleIconButton
               :label="$t('properties.detail.deleteButton')"
-              @click="showDeleteModal = true"
+              @click="onDeleteClick"
             >
               <template #icon>
                 <svg
@@ -205,12 +200,6 @@
               </template>
             </CircleIconButton>
           </div>
-
-          <ConfirmDeleteModal
-            :show="showDeleteModal"
-            @confirm="handleDeleteProperty"
-            @cancel="showDeleteModal = false"
-          />
         </div>
       </div>
     </div>
@@ -218,13 +207,6 @@
       v-else
       :details="property.details"
       @close="showStats = false"
-    />
-
-    <StatusChangeModal
-      :show="showChangeStatusModal"
-      :currentStatus="property.status"
-      @cancel="showChangeStatusModal = false"
-      @confirm="handleChangeStatus"
     />
   </div>
 </template>
@@ -238,8 +220,13 @@ import {
   rentalBadgeClasses,
   rentalTypeLabel,
 } from "~/utils/badges";
+import { useMyToast } from "#imports";
+import { useMyConfirm } from "#imports";
 
-const { t: $t } = useI18n();
+const confirm = useMyConfirm();
+
+const { error: errorToast, success, warn } = useMyToast();
+const { t: $t, locale } = useI18n();
 
 const store = usePropertiesStore();
 const props = defineProps({
@@ -265,32 +252,57 @@ const isStatusChangeable = computed(() => {
   );
 });
 
-const handleDeleteProperty = async () => {
-  try {
-    await store.deleteProperty(props.propertyId);
-    alert($t("propertyDeleted"));
-  } catch (error) {
-    alert($t("deleteError"));
-  }
-  showDeleteModal.value = false;
+const onDeleteClick = () => {
+  confirm.show({
+    message: $t("properties.detail.deleteQuestion"),
+    header: $t("common.confirmation"),
+    icon: "pi pi-exclamation-triangle text-red-500 text-xl",
+    acceptLabel: $t("common.delete"),
+    rejectLabel: $t("common.cancel"),
+    acceptSeverity: "danger",
+    onAccept: async () => {
+      try {
+        await store.deleteProperty(props.property.id);
+        navigateTo(`/${locale.value}/properties?msg=property_deleted`);
+      } catch (e) {
+        errorToast($t("properties.detail.deleteError"));
+      }
+    },
+  });
 };
 
-const handleChangeStatus = async () => {
-  try {
-    const newStatus =
-      props.property.status === "available" ? "unavailable" : "available";
-    await store.changePropertyStatus(props.property.id, newStatus);
-    showChangeStatusModal.value = false;
-    await store.fetchProperty(props.property.id);
+const onStatusClick = () => {
+  const newStatus =
+    props.property.status === "available" ? "unavailable" : "available";
 
-    if (props.property.rental_type === 'per_room') {
-      await store.fetchRooms(props.property.id);
-    }
-  } catch (error) {
-    alert($t("common.errorUpdatingStatus"));
-  }
+  confirm.show({
+    message: $t("properties.detail.statusQuestion", {
+      status: newStatus,
+    }),
+    header: $t("common.confirmation"),
+    icon: "pi pi-info-circle text-info text-xl",
+    acceptLabel: $t("common.accept"),
+    rejectLabel: $t("common.cancel"),
+    acceptSeverity: "info",
+    onAccept: async () => {
+      try {
+        console.log('Id: ', props.property);
+        await store.changePropertyStatus(props.property.id, newStatus);
+        success($t("properties.detail.statusSuccess"));
+        await store.fetchProperty(props.property.id);
+        if (props.property.rental_type === "per_room") {
+          await store.fetchRooms(props.property.id);
+        }
+      } catch (e: any) {
+        console.log(e);
+        if (e.message === "property_status_change_forbidden_due_to_tenant") {
+          warn($t("properties.detail.statusChangeForbidden"));
+        } else {
+          errorToast($t("api.error.property_status_update_failed"));
+        }
+      }
+    },
+  });
 };
-
 </script>
-<style scoped>
-</style>
+<style scoped></style>

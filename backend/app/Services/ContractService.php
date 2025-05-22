@@ -4,13 +4,33 @@ namespace App\Services;
 
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use Exception;
+use Illuminate\Contracts\Support\ValidatedData;
 use Illuminate\Support\Facades\DB;
+use Storage;
 
 class ContractService
 {
     public function __construct(
         private PdfGeneratorService $pdfGenerator
     ) {}
+
+    private function replacePreviewPdf(Contract $contract, string $newHtml, ?string $name = null)
+    {
+        try {
+            if ($contract->pdf_path) {
+                Storage::disk('private')->delete($contract->pdf_path);
+            }
+            $newPath = $this->pdfGenerator
+                ->generatePdfFromHtml($newHtml, 'contracts', $name);
+
+            $contract->pdf_path = $newPath;
+            return $newPath;
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
     private function replaceTokens(string $html, array $tokens): string
     {
         foreach ($tokens as $key => $value) {
@@ -38,7 +58,7 @@ class ContractService
                 $validatedData['token_values'] ?? []
             );
 
-            $validatedData['final_content'] = $htmlFilled;        // guardamos HTML “completo”
+            $validatedData['final_content'] = $htmlFilled; 
 
             $pdfPath = $this->pdfGenerator
                 ->generatePdfFromHtml($htmlFilled, 'contracts', 'contrato-' . ($template->name ?? ''));
@@ -48,7 +68,7 @@ class ContractService
 
             DB::commit();
             return $contract;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -66,11 +86,16 @@ class ContractService
         DB::beginTransaction();
 
         try {
-            $contract->update($validatedData);
+			// We generate another pdf if content has changed
+            if (array_key_exists('final_content', $validatedData) && $validatedData['final_content'] !== $contract->final_content) {
+                $this->replacePreviewPdf($contract, $validatedData['final_content'], 'contrato-' . ($contract->contractTemplate->name ?? ''));
+            }
 
+            $contract->fill($validatedData);
+            $contract->save();
             DB::commit();
             return $contract;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -91,8 +116,38 @@ class ContractService
 
             DB::commit();
             return $deleted;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function getPreviewFile(Contract $contract)
+    {
+        $path = $contract->pdf_path;
+
+        if (!$path) {
+            throw new Exception("No pdf_path definido para el template ID {$contract->id}");
+        }
+
+        try {
+            $disk = Storage::disk('private');
+
+            if (! $disk->exists($path)) {
+                throw new Exception("Fichero de preview no encontrado en: {$path}");
+            }
+
+            $content = $disk->get($path);
+            $fullPath = $disk->path($path);
+            $mime = mime_content_type($fullPath);
+            $name = basename($path);
+
+            return [
+                'content' => $content,
+                'mime'    => $mime,
+                'name'    => $name,
+            ];
+        } catch (Exception $e) {
             throw $e;
         }
     }

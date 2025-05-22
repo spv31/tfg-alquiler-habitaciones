@@ -13,14 +13,6 @@
       />
     </div>
 
-    <p v-if="errorMessage" class="error-message mb-2">
-      {{ errorMessage }}
-    </p>
-
-    <p v-if="successMessage" class="text-green-600 mb-2">
-      {{ successMessage }}
-    </p>
-
     <div class="flex justify-center">
       <button
         class="button-primary w-full"
@@ -37,33 +29,30 @@
 <script setup lang="ts">
 import { useInvitationsStore } from "~/store/invitations";
 import type { CreateInvitationResponse } from "~/types/invitation";
+import { useMyToast } from "#imports"; 
 
 const props = defineProps<{
   propertyId: number;
-  roomId?: number,
+  roomId?: number;
 }>();
 
 const invitationsStore = useInvitationsStore();
 const { t: $t } = useI18n();
+const toast = useMyToast();
 
 const email = ref("");
-const successMessage = ref("");
-const errorMessage = ref("");
 const loading = ref(false);
 
 const emits = defineEmits(["invitationSent"]);
 
 const handleSendInvitation = async () => {
   if (!email.value || !email.value.includes("@")) {
-    errorMessage.value = $t("invitations.invalidEmailError");
+    toast.error($t("invitations.invalidEmailError"));
     return;
   }
 
-  successMessage.value = "";
-  errorMessage.value = "";
   loading.value = true;
 
-	console.log('Enviar invitacion');
   try {
     const response: CreateInvitationResponse =
       await invitationsStore.createInvitation({
@@ -72,18 +61,13 @@ const handleSendInvitation = async () => {
         room_id: props.roomId,
       });
 
-    successMessage.value = $t("invitations.invitationSuccess");
+    toast.success($t("invitations.invitationSuccess"));
     email.value = "";
-
-    emits("invitationSent", successMessage.value);
+    emits("invitationSent");
   } catch (error: any) {
-    errorMessage.value =
-      error?.message || $t("invitations.invitationError");
+    toast.error(error?.message || $t("invitations.invitationError"));
   } finally {
     loading.value = false;
   }
-}
+};
 </script>
-
-<style scoped>
-</style>

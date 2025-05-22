@@ -242,12 +242,15 @@
 <script setup lang="ts">
 import { useContractsStore } from "~/store/contracts";
 import { contractTypeBadgeClasses, contractTypeLabel } from "~/utils/badges";
+import { useMyToast, useMyConfirm } from "#imports";
 
 const contractsStore = useContractsStore();
 const { contractTemplates, loading } = storeToRefs(contractsStore);
 import { useI18n } from "vue-i18n";
 const { locale } = useI18n();
 const route = useRoute();
+const { success, error: errorToast } = useMyToast();
+const confirm = useMyConfirm();
 
 const showId = ref<number | null>(null);
 const pdfUrl = ref<string>("");
@@ -272,26 +275,25 @@ const closeViewer = () => {
 const routeToEdit = (id: number) =>
   localePath({ name: "contract-templates-edit", params: { id } });
 
-const deleteTemplate = async (id: number) => {
-  if (!confirm("¿Eliminar la plantilla?")) return;
-  try {
-    await contractsStore.deleteContractTemplate(id);
-    await contractsStore.fetchContractTemplates();
-
-    alertMessage.value = "Plantilla eliminada correctamente";
-    alertType.value = "success";
-
-    nextTick(() => {
-      setTimeout(() => {
-        const offset = alertRef.value?.offsetTop ?? 0;
-        window.scrollTo({ top: offset - 100, behavior: "smooth" });
-      }, 50);
-    });
-  } catch (error) {
-    console.error(error);
-    alertMessage.value = "Error al eliminar la plantilla";
-    alertType.value = "error";
-  }
+const deleteTemplate = (id: number) => {
+  confirm.show({
+    message: "¿Estás seguro de que deseas eliminar esta plantilla?",
+    header: "Confirmación",
+    icon: "pi pi-exclamation-triangle text-red-500 text-xl",
+    acceptLabel: "Eliminar",
+    rejectLabel: "Cancelar",
+    acceptSeverity: "danger",
+    onAccept: async () => {
+      try {
+        await contractsStore.deleteContractTemplate(id);
+        await contractsStore.fetchContractTemplates();
+        success("Plantilla eliminada correctamente");
+      } catch (err) {
+        console.error(err);
+        errorToast("Error al eliminar la plantilla");
+      }
+    },
+  });
 };
 
 onMounted(async () => {
@@ -300,22 +302,21 @@ onMounted(async () => {
 
     const { msg } = route.query;
     if (msg) {
-      const messages: Record<string, string> = {
-        created: "Plantilla creada correctamente",
-        updated: "Plantilla actualizada correctamente",
-        deleted: "Plantilla eliminada correctamente",
-      };
-      alertMessage.value = messages[msg as string] ?? "";
-      alertType.value = msg === "deleted" ? "success" : "success";
+      switch (msg) {
+        case "created":
+          success("Plantilla creada correctamente");
+          break;
+        case "updated":
+          success("Plantilla actualizada correctamente");
+          break;
+        case "deleted":
+          success("Plantilla eliminada correctamente");
+          break;
+      }
       navigateTo(route.path, { replace: true });
-      nextTick(() => {
-        document
-          .querySelector('div[role="alert"]')
-          ?.scrollIntoView({ behavior: "smooth" });
-      });
     }
   } catch (error) {
-    console.error(error);
+    errorToast("Error al cargar las plantillas de contratos");
   }
 });
 
@@ -335,15 +336,6 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-};
-
-const getPreviewUrl = async (tplId: number) => {
-  try {
-    return await contractsStore.fetchContractPdf(tplId);
-  } catch (error) {
-    console.error(error);
-    return "";
-  }
 };
 </script>
 

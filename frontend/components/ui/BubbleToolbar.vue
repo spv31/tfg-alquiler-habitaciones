@@ -68,7 +68,7 @@
 import { toRef } from "vue";
 import { predefinedTokens } from "~/utils/tokens";
 import ToolbarBtn from "./ToolbarBtn.vue";
-import Dropdown from "./Dropdown.vue";
+import Dropdown from "./DropdownToolbar.vue";
 import {
   Bold,
   Italic,

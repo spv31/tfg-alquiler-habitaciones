@@ -89,9 +89,13 @@ const { properties, loading, error } = storeToRefs(propertiesStore);
 const { fetchProperties } = propertiesStore;
 const route = useRoute();
 const router = useRouter();
+const { t: $t, locale } = useI18n();
 
 const alertMessage = ref<string | null>(null);
 const alertType = ref<"error" | "success">("error");
+
+import { useMyToast } from "#imports";
+const { success, info, error: errorToast}  = useMyToast();
 
 onMounted(async () => {
   try {
@@ -99,17 +103,29 @@ onMounted(async () => {
 
     const msg = route.query.msg;
 
-    if (msg && msg === 'tenant_reassigned') {
-      alertMessage.value = "Inquilino reasignado correctamente";
-      alertType.value = "success";
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+    console.log('Mensaje: ', msg);
+    switch (msg) {
+      case 'tenant_reassigned':
+        success("Inquilino reasignado correctamente", 5000);
+        break;
+
+      case 'property_created':
+        success("Propiedad añadida correctamente", 5000);
+        break;
+
+      case 'property_deleted':
+        info($t("properties.detail.propertyDeleted"), 5000);
+        break;
+
+      default:
+        break;
+    }
+
+    if (msg) {
       router.replace({ query: { ...route.query, msg: undefined } });
-    }      
+    }
   } catch (e) {
-    console.error("Error al obtener propiedades:", e);
+    errorToast("Error al obtener las propiedades", 10000);    
   }
 });
 </script>

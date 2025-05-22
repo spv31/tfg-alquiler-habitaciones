@@ -1,17 +1,6 @@
 <template>
   <div class="py-8 px-4">
     <div class="max-w-3xl mx-auto mb-8">
-      <!-- Alert -->
-      <div v-if="alertMessage" class="max-w-2xl mx-auto mb-5">
-        <Alert
-          v-if="alertMessage"
-          :message="alertMessage"
-          :type="alertType"
-          @close="alertMessage = ''"
-        />
-      </div>
-
-      <!-- Título según el paso -->
       <h1 class="text-3xl font-bold text-gray-900 text-center">
         {{
           step === 1
@@ -21,9 +10,7 @@
       </h1>
     </div>
 
-    <!-- Form principal con tus clases Tailwind personalizadas -->
     <form @submit.prevent="handleSubmit" class="card-form-two-columns">
-      <!-- Paso 1: Campos obligatorios -->
       <PropertyForm
         ref="propertyFormRef"
         v-if="step === 1"
@@ -31,7 +18,6 @@
         v-model:errors="errors"
       />
 
-      <!-- Paso 2: Campos opcionales -->
       <PropertyDetailsForm
         v-else
         v-model:propertyData="propertyData"
@@ -39,9 +25,7 @@
         :optional-fields="optionalFields"
       />
 
-      <!-- Botones de navegación -->
       <div class="flex justify-between mt-4">
-        <!-- Botón "Volver" (solo step 2) -->
         <button
           v-if="step === 2"
           type="button"
@@ -51,7 +35,6 @@
           {{ $t("common.back") }}
         </button>
 
-        <!-- Botón "Continuar" (solo step 1) -->
         <button
           v-else
           type="button"
@@ -62,7 +45,6 @@
           {{ $t("common.continue") }}
         </button>
 
-        <!-- Botón "Guardar" (solo step 2) -->
         <button
           v-if="step === 2"
           type="submit"
@@ -81,7 +63,7 @@ import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
 
 const store = usePropertiesStore();
-const { t: $t } = useI18n();
+const { t: $t, locale } = useI18n();
 
 const step = ref(1);
 
@@ -226,13 +208,13 @@ function prevStep() {
   step.value = 1;
 }
 
+import { useMyToast } from "#imports";
+const { error: errorToast } = useMyToast();
+
 async function handleSubmit() {
   if (!hasErrors.value) {
     try {
       await store.createProperty(propertyData.value);
-
-      alertMessage.value = $t("properties.success_message");
-      alertType.value = "success";
 
       propertyData.value = {
         address: "",
@@ -259,15 +241,15 @@ async function handleSubmit() {
         property_size: null,
       };
       step.value = 1;
+      navigateTo(
+        `/${locale.value}/properties?msg=property_created`
+      );
     } catch (error: any) {
-      console.error("Error al registrar la propiedad:", error);
       const errorsFromBackend = error?.data?.errors || {};
       Object.keys(errorsFromBackend).forEach((key) => {
         errors.value[key] = errorsFromBackend[key][0] || "Error desconocido";
       });
-
-      alertMessage.value = $t("properties.error_message");
-      alertType.value = "error";
+      errorToast($t("properties.error_message"));
     }
   }
 }

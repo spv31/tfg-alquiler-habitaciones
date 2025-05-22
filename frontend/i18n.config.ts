@@ -21,7 +21,12 @@ export default defineI18nConfig(() => ({
         select: "Seleccionar",
         view: "Ver",
         backToEdit: "Volver a editar",
-        saving: "Guardando..."
+        saving: "Guardando...",
+        confirmation: "Confirmación",
+        delete: "Eliminar",
+        accept: "Aceptar",
+        actionAccepted: "Acción aceptada",
+        actionCancelled: "Acción cancelada",
       },
       contracts: {
         view: "Ver contrato",
@@ -62,7 +67,11 @@ export default defineI18nConfig(() => ({
         requiredField: "Campo obligatorio",
         sharedPercent: "Porcentaje que paga el arrendador (%)",
         created: "Contrato creado con éxito.",
-        viewContract: "Ver contrato"
+        viewContract: "Ver contrato",
+        editContract: "Editar contrato",
+        deleteContract: "Eliminar contrato",
+        confirmDelete: "¿Estás seguro de que quieres eliminar este contrato?",
+        deleteFailed: "Error al eliminar el contrato.",
       },
       badges: {
         status: {
@@ -356,6 +365,13 @@ export default defineI18nConfig(() => ({
             confirmUnavailable: "Marcar como disponible",
             cancel: "Cancelar",
           },
+          deleteQuestion:
+            "¿Estás seguro de que quieres eliminar esta propiedad? Esta acción no se puede deshacer.",
+          deleteSuccess: "Propiedad eliminada con éxito.",
+          statusQuestion: "¿Seguro que quieres cambiar el estado a «{status}»?",
+          statusSuccess: "Estado de la propiedad actualizado correctamente.",
+          statusChangeForbidden:
+            "No se puede cambiar el estado de una propiedad que tiene inquilinos asociados.",
         },
       },
       errors: {
@@ -365,7 +381,7 @@ export default defineI18nConfig(() => ({
         min_rooms: "Debe haber al menos 1 habitación.",
         invalid_number: "Debe ser un número válido.",
         invalid_date: "Debe ser una fecha válida.",
-        contractCreateFailed: "Error al crear el contrato."
+        contractCreateFailed: "Error al crear el contrato.",
       },
       api: {
         success: {
@@ -375,10 +391,10 @@ export default defineI18nConfig(() => ({
           invitation_sent: "Invitación enviada.",
           invitation_updated: "Invitación actualizada.",
           invitation_deleted: "Invitación eliminada.",
-          property_created: "Propiedad creada.",
+          property_created: "Propiedad añadida.",
           property_status_updated: "Estado de la propiedad actualizado.",
           property_details_updated: "Detalles de la propiedad actualizados.",
-          room_created: "Habitación creada con éxito.",
+          room_created: "Habitación añadida con éxito.",
           room_status_updated: "Estado de la habitación actualizado.",
           room_deleted: "Habitación eliminada.",
           tenant_reassigned: "Inquilino reasignado.",
@@ -481,7 +497,12 @@ export default defineI18nConfig(() => ({
         contractStart: "Contract start",
         select: "Select",
         view: "View",
-        saving: "Saving…"
+        saving: "Saving…",
+        confirmation: "Confirmation",
+        delete: "Delete",
+        accept: "Accept",
+        actionAccepted: "Action accepted",
+        actionCancelled: "Action cancelled",
       },
       contracts: {
         view: "View contract",
@@ -521,7 +542,11 @@ export default defineI18nConfig(() => ({
         shared: "Shared",
         requiredField: "Required field",
         sharedPercent: "Percentage paid by landlord (%)",
-        created: "Contract created successfully."
+        created: "Contract created successfully.",
+        editContract: "Edit contract",
+        deleteContract: "Delete contract",
+        confirmDelete: "Are you sure you want to delete this contract?",
+        deleteFailed: "Failed to delete contract.",
       },
       badges: {
         status: {
@@ -807,6 +832,14 @@ export default defineI18nConfig(() => ({
             confirmUnavailable: "Mark as available",
             cancel: "Cancel",
           },
+          deleteQuestion:
+            "Are you sure you want to delete this property? This action cannot be undone.",
+          deleteSuccess: "Property deleted successfully.",
+          statusQuestion:
+            'Are you sure you want to change the status to "{status}"?',
+          statusSuccess: "Property status updated successfully.",
+          statusChangeForbidden:
+            "You cannot change the status of a property that has tenants assigned.",
         },
       },
       errors: {
@@ -819,7 +852,7 @@ export default defineI18nConfig(() => ({
         invalid_date: "Must be a valid date.",
         total_rooms_too_low:
           "You cannot reduce the total number of rooms below the {minRooms} existing rooms.",
-        contractCreateFailed: "Error creating contract."
+        contractCreateFailed: "Error creating contract.",
       },
       api: {
         success: {

@@ -8,6 +8,7 @@ use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use App\Services\ContractService;
 use App\Services\PdfGeneratorService;
+use Auth;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -31,7 +32,7 @@ class ContractController extends Controller
     public function index()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
 
             $contracts = Contract::query()
                 ->where('tenant_id', $user->id)
@@ -62,10 +63,9 @@ class ContractController extends Controller
         try {
             $contract = $this->contractServices->createContract($request->validated());
 
-            return response()->json([
-                'message_key' => 'contract_created',
-                'contract' => new ContractResource($contract)
-            ], 201);
+            return (new ContractResource($contract))
+                ->response()
+                ->setStatusCode(201);
         } catch (Exception $e) {
             return response()->json([
                 'error_key' => 'create_contract_failed',
@@ -109,12 +109,15 @@ class ContractController extends Controller
     public function update(UpdateContractRequest $request, Contract $contract)
     {
         try {
+            if ($contract->status !== 'draft') {
+                return response()->json([
+                    'success' => false,
+                    'error_key' => 'cannot_delete_non_draft_contract',
+                ]);
+            }
+            
             $updatedContract = $this->contractServices->updateContract($contract, $request->validated());
-
-            return response()->json([
-                'message_key' => 'contract_updated',
-                'contract' => new ContractResource($updatedContract)
-            ]);
+            return new ContractResource($updatedContract);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error_key' => 'contract_not_found'
@@ -139,11 +142,15 @@ class ContractController extends Controller
     public function destroy(Contract $contract)
     {
         try {
-            $this->contractServices->deleteContract($contract);
+            if ($contract->status !== 'draft') {
+                return response()->json([
+                    'success' => false,
+                    'error_key' => 'cannot_delete_non_draft_contract',
+                ]);
+            }
 
-            return response()->json([
-                'message_key' => 'contract_deleted'
-            ], 200);
+            $this->contractServices->deleteContract($contract);
+            return response()->noContent();
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error_key' => 'contract_not_found'
@@ -159,34 +166,12 @@ class ContractController extends Controller
         }
     }
 
-    public function previewPdf(Contract $contract)
+    public function previewPdf(Contract $contract) 
     {
-        try {
-            $html = $contract->final_content;
-
-            $name = 'contract_' . $contract->id;
-
-            $path = $this->pdfGenerator->generatePdfFromHtml(
-                $html,
-                'contracts',   
-                $name
-            );
-
-            $disk    = Storage::disk('private');
-            $content = $disk->get($path);
-            $full    = $disk->path($path);
-            $mime    = mime_content_type($full);
-            $fileName = basename($path);
-
-            return response($content, 200, [
-                'Content-Type'        => $mime,
-                'Content-Disposition' => 'inline; filename="' . $fileName . '"',
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'error_key' => 'preview_contract_failed',
-                'message'   => $e->getMessage(),
-            ], 500);
-        }
+        $file = $this->contractServices->getPreviewFile($contract);
+        return response($file['content'], 200, [
+            'Content-Type' => $file['mime'],
+            'Content-Disposition' => 'inline; filename="'.$file['name'].'"',
+        ]);
     }
 }

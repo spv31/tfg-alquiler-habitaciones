@@ -242,10 +242,7 @@ export const useAuthStore = defineStore(
       return data;
     };
 
-    const fetchUserImageUrl = async (
-      userId: number,
-      filename: string,
-    ) => {
+    const fetchUserImageUrl = async (userId: number, filename: string) => {
       const cacheKey = `${userId}-${filename}`;
 
       if (userImagesCache.value[cacheKey]) {
@@ -262,7 +259,7 @@ export const useAuthStore = defineStore(
         console.error("Error getting user image:", error);
         return null;
       }
-    }
+    };
 
     return {
       user,
@@ -276,12 +273,13 @@ export const useAuthStore = defineStore(
       signOut,
       fetchUserImage,
       fetchUserImageUrl,
-      userImagesCache
+      userImagesCache,
     };
   },
   {
     persist: {
       storage: localStorage,
+      paths: ["userImagesCache"],
     },
   }
 );

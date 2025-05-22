@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import type { PersistenceOptions } from "pinia-plugin-persistedstate";
 import { getCsrfToken } from "#imports";
 import type {
   PropertyCollection,
@@ -292,6 +293,20 @@ export const usePropertiesStore = defineStore(
       propertyId: Property["id"],
       status: "available" | "unavailable" | "occupied" | "partially_occupied"
     ): Promise<Property> => {
+      console.log(`ID: ${propertyId}`);
+      const propertyIndex = properties.value.findIndex(
+        (property) => property.id === propertyId
+      );
+      console.log("Property Id: ", propertyId, propertyIndex, properties.value);
+      const propertyStatus = properties.value[propertyIndex].status;
+      if (
+        ((propertyStatus === "occupied" ||
+          propertyStatus === "partially_occupied") &&
+          status === "available") ||
+        status === "unavailable"
+      ) {
+        throw new Error("property_status_change_forbidden_due_to_tenant");
+      }
       const { data, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
@@ -321,15 +336,18 @@ export const usePropertiesStore = defineStore(
       if (index !== -1) {
         properties.value[index] = property;
       }
-      roomsMap.value[propertyId].rooms.forEach((room) => {
-        if (
-          (property.status === "available" ||
-            property.status === "unavailable") &&
-          room.status !== property.status
-        ) {
-          room.status = property.status;
-        }
-      });
+      if (roomsMap.value[propertyId]) {
+        roomsMap.value[propertyId].rooms.forEach((room) => {
+          if (
+            (property.status === "available" ||
+              property.status === "unavailable") &&
+            room.status !== property.status
+          ) {
+            room.status = property.status;
+          }
+        });
+      }
+
       return property;
     };
 
@@ -632,16 +650,17 @@ export const usePropertiesStore = defineStore(
       if (totalRoomsExpected && totalRooms < totalRoomsExpected) {
         const missing = totalRoomsExpected - totalRooms;
 
-        console.log('expected: ', totalRoomsExpected);
-        console.log('tenemos:' , totalRooms);
-        console.log('faltan: ', missing);
+        console.log("expected: ", totalRoomsExpected);
+        console.log("tenemos:", totalRooms);
+        console.log("faltan: ", missing);
         roomsWarning.value = {
-          key: missing === 1
-               ? "properties.detail.rooms.missing_rooms_warning_singular"
-               : "properties.detail.rooms.missing_rooms_warning_plural",
+          key:
+            missing === 1
+              ? "properties.detail.rooms.missing_rooms_warning_singular"
+              : "properties.detail.rooms.missing_rooms_warning_plural",
           parms: {
-           expected: totalRoomsExpected,
-           total_expected: totalRoomsExpected,
+            expected: totalRoomsExpected,
+            total_expected: totalRoomsExpected,
             current: totalRooms,
             missing,
           },
@@ -1098,6 +1117,14 @@ export const usePropertiesStore = defineStore(
     };
   },
   {
-    persist: { storage: localStorage },
+    persist: {
+      storage: sessionStorage,
+      pick: [
+        "properties",
+        "roomsMap",
+        "lastFetchedPropertiesAt",
+        "lastFetchedRoomsAt",
+      ],
+    } satisfies PersistenceOptions,
   }
 );

@@ -33,7 +33,7 @@ class ContractTemplateController extends Controller
     {
         try {
             $templates = ContractTemplate::where('is_default', true)
-                ->orWhere('user_id', auth()->id())
+                ->orWhere('user_id', Auth::id())
                 ->get();
 
             return ContractTemplateResource::collection($templates);

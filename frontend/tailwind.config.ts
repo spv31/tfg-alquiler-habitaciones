@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+import PrimeUI from 'tailwindcss-primeui';
 export default {
   darkMode: "class",
   content: [
@@ -134,5 +135,6 @@ export default {
   plugins: [
     require("@tailwindcss/line-clamp"),
     require("@tailwindcss/typography"),
+    PrimeUI,
   ],
 };

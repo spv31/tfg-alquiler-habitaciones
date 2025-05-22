@@ -498,6 +498,7 @@ type ContractWizardProps = {
 };
 const props = defineProps<ContractWizardProps>();
 
+import type { StoreContractPayload } from "~/types/contract";
 import { useContractsStore } from "~/store/contracts";
 const contractsStore = useContractsStore();
 const { contractTemplates, loading } = storeToRefs(contractsStore);
@@ -505,7 +506,7 @@ const alertMessage = ref<string | null>(null);
 
 import { useI18n } from "vue-i18n";
 import type { ContractTemplate } from "~/types/contractTemplate";
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const PreviewImage = defineAsyncComponent(
   () => import("~/components/ui/PreviewImage.vue")
@@ -529,10 +530,12 @@ const openViewer = async (id: number) => {
   const blob = await fetch(blobUrl).then((r) => r.blob());
   pdfUrl.value = await blobToDataUrl(blob);
 };
+
 const closeViewer = () => {
   showId.value = null;
   pdfUrl.value = "";
 };
+
 const blobToDataUrl = (blob: Blob) => {
   return new Promise<string>((res, rej) => {
     const r = new FileReader();
@@ -679,7 +682,6 @@ const validate = (): string[] => {
   return errors;
 };
 
-import type { StoreContractPayload } from "~/types/contract";
 
 const buildPayload = (): StoreContractPayload => ({
   contract_template_id: selectedTemplate.value!.id,
@@ -722,28 +724,14 @@ const submitContract = async () => {
     saving.value = true;
     const payload = buildPayload();
     console.log('Payload: ', payload);
-    const contract = await contractsStore.saveContract(payload);
+    await contractsStore.saveContract(payload);
 
     const successQuery = { msg: "contract_created" };
 
-    if (props.roomId) {
-      navigateTo(
-        {
-          name: "properties-propertyId-rooms-roomId-index",
-          params: { propertyId: props.propertyId, roomId: props.roomId },
-          query: successQuery,
-        },
-        { replace: true }
-      );
+    if (props.roomId && props.roomId !== 0) {
+      navigateTo(`/${locale.value}/properties/${props.propertyId}/rooms/${props.roomId}?msg=${successQuery}`)
     } else {
-      navigateTo(
-        {
-          name: "properties-propertyId-index",
-          params: { propertyId: props.propertyId },
-          query: successQuery,
-        },
-        { replace: true }
-      );
+      navigateTo(`/${locale.value}/properties/${props.propertyId}?msg=${successQuery}`)
     }
   } catch (err: any) {
     console.error(err);

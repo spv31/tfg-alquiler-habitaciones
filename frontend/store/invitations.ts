@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import type { PersistenceOptions } from "pinia-plugin-persistedstate";
 import { getCsrfToken } from "#imports";
 import type {
   InvitationCollection,
@@ -109,9 +110,9 @@ export const useInvitationsStore = defineStore(
           email: invitationData.email,
           property_id: invitationData.property_id,
         };
-      
+
         if (invitationData.room_id) {
-          formattedData.room_id = invitationData.room_id; 
+          formattedData.room_id = invitationData.room_id;
         }
 
         return await $fetch<CreateInvitationResponse>(
@@ -274,6 +275,9 @@ export const useInvitationsStore = defineStore(
     };
   },
   {
-    persist: { storage: localStorage },
+    persist: {
+      storage: sessionStorage,
+      pick: ["invitations", "currentInvitation"],
+    } satisfies PersistenceOptions,
   }
 );

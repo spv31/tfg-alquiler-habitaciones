@@ -93,7 +93,6 @@ const editor = useEditor({
     StarterKit,
     Placeholder,
     Underline,
-    TextStyle,
     FontFamily,
     FontSize,
     TextAlign.configure({

@@ -1,3 +1,4 @@
+import type { PersistenceOptions } from "pinia-plugin-persistedstate";
 import type { ContractTemplate } from "~/types/contractTemplate";
 import type { Contract, StoreContractPayload } from "~/types/contract";
 
@@ -137,8 +138,7 @@ export const useContractsStore = defineStore(
       if (index != -1) {
         contractTemplates.value[index] = data.data;
       }
-
-      return data;
+      return data.data;
     };
 
     const deleteContractTemplate = async (id: number) => {
@@ -170,6 +170,10 @@ export const useContractsStore = defineStore(
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
       });
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      contracts.value = data.data;
     };
 
     const fetchContract = async () => {
@@ -197,14 +201,35 @@ export const useContractsStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
+      contracts.value.push(data.data);
       return data.data;
     };
 
-    const updateContract = async () => {
+    const updateContract = async (
+      id: number,
+      contract: StoreContractPayload
+    ) => {
       const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
+        return $fetch<{ data: Contract }>(`${apiBaseUrl}/contracts`, {
+          method: "POST",
+          body: contract,
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrf,
+            Accept: "application/json",
+          },
+        });
       });
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      const index = contracts.value.findIndex((contract) => contract.id === id);
+      if (index !== -1) {
+        contracts.value[index] = data.data;
+      }
+      return data.data;
     };
 
     const deleteContract = async (id: number) => {
@@ -212,6 +237,12 @@ export const useContractsStore = defineStore(
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
       });
+      if (error) throw error;
+      contracts.value = contracts.value.filter(
+        (contract) => contract.id !== id
+      );
+      currentContract.value = null;
+      // if (!data) throw new Error("No data received");
     };
 
     const fetchContractTemplatePdf = async (id: number) => {
@@ -280,7 +311,6 @@ export const useContractsStore = defineStore(
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
 
-        // ⇩⇩⇩  Ajusta el endpoint si tu backend usa otra ruta
         return $fetch<Blob>(`${apiBaseUrl}/contracts/${id}/pdf`, {
           method: "GET",
           responseType: "blob",
@@ -327,6 +357,16 @@ export const useContractsStore = defineStore(
     };
   },
   {
-    persist: { storage: localStorage },
+    persist: {
+      storage: sessionStorage,
+      pick: [
+        "contractTemplates",
+        "contracts",
+        "currentContractTemplate",
+        "currentContract",
+        "lastFetchedPreviewAt",
+        "lastFetchedContractAt",
+      ],
+    } satisfies PersistenceOptions,
   }
 );

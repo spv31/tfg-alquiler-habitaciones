@@ -176,6 +176,29 @@
         </template>
       </CircleIconButton>
 
+      <CircleIconButton :label="$t('common.remove')" @click="onRemove">
+        <template #icon>
+          <svg
+            class="h-6 w-6 text-red-600 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M19 7l-.867 
+          12.142A2 2 0 0116.138 21H7.862a2 2 0 
+          01-1.995-1.858L5 7m5 
+          4v6m4-6v6m1-10V4a1 1 
+          0 00-1-1h-4a1 1 
+          0 00-1 1v3M4 
+          7h16"
+            />
+          </svg>
+        </template>
+      </CircleIconButton>
       <CircleIconButton
         :label="hasContract ? $t('contracts.view') : $t('contracts.generate')"
         @click="hasContract ? viewContract(contract!.id) : startContractFlow()"
@@ -197,26 +220,47 @@
           </svg>
         </template>
       </CircleIconButton>
-
-      <CircleIconButton :label="$t('common.remove')" @click="onRemove">
+      <CircleIconButton
+        v-if="hasContract"
+        :label="$t('contracts.editContract')"
+        @click="editContract(contract!.id)"
+      >
         <template #icon>
           <svg
-            class="h-6 w-6 text-red-600 mx-auto"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-info"
             fill="none"
-            stroke="currentColor"
-            stroke-width="2"
             viewBox="0 0 24 24"
+            stroke="currentColor"
           >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              d="M19 7l-.867 
-                 12.142A2 2 0 0116.138 21H7.862a2 2 0 
-                 01-1.995-1.858L5 7m5 
-                 4v6m4-6v6m1-10V4a1 1 
-                 0 00-1-1h-4a1 1 
-                 0 00-1 1v3M4 
-                 7h16"
+              stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+        </template>
+      </CircleIconButton>
+
+      <CircleIconButton
+        v-if="hasContract"
+        :label="$t('contracts.deleteContract')"
+        @click="deleteContract(contract!.id)"
+      >
+        <template #icon>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-red-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
             />
           </svg>
         </template>
@@ -236,6 +280,8 @@ import { useContractsStore } from "~/store/contracts";
 
 import type { Tenant } from "~/types/tenant";
 import defaultAvatar from "~/assets/images/default.jpg";
+import { useMyToast } from "#imports";
+const { success, error, info } = useMyToast();
 
 const props = defineProps<{
   tenant: Tenant;
@@ -244,48 +290,15 @@ const props = defineProps<{
 const { locale, t } = useI18n();
 const contractsStore = useContractsStore();
 
-const contract       = computed(() => props.tenant.contract);
-const hasContract    = computed(() => !!contract.value);
-const isActive       = computed(() => contract.value?.status === "active");
-const isPending      = computed(() => contract.value?.status === "pending_signature");
+const contract = computed(() => props.tenant.contract);
+const hasContract = computed(() => !!contract.value);
+const isActive = computed(() => contract.value?.status === "active");
+const isPending = computed(
+  () => contract.value?.status === "pending_signature"
+);
 
 const showViewer = ref(false);
-const pdfUrl     = ref("");
-
-const blobToBase64 = (blob: Blob): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
-    reader.onerror   = reject;
-    reader.readAsDataURL(blob);
-  });
-
-const startContractFlow = () => {
-  navigateTo({
-    path: `/${locale.value}/contracts/create`,
-    query: {
-      tenantId:   props.tenant.id,
-      propertyId: props.tenant.property_id,
-      roomId:     props.tenant.room_id ?? null,
-    },
-  });
-};
-
-const viewContract = async (id: number) => {
-  try {
-    const blob   = await contractsStore.fetchContractPdfBlob(id);
-    const base64 = await blobToBase64(blob);
-    pdfUrl.value = `data:application/pdf;base64,${base64}`;
-    showViewer.value = true;
-  } catch (err) {
-    console.error("Error loading contract PDF", err);
-  }
-};
-
-const onChat     = () => {};
-const onRemove   = () => {};
-const moveTenant = () =>
-  navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
+const pdfUrl = ref("");
 
 const ContractViewerModal = defineAsyncComponent(
   () => import("~/components/ui/ContractViewerModal.vue")
@@ -294,7 +307,60 @@ const CircleIconButton = defineAsyncComponent(
   () => import("~/components/ui/CircleIconButton.vue")
 );
 const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
-</script>
 
+const blobToBase64 = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+const startContractFlow = () => {
+  navigateTo({
+    path: `/${locale.value}/contracts/create`,
+    query: {
+      tenantId: props.tenant.id,
+      propertyId: props.tenant.property_id,
+      roomId: props.tenant.room_id ?? null,
+    },
+  });
+};
+
+const onChat = () => {};
+const onRemove = () => {
+  error("Eliminación de inquilino en progreso", 5000);
+
+};
+const moveTenant = () =>
+  navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
+
+const viewContract = async (id: number) => {
+  try {
+    const blob = await contractsStore.fetchContractPdfBlob(id);
+    const base64 = await blobToBase64(blob);
+    pdfUrl.value = `data:application/pdf;base64,${base64}`;
+    showViewer.value = true;
+  } catch (err) {
+    console.error("Error loading contract PDF", err);
+  }
+};
+
+const editContract = async (id: number) => {
+  try {
+    info("Testing", 7500);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const deleteContract = async (id: number) => {
+  try {
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+</script>
 
 <style scoped></style>
