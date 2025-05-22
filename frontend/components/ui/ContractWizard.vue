@@ -702,7 +702,7 @@ const buildPayload = (): StoreContractPayload => ({
   end_date: business.end_date || null,
   extension_date: null,
 
-  status: "pending_signature",
+  status: "draft",
 
   final_content: htmlWithTokensReplaced.value,
   token_values: { ...tokenValues },

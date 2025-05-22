@@ -35,7 +35,7 @@ class StoreContractRequest extends FormRequest
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date'],
             'extension_date' => ['nullable', 'date'],
-            'status' => ['required', 'in:pending_signature,active,finished'],
+            'status' => ['required', 'in:draft,signed_by_owner,active,finished'],
             'pdf_path' => ['nullable', 'string'],
             'pdf_path_signed' => ['nullable', 'string'],
             'token_values' => ['required', 'array'],

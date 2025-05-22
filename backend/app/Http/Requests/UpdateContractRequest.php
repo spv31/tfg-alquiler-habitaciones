@@ -35,7 +35,7 @@ class UpdateContractRequest extends FormRequest
             'start_date' => ['sometimes', 'required', 'date'],
             'end_date' => ['nullable', 'date'],
             'extension_date' => ['nullable', 'date'],
-            'status' => ['sometimes', 'required', 'in:pending_signature,active,finished'],
+            'status' => ['sometimes', 'required', 'in:draft,signed_by_owner,active,finished'],
             'pdf_path' => ['nullable', 'string'],
             'pdf_path_signed' => ['nullable', 'string'],
             'final_content' => ['nullable', 'string'],

@@ -1,4 +1,4 @@
-type ContractStatus = "pending_signature" | "active" | "finished";
+type ContractStatus = "draft" | "signed_by_owner" | "active" | "finished";
 type UtilitiesPayer = "tenant" | "owner" | "shared";
 
 export interface Contract {
@@ -16,7 +16,7 @@ export interface Contract {
 	start_date: string
   end_date: string | null
   extension_date: string | null
-  status: 'pending_signature' | 'active' | 'finished'
+  status: 'draft' | 'signed_by_owner' | 'active' | 'finished'
   pdf_path: string | null
   pdf_path_signed: string | null
   final_content: string | null

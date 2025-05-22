@@ -345,6 +345,11 @@ export default defineI18nConfig(() => ({
             saveRoomButton: "Guardar Habitación",
             makeUnavailableButton: "Estado",
             makeAvailableButton: "Estado",
+            deleteQuestion:
+              "¿Estás seguro de que quieres eliminar esta habitación?",
+            deleteSuccess: "Habitación eliminada con éxito.",
+            statusQuestion:
+              "¿Seguro que quieres cambiar el estado a «{status}»?",
           },
           addRoomHelpText: "Haz clic para registrar una nueva habitación",
           noRoomsPrompt: "¡Comienza añadiendo tu primera habitación!",
@@ -812,6 +817,10 @@ export default defineI18nConfig(() => ({
             saveRoomButton: "Save Room",
             makeUnavailableButton: "Mark as unavailable",
             makeAvailableButton: "Mark as available",
+            deleteQuestion: "Are you sure you want to delete this room?",
+            deleteSuccess: "Room deleted successfully.",
+            statusQuestion:
+              'Are you sure you want to change the status to "{status}"?',
           },
           addRoomHelpText: "Click to register a new room",
           noRoomsPrompt: "Start by adding your first room!",

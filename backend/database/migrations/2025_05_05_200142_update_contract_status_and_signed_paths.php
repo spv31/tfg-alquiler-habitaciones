@@ -21,7 +21,7 @@ return new class extends Migration
 
             $table->string('pdf_path_signed_owner')->nullable()->after('pdf_path');
             $table->string('pdf_path_signed_tenant')->nullable()->after('pdf_path_signed_owner');
-        
+
             $table->timestamp('signed_by_owner_at')->nullable()->after('pdf_path_signed_tenant');
             $table->timestamp('signed_by_tenant_at')->nullable()->after('signed_by_owner_at');
         });

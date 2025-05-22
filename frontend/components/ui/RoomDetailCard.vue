@@ -132,28 +132,24 @@
                   ? $t('properties.detail.rooms.makeUnavailableButton')
                   : $t('properties.detail.rooms.makeAvailableButton')
               "
-              @click="showChangeStatusModal = true"
+              @click="handleChangeStatus"
             >
               <template #icon>
-                <svg
-                  class="h-6 w-6 text-red-600 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 20V4M5 11l7-7 7 7"
-                  />
-                </svg>
+                <i
+                  :class="[
+                    'pi',
+                    room.status === 'available'
+                      ? 'pi-lock text-red-500'
+                      : 'pi-unlock text-info',
+                    'text-xl',
+                  ]"
+                />
               </template>
             </CircleIconButton>
 
             <CircleIconButton
               :label="$t('properties.detail.deleteButton')"
-              @click="showDeleteModal = true"
+              @click="handleDeleteRoom"
             >
               <template #icon>
                 <svg
@@ -171,23 +167,10 @@
                 </svg>
               </template>
             </CircleIconButton>
-
-            <ConfirmDeleteModal
-              :show="showDeleteModal"
-              @confirm="handleDeleteRoom"
-              @cancel="showDeleteModal = false"
-            />
           </div>
         </div>
       </div>
     </div>
-
-    <StatusChangeModal
-      :show="showChangeStatusModal"
-      :currentStatus="room.status"
-      @cancel="showChangeStatusModal = false"
-      @confirm="handleChangeStatus"
-    />
   </div>
 </template>
 
@@ -195,8 +178,7 @@
 import { useI18n } from "vue-i18n";
 import { statusBadgeClasses, statusLabel } from "~/utils/badges";
 import { usePropertiesStore } from "../../store/properties";
-
-const propertiesStore = usePropertiesStore();
+import { useMyToast, useMyConfirm } from "#imports";
 
 const props = defineProps<{
   room: any;
@@ -206,43 +188,71 @@ const props = defineProps<{
   };
 }>();
 
+const propertiesStore = usePropertiesStore();
 const { t, locale } = useI18n();
+
+const toast = useMyToast();
+const confirm = useMyConfirm();
 
 const isExpanded = ref(false);
 const showStats = ref(false);
-const showChangeStatusModal = ref(false);
-const showDeleteModal = ref(false);
 
 const editRoomLink = computed(() => {
   return `/properties/${props.room.property_id}/rooms/${props.room.id}/edit`;
 });
 
-const handleDeleteRoom = async () => {
-  try {
-    await propertiesStore.deleteRoom(props.room.property_id, props.room.id);
-    showDeleteModal.value = false;
-
-    navigateTo(`/${locale.value}/properties/${props.room.property_id}?msg=room_deleted`);
-  } catch (error) {
-    alert(t("common.errorDeleting"));
-  }
+const handleDeleteRoom = () => {
+  confirm.show({
+    message: t("properties.detail.rooms.deleteQuestion"),
+    header: t("common.confirmation"),
+    icon: "pi pi-exclamation-triangle text-red-500 text-xl",
+    acceptLabel: t("common.delete"),
+    rejectLabel: t("common.cancel"),
+    acceptSeverity: "danger",
+    onAccept: async () => {
+      try {
+        await propertiesStore.deleteRoom(props.room.property_id, props.room.id);
+        toast.success(t("properties.detail.rooms.deleteSuccess"));
+        navigateTo(
+          `/${locale.value}/properties/${props.room.property_id}?msg=room_deleted`
+        );
+      } catch {
+        toast.error(t("common.errorDeleting"));
+      }
+    },
+  });
 };
 
-const handleChangeStatus = async () => {
-  try {
-    const newStatus =
-      props.room.status === "available" ? "unavailable" : "available";
-    await propertiesStore.changeRoomStatus(
-      props.room.property_id,
-      props.room.id,
-      newStatus
-    );
+const handleChangeStatus = () => {
+  const newStatus =
+    props.room.status === "available" ? "unavailable" : "available";
 
-    showChangeStatusModal.value = false;
-    await propertiesStore.fetchRoom(props.room.property_id, props.room.id);
-  } catch (error) {
-    alert(t("common.errorUpdatingStatus"));
-  }
+  confirm.show({
+    message: t("properties.detail.rooms.statusQuestion", { status: newStatus }),
+    header: t("common.confirmation"),
+    icon: "pi pi-info-circle text-info text-xl",
+    acceptLabel: t("common.accept"),
+    rejectLabel: t("common.cancel"),
+    acceptSeverity: "info",
+    onAccept: async () => {
+      try {
+        await propertiesStore.changeRoomStatus(
+          props.room.property_id,
+          props.room.id,
+          newStatus
+        );
+        toast.success(t("properties.detail.statusSuccess"));
+
+        await propertiesStore.fetchRoom(props.room.property_id, props.room.id);
+      } catch (e: any) {
+        if (e.message === "property_status_change_forbidden_due_to_tenant") {
+          toast.warn(t("properties.detail.statusChangeForbidden"));
+        } else {
+          toast.error(t("common.errorUpdatingStatus"));
+        }
+      }
+    },
+  });
 };
 </script>
 

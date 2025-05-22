@@ -111,7 +111,7 @@ class User extends Authenticatable
   public function contract()
   {
     return $this->hasOne(Contract::class, 'tenant_id')
-      ->whereIn('status', ['pending_signature', 'active'])
+      ->whereIn('status', ['draft', 'signed_by_owner', 'active'])
       ->latestOfMany();  
   }
 }
