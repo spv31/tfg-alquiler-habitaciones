@@ -27,6 +27,8 @@ export default defineI18nConfig(() => ({
         accept: "Aceptar",
         actionAccepted: "Acción aceptada",
         actionCancelled: "Acción cancelada",
+        noInlinePdf: "Tu dispositivo no permite mostrar el PDF directamente.",
+        openNewTab: "Abrir en una nueva pestaña",
       },
       contracts: {
         view: "Ver contrato",
@@ -34,6 +36,8 @@ export default defineI18nConfig(() => ({
         alert: {
           noContract: "Este inquilino aún no tiene contrato.",
           pendingSignature: "El contrato está pendiente de firma.",
+          signedByOwner:
+            "El contrato ya lo ha firmado el arrendador. Falta la firma del inquilino.",
         },
         selectTemplate: "Selecciona una plantilla",
         defaultTemplate: "Plantilla predeterminada",
@@ -72,6 +76,15 @@ export default defineI18nConfig(() => ({
         deleteContract: "Eliminar contrato",
         confirmDelete: "¿Estás seguro de que quieres eliminar este contrato?",
         deleteFailed: "Error al eliminar el contrato.",
+        create_success_message: "Contrato creado correctamente.",
+        update_success_message: "Contrato actualizado correctamente.",
+        uploadSigned: "Subir contrato firmado",
+        uploadSelected: "Se ha seleccionado «{name}» para subir.",
+      },
+      templates: {
+        created: "Plantilla creada correctamente",
+        updated: "Plantilla actualizada correctamente",
+        deleted: "Plantilla eliminada correctamente",
       },
       badges: {
         status: {
@@ -86,6 +99,9 @@ export default defineI18nConfig(() => ({
           per_room: "Por habitaciones",
           unknown: "Desconocido",
         },
+      },
+      tenants: {
+        reassigned: "Inquilino reasignado correctamente",
       },
       navbar: {
         login: "Inicia Sesión",
@@ -237,6 +253,7 @@ export default defineI18nConfig(() => ({
       properties: {
         success_message: "¡Propiedad registrada con éxito!",
         update_success_message: "Propiedad actualizada con éxito.",
+        created: "Propiedad añadida correctamente.",
         error_message:
           "Hubo un error al registrar la propiedad. Por favor, inténtalo de nuevo.",
         add_title: "Añadir Propiedad",
@@ -350,6 +367,7 @@ export default defineI18nConfig(() => ({
             deleteSuccess: "Habitación eliminada con éxito.",
             statusQuestion:
               "¿Seguro que quieres cambiar el estado a «{status}»?",
+            roomDeleted: "Habitación eliminada correctamente",
           },
           addRoomHelpText: "Haz clic para registrar una nueva habitación",
           noRoomsPrompt: "¡Comienza añadiendo tu primera habitación!",
@@ -508,6 +526,8 @@ export default defineI18nConfig(() => ({
         accept: "Accept",
         actionAccepted: "Action accepted",
         actionCancelled: "Action cancelled",
+        noInlinePdf: "Your device does not allow displaying the PDF directly.",
+        openNewTab: "Open in a new tab",
       },
       contracts: {
         view: "View contract",
@@ -515,6 +535,8 @@ export default defineI18nConfig(() => ({
         alert: {
           noContract: "This tenant doesn’t have a contract yet.",
           pendingSignature: "The contract is pending signature.",
+          signedByOwner:
+            "The contract is already signed by the landlord. Tenant signature pending.",
         },
         selectTemplate: "Select a template",
         defaultTemplate: "Default template",
@@ -552,6 +574,15 @@ export default defineI18nConfig(() => ({
         deleteContract: "Delete contract",
         confirmDelete: "Are you sure you want to delete this contract?",
         deleteFailed: "Failed to delete contract.",
+        create_success_message: "Contract created successfully.",
+        update_success_message: "Contract updated successfully.",
+        uploadSigned: "Upload signed contract",
+        uploadSelected: "«{name}» selected for upload.",
+      },
+      templates: {
+        created: "Template created successfully",
+        updated: "Template updated successfully",
+        deleted: "Template deleted successfully",
       },
       badges: {
         status: {
@@ -566,6 +597,9 @@ export default defineI18nConfig(() => ({
           per_room: "Per room",
           unknown: "Unknown",
         },
+      },
+      tenants: {
+        reassigned: "Tenant reassigned successfully",
       },
       navbar: {
         login: "Log In",
@@ -713,6 +747,7 @@ export default defineI18nConfig(() => ({
       properties: {
         success_message: "Property registered successfully!",
         update_success_message: "Property updated successfully.",
+        created: "Property added successfully.",
         error_message:
           "There was an error registering the property. Please try again.",
         add_title: "Add Property",
@@ -821,6 +856,7 @@ export default defineI18nConfig(() => ({
             deleteSuccess: "Room deleted successfully.",
             statusQuestion:
               'Are you sure you want to change the status to "{status}"?',
+            roomDeleted: "Room deleted successfully",
           },
           addRoomHelpText: "Click to register a new room",
           noRoomsPrompt: "Start by adding your first room!",

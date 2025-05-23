@@ -29,7 +29,6 @@
 <script setup lang="ts">
 import { useInvitationsStore } from "~/store/invitations";
 import type { CreateInvitationResponse } from "~/types/invitation";
-import { useMyToast } from "#imports"; 
 
 const props = defineProps<{
   propertyId: number;

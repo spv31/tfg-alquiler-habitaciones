@@ -66,9 +66,10 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { usePropertiesStore } from "~/store/properties";
-import type { Tenant } from "../../../types/tenant";
+import { useFlashToast } from "#imports";
 
 const { t: $t, locale } = useI18n();
+const { showFlash } = useFlashToast();
 const propertiesStore = usePropertiesStore();
 const { currentProperty, rooms, loading, error, roomsWarning } =
   storeToRefs(propertiesStore);
@@ -82,15 +83,7 @@ const roomsReady = ref(false);
 
 onMounted(async () => {
   try {
-    const msg = route.query.msg;
-
-    if (msg === "room_created") {
-      alertMessage.value = $t("api.success.room_created");
-      alertType.value = "success";
-    } else if (msg === "property_updated") {
-      alertMessage.value = $t("properties.update_success_message");
-      alertType.value = "success";
-    }
+    showFlash();
 
     await propertiesStore.fetchProperty(propertyId);
     if (currentProperty.value?.rental_type === "per_room") {
@@ -107,15 +100,6 @@ onMounted(async () => {
         propertyId,
         filename
       );
-    }
-
-    // Limpiar la query después del fetch
-    if (msg) {
-      nextTick(() => {
-        navigateTo(`/${locale.value}/properties/${propertyId}`, {
-          replace: true,
-        });
-      });
     }
   } catch (e) {
     console.error("Error al obtener la propiedad:", e);

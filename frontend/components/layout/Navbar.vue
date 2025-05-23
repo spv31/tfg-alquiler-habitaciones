@@ -206,7 +206,7 @@
             </li>
             <li>
               <NuxtLink
-                :to="$localePath('contracts')"
+                :to="$localePath('contract-templates')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.contracts") }}

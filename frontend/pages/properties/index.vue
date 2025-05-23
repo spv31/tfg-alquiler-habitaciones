@@ -96,35 +96,14 @@ const alertType = ref<"error" | "success">("error");
 
 import { useMyToast } from "#imports";
 const { success, info, error: errorToast}  = useMyToast();
+const { showFlash } = useFlashToast();
 
 onMounted(async () => {
   try {
     await fetchProperties();
-
-    const msg = route.query.msg;
-
-    console.log('Mensaje: ', msg);
-    switch (msg) {
-      case 'tenant_reassigned':
-        success("Inquilino reasignado correctamente", 5000);
-        break;
-
-      case 'property_created':
-        success("Propiedad añadida correctamente", 5000);
-        break;
-
-      case 'property_deleted':
-        info($t("properties.detail.propertyDeleted"), 5000);
-        break;
-
-      default:
-        break;
-    }
-
-    if (msg) {
-      router.replace({ query: { ...route.query, msg: undefined } });
-    }
+    showFlash();
   } catch (e) {
+    console.error('Error: ', e);
     errorToast("Error al obtener las propiedades", 10000);    
   }
 });

@@ -3,15 +3,18 @@
     class="bg-white/90 shadow-2xl rounded-2xl p-8 space-y-6 transition-all hover:shadow-3xl group"
   >
     <Alert
-      v-if="!hasContract || isPending"
-      :type="!hasContract ? 'info' : 'warning'"
+      v-if="!hasContract || isDraft || isOwnerSigned"
+      :type="!hasContract ? 'info' : isOwnerSigned ? 'success' : 'warning'"
       :message="
         !hasContract
           ? t('contracts.alert.noContract')
-          : t('contracts.alert.pendingSignature')
+          : isOwnerSigned
+            ? t('contracts.alert.signedByOwner')
+            : t('contracts.alert.pendingSignature')
       "
       class="rounded-lg"
     />
+
     <div class="flex items-center justify-between border-b pb-6">
       <div>
         <h2 class="text-xl font-bold text-gray-800">
@@ -265,6 +268,36 @@
           </svg>
         </template>
       </CircleIconButton>
+      <CircleIconButton
+        v-if="hasContract && !isOwnerSigned"
+        :label="$t('contracts.uploadSigned')"
+        @click="triggerUpload"
+      >
+        <template #icon>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 text-info"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16.862 3.487a2.25 2.25 0 113.182 3.182L7.5 19.213 3 21l1.787-4.5 12.075-13.013z"
+            />
+          </svg>
+        </template>
+      </CircleIconButton>
+
+      <input
+        ref="fileInput"
+        type="file"
+        accept="application/pdf"
+        class="hidden"
+        @change="onFileSelected"
+      />
     </div>
     <ContractViewerModal
       v-if="hasContract"
@@ -292,10 +325,11 @@ const contractsStore = useContractsStore();
 
 const contract = computed(() => props.tenant.contract);
 const hasContract = computed(() => !!contract.value);
-const isActive = computed(() => contract.value?.status === "active");
-const isPending = computed(
-  () => contract.value?.status === "pending_signature"
+const isDraft = computed(() => contract.value?.status === "draft");
+const isOwnerSigned = computed(
+  () => contract.value?.status === "signed_by_owner"
 );
+const isActive = computed(() => contract.value?.status === "active");
 
 const showViewer = ref(false);
 const pdfUrl = ref("");
@@ -307,6 +341,7 @@ const CircleIconButton = defineAsyncComponent(
   () => import("~/components/ui/CircleIconButton.vue")
 );
 const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
+const fileInput = ref<HTMLInputElement | null>(null);
 
 const blobToBase64 = (blob: Blob): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -330,7 +365,6 @@ const startContractFlow = () => {
 const onChat = () => {};
 const onRemove = () => {
   error("Eliminación de inquilino en progreso", 5000);
-
 };
 const moveTenant = () =>
   navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
@@ -338,8 +372,7 @@ const moveTenant = () =>
 const viewContract = async (id: number) => {
   try {
     const blob = await contractsStore.fetchContractPdfBlob(id);
-    const base64 = await blobToBase64(blob);
-    pdfUrl.value = `data:application/pdf;base64,${base64}`;
+    pdfUrl.value = URL.createObjectURL(blob);
     showViewer.value = true;
   } catch (err) {
     console.error("Error loading contract PDF", err);
@@ -356,10 +389,26 @@ const editContract = async (id: number) => {
 
 const deleteContract = async (id: number) => {
   try {
-
   } catch (err) {
     console.error(err);
   }
+};
+
+// ---------- subida contrato firmado ----------
+
+const triggerUpload = () => {
+  fileInput.value?.click();
+};
+
+const onFileSelected = (e: Event) => {
+  const files = (e.target as HTMLInputElement).files;
+  if (!files || !files.length) return;
+  const file = files[0];
+
+  // por ahora solo mostramos un aviso
+  success(t("contracts.uploadSelected", { name: file.name }), 4000);
+
+  // TODO: lógica de subida + llamada a API
 };
 </script>
 

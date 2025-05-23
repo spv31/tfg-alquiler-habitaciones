@@ -230,9 +230,55 @@
             </button>
           </div>
 
-          <client-only>
-            <PdfViewer v-if="pdfUrl" :url="pdfUrl" class="flex-1 p-4" />
-          </client-only>
+          <teleport to="body">
+            <div
+              v-if="showId"
+              class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6"
+              @click.self="closeViewer"
+            >
+              <div
+                class="bg-white w-full max-w-[95%] sm:max-w-[90%] md:max-w-[70%] h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+              >
+                <div
+                  class="p-3 flex justify-between items-center border-b bg-gray-50 shrink-0"
+                >
+                  <h3 class="font-medium text-sm sm:text-base">
+                    {{ t("contracts.preview") }}
+                  </h3>
+                  <button
+                    @click="closeViewer"
+                    class="p-1 hover:text-red-600 text-xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <object
+                  v-if="pdfUrl"
+                  :data="pdfUrl"
+                  type="application/pdf"
+                  class="flex-1 w-full"
+                  style="min-height: 0"
+                >
+                  <div
+                    class="h-full w-full flex flex-col items-center justify-center p-4 space-y-4"
+                  >
+                    <p class="text-center text-gray-600 text-sm">
+                      {{ t("common.noInlinePdf") }}
+                    </p>
+                    <a
+                      :href="pdfUrl"
+                      target="_blank"
+                      rel="noopener"
+                      class="button-primary px-4 py-2 rounded-md"
+                    >
+                      {{ t("common.openNewTab") }}
+                    </a>
+                  </div>
+                </object>
+              </div>
+            </div>
+          </teleport>
         </div>
       </div>
     </teleport>
@@ -240,28 +286,24 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useRoute } from "#imports";
+
 import { useContractsStore } from "~/store/contracts";
 import { contractTypeBadgeClasses, contractTypeLabel } from "~/utils/badges";
-import { useMyToast, useMyConfirm } from "#imports";
+import { useMyToast, useMyConfirm, useFlashToast } from "#imports";
 
 const contractsStore = useContractsStore();
 const { contractTemplates, loading } = storeToRefs(contractsStore);
-import { useI18n } from "vue-i18n";
-const { locale } = useI18n();
-const route = useRoute();
+
 const { success, error: errorToast } = useMyToast();
 const confirm = useMyConfirm();
+const { showFlash } = useFlashToast();
+const { t } = useI18n();
 
 const showId = ref<number | null>(null);
-const pdfUrl = ref<string>("");
-
-const alertMessage = ref("");
-const alertType = ref<"success" | "error" | null>(null);
-const alertRef = ref<HTMLElement | null>(null);
-
-const PdfViewer = defineAsyncComponent(
-  () => import("~/components/ui/PdfViewer.vue")
-);
+const pdfUrl = ref<string | null>(null);
 
 const openViewer = (id: number) => {
   showId.value = id;
@@ -269,11 +311,21 @@ const openViewer = (id: number) => {
 
 const closeViewer = () => {
   showId.value = null;
-  pdfUrl.value = "";
+  if (pdfUrl.value) URL.revokeObjectURL(pdfUrl.value);
+  pdfUrl.value = null;
 };
 
-const routeToEdit = (id: number) =>
-  localePath({ name: "contract-templates-edit", params: { id } });
+watch(showId, async (newId) => {
+  if (!newId) return;
+  try {
+    const blob = await contractsStore.fetchContractTemplatePdfBlob(newId);
+    if (pdfUrl.value) URL.revokeObjectURL(pdfUrl.value);
+    pdfUrl.value = URL.createObjectURL(blob);
+  } catch (err) {
+    console.error(err);
+    errorToast("Error al cargar la vista previa");
+  }
+});
 
 const deleteTemplate = (id: number) => {
   confirm.show({
@@ -299,44 +351,15 @@ const deleteTemplate = (id: number) => {
 onMounted(async () => {
   try {
     await contractsStore.fetchContractTemplates();
-
-    const { msg } = route.query;
-    if (msg) {
-      switch (msg) {
-        case "created":
-          success("Plantilla creada correctamente");
-          break;
-        case "updated":
-          success("Plantilla actualizada correctamente");
-          break;
-        case "deleted":
-          success("Plantilla eliminada correctamente");
-          break;
-      }
-      navigateTo(route.path, { replace: true });
-    }
-  } catch (error) {
+    showFlash();
+  } catch (err) {
     errorToast("Error al cargar las plantillas de contratos");
   }
 });
 
-watch(showId, async (newId: number) => {
-  if (!newId) return;
-
-  const blob = await contractsStore.fetchContractTemplatePdfBlob(newId);
-
-  const base64 = await blobToBase64(blob);
-  pdfUrl.value = `data:application/pdf;base64,${base64}`;
-});
-
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
+const alertMessage = ref("");
+const alertType = ref<"success" | "error" | null>(null);
+const alertRef = ref<HTMLElement | null>(null);
 </script>
 
 <style scoped></style>

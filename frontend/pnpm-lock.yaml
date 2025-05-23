@@ -110,9 +110,6 @@ importers:
       pdf-vue3:
         specifier: ^1.0.12
         version: 1.0.12
-      pdfjs-dist:
-        specifier: ^5.2.133
-        version: 5.2.133
       pinia:
         specifier: ^2.3.1
         version: 2.3.1(typescript@5.7.3)(vue@3.5.13(typescript@5.7.3))
@@ -719,70 +716,6 @@ packages:
     resolution: {integrity: sha512-JjTIaXZp9WzhUHpElrqPnl1AzBi/rvRs065F71+aTmlqvTMVkdbjZ8vfFl4nRlgJy+TPBw69ZK4pwFdmOAt4aA==}
     peerDependencies:
       rollup: ^1.20.0 || ^2.0.0 || ^3.0.0 || ^4.0.0
-
-  '@napi-rs/canvas-android-arm64@0.1.69':
-    resolution: {integrity: sha512-4icWTByY8zPvM9SelfQKf3I6kwXw0aI5drBOVrwfER5kjwXJd78FPSDSZkxDHjvIo9Q86ljl18Yr963ehA4sHQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [android]
-
-  '@napi-rs/canvas-darwin-arm64@0.1.69':
-    resolution: {integrity: sha512-HOanhhYlHdukA+unjelT4Dg3ta7e820x87/AG2dKUMsUzH19jaeZs9bcYjzEy2vYi/dFWKz7cSv2yaIOudB8Yg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@napi-rs/canvas-darwin-x64@0.1.69':
-    resolution: {integrity: sha512-SIp7WfhxAPnSVK9bkFfJp+84rbATCIq9jMUzDwpCLhQ+v+OqtXe4pggX1oeV+62/HK6BT1t18qRmJfyqwJ9f3g==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [darwin]
-
-  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.69':
-    resolution: {integrity: sha512-Ls+KujCp6TGpkuMVFvrlx+CxtL+casdkrprFjqIuOAnB30Mct6bCEr+I83Tu29s3nNq4EzIGjdmA3fFAZG/Dtw==}
-    engines: {node: '>= 10'}
-    cpu: [arm]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-arm64-gnu@0.1.69':
-    resolution: {integrity: sha512-m8VcGmeSBNRbHZBd1srvdM1aq/ScS2y8KqGqmCCEgJlytYK4jdULzAo2K/BPKE1v3xvn8oUPZDLI/NBJbJkEoA==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-arm64-musl@0.1.69':
-    resolution: {integrity: sha512-a3xjNRIeK2m2ZORGv2moBvv3vbkaFZG1QKMeiEv/BKij+rkztuEhTJGMar+buICFgS0fLgphXXsKNkUSJb7eRQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-riscv64-gnu@0.1.69':
-    resolution: {integrity: sha512-pClUoJF5wdC9AvD0mc15G9JffL1Q85nuH1rLSQPRkGmGmQOtRjw5E9xNbanz7oFUiPbjH7xcAXUjVAcf7tdgPQ==}
-    engines: {node: '>= 10'}
-    cpu: [riscv64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-x64-gnu@0.1.69':
-    resolution: {integrity: sha512-96X3bFAmzemfw84Ts6Jg/omL86uuynvK06MWGR/mp3JYNumY9RXofA14eF/kJIYelbYFWXcwpbcBR71lJ6G/YQ==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
-  '@napi-rs/canvas-linux-x64-musl@0.1.69':
-    resolution: {integrity: sha512-2QTsEFO72Kwkj53W9hc5y1FAUvdGx0V+pjJB+9oQF6Ys9+y989GyPIl5wZDzeh8nIJW6koZZ1eFa8pD+pA5BFQ==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
-  '@napi-rs/canvas-win32-x64-msvc@0.1.69':
-    resolution: {integrity: sha512-Q4YA8kVnKarApBVLu7F8icGlIfSll5Glswo5hY6gPS4Is2dCI8+ig9OeDM8RlwYevUIxKq8lZBypN8Q1iLAQ7w==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [win32]
-
-  '@napi-rs/canvas@0.1.69':
-    resolution: {integrity: sha512-ydvNeJMRm+l3T14yCoUKqjYQiEdXDq1isznI93LEBGYssXKfSaLNLHOkeM4z9Fnw9Pkt2EKOCAtW9cS4b00Zcg==}
-    engines: {node: '>= 10'}
 
   '@netlify/functions@2.8.2':
     resolution: {integrity: sha512-DeoAQh8LuNPvBE4qsKlezjKj0PyXDryOFJfJKo3Z1qZLKzQ21sT314KQKPVjfvw6knqijj+IO+0kHXy/TJiqNA==}
@@ -3583,10 +3516,6 @@ packages:
   pdf-vue3@1.0.12:
     resolution: {integrity: sha512-7SMTx1RfRwdc+2WPniDzqM8MxJLqTNNzdyV0SeQTxeRLJGndb5Wv/fz5afO13oBSIvvaqcbZ/S3gF+XjqkSb9g==}
 
-  pdfjs-dist@5.2.133:
-    resolution: {integrity: sha512-abE6ZWDxztt+gGFzfm4bX2ggfxUk9wsDEoFzIJm9LozaY3JdXR7jyLK4Bjs+XLXplCduuWS1wGhPC4tgTn/kzg==}
-    engines: {node: '>=20.16.0 || >=22.3.0'}
-
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
 
@@ -5448,50 +5377,6 @@ snapshots:
       '@rollup/pluginutils': 5.1.4(rollup@4.34.0)
       json5: 2.2.3
       rollup: 4.34.0
-
-  '@napi-rs/canvas-android-arm64@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-darwin-arm64@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-darwin-x64@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-linux-arm64-gnu@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-linux-arm64-musl@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-linux-riscv64-gnu@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-linux-x64-gnu@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-linux-x64-musl@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas-win32-x64-msvc@0.1.69':
-    optional: true
-
-  '@napi-rs/canvas@0.1.69':
-    optionalDependencies:
-      '@napi-rs/canvas-android-arm64': 0.1.69
-      '@napi-rs/canvas-darwin-arm64': 0.1.69
-      '@napi-rs/canvas-darwin-x64': 0.1.69
-      '@napi-rs/canvas-linux-arm-gnueabihf': 0.1.69
-      '@napi-rs/canvas-linux-arm64-gnu': 0.1.69
-      '@napi-rs/canvas-linux-arm64-musl': 0.1.69
-      '@napi-rs/canvas-linux-riscv64-gnu': 0.1.69
-      '@napi-rs/canvas-linux-x64-gnu': 0.1.69
-      '@napi-rs/canvas-linux-x64-musl': 0.1.69
-      '@napi-rs/canvas-win32-x64-msvc': 0.1.69
-    optional: true
 
   '@netlify/functions@2.8.2':
     dependencies:
@@ -8904,10 +8789,6 @@ snapshots:
   pathe@2.0.2: {}
 
   pdf-vue3@1.0.12: {}
-
-  pdfjs-dist@5.2.133:
-    optionalDependencies:
-      '@napi-rs/canvas': 0.1.69
 
   perfect-debounce@1.0.0: {}
 

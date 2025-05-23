@@ -723,7 +723,6 @@ const submitContract = async () => {
   try {
     saving.value = true;
     const payload = buildPayload();
-    console.log('Payload: ', payload);
     await contractsStore.saveContract(payload);
 
     const successQuery = { msg: "contract_created" };

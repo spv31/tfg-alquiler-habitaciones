@@ -79,13 +79,6 @@ onMounted(async () => {
   try {
     await propertiesStore.fetchRoom(propertyId, roomId);
 
-    const msg = route.query.msg;
-
-     if (msg === "room_updated") {
-       alertMessage.value = $t("properties.detail.rooms.roomUpdated");
-       alertType.value    = "success";
-     }
-
     if (currentRoom.value?.main_image_url) {
       const filename = currentRoom.value.main_image_url.split("/").pop() || "";
       roomImage.value = await propertiesStore.fetchRoomImageUrl(
@@ -98,18 +91,6 @@ onMounted(async () => {
     console.error("Error al cargar la habitación:", e);
   }
 });
-
-const toggleForm = () => {
-  showForm.value = !showForm.value;
-  if (showForm.value) {
-    successMessage.value = "";
-  }
-};
-
-const handleInvitationSent = (msg: string) => {
-  successMessage.value = msg;
-  showForm.value = false;
-};
 </script>
 
 <style scoped>
