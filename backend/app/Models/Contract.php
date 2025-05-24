@@ -31,6 +31,10 @@ class Contract extends Model
         'pdf_path_signed',
         'final_content',
         'token_values',
+        'pdf_path_signed_owner',
+        'pdf_path_signed_tenant',
+        'signed_by_owner_at',
+        'signed_by_tenant_at',
     ];
 
     /**
@@ -47,6 +51,8 @@ class Contract extends Model
         'end_date' => 'date',
         'extension_date' => 'date',
         'token_values' => 'array',
+        'signed_by_owner_at'  => 'datetime',
+        'signed_by_tenant_at' => 'datetime',
     ];
 
     /**

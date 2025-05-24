@@ -28,10 +28,9 @@ defineEmits(["click"]);
 <style scoped>
 
 .shadow-top-md {
-  /* Basado en 'shadow-md' de Tailwind + sombra arriba */
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
                0 2px 4px -2px rgb(0 0 0 / 0.1),
-               0 -1px 3px rgba(0, 0, 0, 0.08); /* Sombra hacia arriba */
+               0 -1px 3px rgba(0, 0, 0, 0.08); 
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color),
                        0 2px 4px -2px var(--tw-shadow-color),
                        0 -1px 3px rgba(0, 0, 0, 0.08);
@@ -41,10 +40,9 @@ defineEmits(["click"]);
 }
 
 .hover\:shadow-top-lg:hover {
-  /* Basado en 'shadow-lg' de Tailwind + sombra arriba */
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
                0 4px 6px -4px rgb(0 0 0 / 0.1),
-               0 -2px 5px rgba(0, 0, 0, 0.07); /* Sombra hacia arriba */
+               0 -2px 5px rgba(0, 0, 0, 0.07); 
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color),
                        0 4px 6px -4px var(--tw-shadow-color),
                        0 -2px 5px rgba(0, 0, 0, 0.07);

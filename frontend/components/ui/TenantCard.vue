@@ -269,7 +269,7 @@
         </template>
       </CircleIconButton>
       <CircleIconButton
-        v-if="hasContract && !isOwnerSigned"
+        v-if="hasContract && contract.status !== 'active'"
         :label="$t('contracts.uploadSigned')"
         @click="triggerUpload"
       >
@@ -290,14 +290,6 @@
           </svg>
         </template>
       </CircleIconButton>
-
-      <input
-        ref="fileInput"
-        type="file"
-        accept="application/pdf"
-        class="hidden"
-        @change="onFileSelected"
-      />
     </div>
     <ContractViewerModal
       v-if="hasContract"
@@ -306,6 +298,7 @@
       :title="$t('contracts.viewContract')"
       @close="showViewer = false"
     />
+    <UploadSignedDialog v-model:visible="showUpload" @submit="handleUpload" />
   </div>
 </template>
 <script setup lang="ts">
@@ -314,7 +307,8 @@ import { useContractsStore } from "~/store/contracts";
 import type { Tenant } from "~/types/tenant";
 import defaultAvatar from "~/assets/images/default.jpg";
 import { useMyToast } from "#imports";
-const { success, error, info } = useMyToast();
+import type { Contract } from "../../types/contract";
+const { success, error: errorToast, info } = useMyToast();
 
 const props = defineProps<{
   tenant: Tenant;
@@ -333,6 +327,8 @@ const isActive = computed(() => contract.value?.status === "active");
 
 const showViewer = ref(false);
 const pdfUrl = ref("");
+const showUpload = ref(false);
+const selectedFile = ref<File | null>(null);
 
 const ContractViewerModal = defineAsyncComponent(
   () => import("~/components/ui/ContractViewerModal.vue")
@@ -340,7 +336,11 @@ const ContractViewerModal = defineAsyncComponent(
 const CircleIconButton = defineAsyncComponent(
   () => import("~/components/ui/CircleIconButton.vue")
 );
+const UploadSignedDialog = defineAsyncComponent(
+  () => import("~/components/ui/UploadSignedDialog.vue")
+);
 const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
+
 const fileInput = ref<HTMLInputElement | null>(null);
 
 const blobToBase64 = (blob: Blob): Promise<string> =>
@@ -389,26 +389,30 @@ const editContract = async (id: number) => {
 
 const deleteContract = async (id: number) => {
   try {
+    info("Testing", 6700);
   } catch (err) {
     console.error(err);
   }
 };
 
-// ---------- subida contrato firmado ----------
-
 const triggerUpload = () => {
-  fileInput.value?.click();
+  showUpload.value = true;
 };
 
-const onFileSelected = (e: Event) => {
-  const files = (e.target as HTMLInputElement).files;
-  if (!files || !files.length) return;
-  const file = files[0];
-
-  // por ahora solo mostramos un aviso
-  success(t("contracts.uploadSelected", { name: file.name }), 4000);
-
-  // TODO: lógica de subida + llamada a API
+const handleUpload = async (file: { file: File; name: string }) => {
+  try {
+    const updated: Contract = await contractsStore.uploadSigned(
+      contract.value.id,
+      file
+    );
+    if (updated.status === "signed_by_owner") {
+      success(t("contracts.signedUploadOwner"));
+    } else if (updated.status === "active") {
+      success(t("contracts.signedUploadTenant"));
+    }
+  } catch (error) {
+    errorToast(t("common.genericError"));
+  }
 };
 </script>
 

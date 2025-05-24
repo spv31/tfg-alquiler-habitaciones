@@ -725,7 +725,7 @@ const submitContract = async () => {
     const payload = buildPayload();
     await contractsStore.saveContract(payload);
 
-    const successQuery = { msg: "contract_created" };
+    const successQuery = "contract_created";
 
     if (props.roomId && props.roomId !== 0) {
       navigateTo(`/${locale.value}/properties/${props.propertyId}/rooms/${props.roomId}?msg=${successQuery}`)

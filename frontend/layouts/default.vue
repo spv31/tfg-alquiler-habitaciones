@@ -10,8 +10,6 @@
 </template>
 
 <script setup lang="ts">
-import MyToaster from "~/components/ui/MyToaster.vue";
-import ConfirmDialog from "primevue/confirmdialog";
 </script>
 
 <style scoped>

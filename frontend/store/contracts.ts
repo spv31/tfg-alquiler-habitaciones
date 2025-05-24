@@ -242,7 +242,6 @@ export const useContractsStore = defineStore(
         (contract) => contract.id !== id
       );
       currentContract.value = null;
-      // if (!data) throw new Error("No data received");
     };
 
     const fetchContractTemplatePdf = async (id: number) => {
@@ -331,6 +330,43 @@ export const useContractsStore = defineStore(
 
     const downloadSignedContractPdf = async () => {};
 
+    const uploadSigned = async (
+      contractId: number,
+      file: { file: File; name: string }
+    ) => {
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+
+        const form = new FormData();
+        form.append("file", file.file, file.name);
+        form.append("name", file.name);
+
+        return $fetch<{ data: Contract }>(
+          `${apiBaseUrl}/contracts/${contractId}/signed`,
+          {
+            method: "POST",
+            body: form,
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrf,
+              Accept: "application/json",
+            },
+          }
+        );
+      });
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      const idx = contracts.value.findIndex((c) => c.id === data.data.id);
+      if (idx !== -1) contracts.value[idx] = data.data;
+      if (currentContract.value?.id === data.data.id)
+        currentContract.value = data.data;
+
+      return data.data;
+    };
+
     return {
       contractTemplates,
       currentContractTemplate,
@@ -354,6 +390,7 @@ export const useContractsStore = defineStore(
       downloadContractTemplatePdf,
       downloadContractPdf,
       downloadSignedContractPdf,
+      uploadSigned,
     };
   },
   {

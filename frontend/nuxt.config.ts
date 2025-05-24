@@ -18,8 +18,8 @@ export default defineNuxtConfig({
   colorMode: {
     preference: 'light',
     fallback: 'light',
-    classSuffix: '', // esta línea genera 'dark-mode' en vez de 'dark'
-    classPrefix: '', // también puedes probar eliminar el prefix
+    classSuffix: '', 
+    classPrefix: '', 
   },
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },

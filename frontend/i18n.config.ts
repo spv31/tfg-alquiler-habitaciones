@@ -29,6 +29,7 @@ export default defineI18nConfig(() => ({
         actionCancelled: "Acción cancelada",
         noInlinePdf: "Tu dispositivo no permite mostrar el PDF directamente.",
         openNewTab: "Abrir en una nueva pestaña",
+        upload: "Subir",
       },
       contracts: {
         view: "Ver contrato",
@@ -38,6 +39,7 @@ export default defineI18nConfig(() => ({
           pendingSignature: "El contrato está pendiente de firma.",
           signedByOwner:
             "El contrato ya lo ha firmado el arrendador. Falta la firma del inquilino.",
+          fullySigned: "Contrato totalmente firmado",
         },
         selectTemplate: "Selecciona una plantilla",
         defaultTemplate: "Plantilla predeterminada",
@@ -80,6 +82,12 @@ export default defineI18nConfig(() => ({
         update_success_message: "Contrato actualizado correctamente.",
         uploadSigned: "Subir contrato firmado",
         uploadSelected: "Se ha seleccionado «{name}» para subir.",
+        documentName: "Nombre del documento",
+        uploadFile: "Subir archivo",
+        clickOrDrop: "Haz clic o arrastra un archivo aquí",
+        signedUploadOwner:
+          "¡Has subido tu firma correctamente! Solo falta la firma del inquilino para que el contrato quede activo.",
+        signedUploadTenant: "¡Contrato totalmente firmado y activo!",
       },
       templates: {
         created: "Plantilla creada correctamente",
@@ -528,6 +536,7 @@ export default defineI18nConfig(() => ({
         actionCancelled: "Action cancelled",
         noInlinePdf: "Your device does not allow displaying the PDF directly.",
         openNewTab: "Open in a new tab",
+        upload: "Upload",
       },
       contracts: {
         view: "View contract",
@@ -537,6 +546,7 @@ export default defineI18nConfig(() => ({
           pendingSignature: "The contract is pending signature.",
           signedByOwner:
             "The contract is already signed by the landlord. Tenant signature pending.",
+          fullySigned: "Fully signed contract",
         },
         selectTemplate: "Select a template",
         defaultTemplate: "Default template",
@@ -578,6 +588,12 @@ export default defineI18nConfig(() => ({
         update_success_message: "Contract updated successfully.",
         uploadSigned: "Upload signed contract",
         uploadSelected: "«{name}» selected for upload.",
+        documentName: "Document name",
+        uploadFile: "Upload file",
+        clickOrDrop: "Click or drag a file here",
+        signedUploadOwner:
+          "Your signature was uploaded successfully! Tenant signature is still needed to activate the contract.",
+        signedUploadTenant: "Contract fully signed and now active!",
       },
       templates: {
         created: "Template created successfully",
