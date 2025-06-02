@@ -21,28 +21,6 @@ class TenantAssignmentController extends Controller
     $this->propertyTenantService = $propertyTenantService;
   }
 
-  public function getAssignedRentable(Request $request)
-  {
-    try {
-      $user = $request->user();
-
-      $assignment = PropertyTenant::where('tenant_id', $user->id)->first();
-
-      if (!$assignment) {
-        return response()->json([
-          'error_key' => 'no_rentable_assigned'
-        ], 404);
-      }
-
-      return response()->json([
-        'rentable' => $assignment->rentable,
-      ], 200);
-    } catch (Exception $e) {
-      return response()->json([
-        'error_key' => 'unexpected_error',
-      ]);
-    }
-  }
   public function reassign(Request $request)
   {
     try {

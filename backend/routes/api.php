@@ -8,6 +8,7 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantAssignmentController;
 use App\Http\Middleware\ExpireInvitationsMiddleware;
 use Illuminate\Http\Request;
@@ -76,6 +77,16 @@ Route::middleware('auth:sanctum')->group(function () {
   )->name('contracts.uploadSigned');
   Route::get('contracts/{contract}/pdf', [ContractController::class, 'previewPdf']);
 });
+
+Route::middleware(['auth:sanctum', 'role:tenant'])
+  ->prefix('tenant')
+  ->group(function () {
+    Route::get('/dashboard', [TenantController::class, 'data']);
+    Route::get('/rentable', [TenantController::class, 'getAssignedRentable']);
+    Route::get('/contract', [TenantController::class, 'getCurrentContract']);
+    Route::post('/contract/signed', [TenantController::class, 'uploadSigned']);
+    Route::get('/contract/pdf', [TenantController::class, 'previewPdf']);
+  });
 
 // Auth Routes for login, register and logout
 Route::post('/register/owner', [AuthController::class, 'registerOwner']);

@@ -1,28 +1,54 @@
-import { useAuthStore } from '~/store/auth';
+import { useAuthStore } from "~/store/auth";
 
 export default defineNuxtRouteMiddleware((to) => {
   const { $localePath } = useNuxtApp();
   const authStore = useAuthStore();
 
-  const login = $localePath('login');
-  const register = $localePath('register');
-  const resetPassword = $localePath('reset-password');
-  const registerOwner = $localePath('/register/owner');
-  const registerTenant = $localePath('/register/tenant');
-  const dashboard = $localePath('dashboard');
+  const login = $localePath("login");
+  const register = $localePath("register");
+  const resetPassword = $localePath("reset-password");
+  const registerOwner = $localePath("/register/owner");
+  const registerTenant = $localePath("/register/tenant");
 
-  const authPages = [login, register, resetPassword, registerOwner, registerTenant];
+  const ownerDashboard = $localePath("dashboard");
+  const tenantDashboard = $localePath("/tenant/dashboard");
 
-  const isTenantRegistration = to.path.startsWith('/register/tenant');
+  const authPages = [
+    login,
+    register,
+    resetPassword,
+    registerOwner,
+    registerTenant,
+  ];
 
-  console.log('Autenticación: ', authStore.isAuthenticated)
-  if (!authStore.isAuthenticated && !authPages.includes(to.path) && !isTenantRegistration) {
+  const isTenantRegistration = to.path.startsWith("/register/tenant");
+
+  console.log("Autenticación: ", authStore.isAuthenticated);
+  if (
+    !authStore.isAuthenticated &&
+    !authPages.includes(to.path) &&
+    !isTenantRegistration
+  ) {
+    return navigateTo(login);
+  }
+
+  if (
+    !authStore.isAuthenticated &&
+    !authPages.includes(to.path) &&
+    !isTenantRegistration
+  ) {
     return navigateTo(login);
   }
 
   if (authStore.isAuthenticated && authPages.includes(to.path)) {
-    if (to.path !== dashboard) {
-      return navigateTo(dashboard);
+    const role = authStore.user?.role;
+
+    if (role === "owner" && to.path !== ownerDashboard) {
+      return navigateTo(ownerDashboard);
+    }
+
+    if (role === "tenant" && to.path !== tenantDashboard) {
+      return navigateTo(tenantDashboard);
     }
   }
 });
