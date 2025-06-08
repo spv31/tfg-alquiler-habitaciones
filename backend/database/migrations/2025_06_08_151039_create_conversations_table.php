@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('tenant_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('property_id')->nullable()->constrained('properties')->nullOnDelete();
-            $table->timestamps();
 
             $table->unique(['owner_id', 'tenant_id']); 
             $table->timestamps();
