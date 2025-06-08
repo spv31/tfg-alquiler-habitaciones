@@ -71,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('/contract-templates/{contractTemplate}/preview', [ContractTemplateController::class, 'preview'])->name('contract-templates.preview');
   // Contract
   Route::apiResource('contracts', ContractController::class);
+  Route::get('contracts/{contract}/preview', [ContractController::class, 'preview']);
   Route::post(
     'contracts/{contract}/signed',
     [ContractController::class, 'uploadSigned']

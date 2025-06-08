@@ -187,7 +187,7 @@ class ContractController extends Controller
         if ($isOwner && $contract->status !== 'draft') {
             return response()->json(['error_key' => 'owner_cannot_sign_now'], 409);
         }
-        
+
         if (!$isOwner && $contract->status !== 'signed_by_owner') {
             return response()->json(['error_key' => 'tenant_cannot_sign_now'], 409);
         }
@@ -208,5 +208,17 @@ class ContractController extends Controller
         $contract->save();
 
         return new ContractResource($contract);
+    }
+    
+    /**
+     * Returns contract PDF related
+     */
+    public function preview(Contract $contract)
+    {
+        $file = $this->contractServices->getPreviewFile($contract);
+        return response($file['content'], 200, [
+            'Content-Type'        => $file['mime'],
+            'Content-Disposition' => 'inline; filename="' . $file['name'] . '"',
+        ]);
     }
 }

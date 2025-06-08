@@ -1,7 +1,7 @@
 <template>
   <nav class="bg-white relative">
     <div
-      class="max-w-screen-2xl mx-auto py-5 px-5 flex items-center justify-between"
+      class="max-w-screen-xl mx-auto py-5 px-5 flex items-center justify-between"
     >
       <!-- Logo -->
       <div class="flex items-center space-x-6 mr-12">

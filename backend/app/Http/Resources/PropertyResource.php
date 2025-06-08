@@ -33,7 +33,7 @@ class PropertyResource extends JsonResource
       'main_image_url' => $this->main_image_url,
 
       'details'             => new PropertyDetailResource($this->whenLoaded('details')),
-      'owner'               => $this->whenLoaded('owner', fn() => new UserResource($this->owner)),
+      'owner'               => new OwnerResource($this->owner),
       'created_at'          => $this->created_at,
       'updated_at'          => $this->updated_at,
     ];

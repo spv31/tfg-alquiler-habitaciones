@@ -1,3 +1,4 @@
+import type { Owner } from "./owner";
 import type { PropertyDetail } from "./propertyDetail";
 import type { User } from "./user";
 
@@ -20,7 +21,7 @@ export interface Property {
   images: string[],
 
   details?: PropertyDetail,
-  owner?: User,
+  owner?: Owner,
 
   created_at: string,
   updated_at: string,

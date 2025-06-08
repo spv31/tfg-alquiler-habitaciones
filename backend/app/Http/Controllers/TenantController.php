@@ -53,6 +53,7 @@ class TenantController extends Controller
             $rentable = $assignment->rentable;
 
             if ($rentable instanceof Property) {
+                $rentable->load('details');
                 $resource = new PropertyResource($rentable);
             } else if ($rentable instanceof Room) {
                 $resource = new RoomResource($rentable);
@@ -88,6 +89,7 @@ class TenantController extends Controller
         $rentableData = null;
 
         if ($rentable instanceof Property) {
+            $rentable = $rentable->load('details');
             $rentableData = [
                 'type'     => 'Property',
                 'rentable' => new PropertyResource($rentable),

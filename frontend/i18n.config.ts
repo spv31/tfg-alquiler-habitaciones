@@ -41,6 +41,7 @@ export default defineI18nConfig(() => ({
             "El contrato ya lo ha firmado el arrendador. Falta la firma del inquilino.",
           fullySigned: "Contrato totalmente firmado",
         },
+        signed_success_message: "Contrato firmado y subido correctamente.",
         selectTemplate: "Selecciona una plantilla",
         defaultTemplate: "Plantilla predeterminada",
         customTemplate: "Plantilla personalizada",
@@ -413,6 +414,7 @@ export default defineI18nConfig(() => ({
         invalid_number: "Debe ser un número válido.",
         invalid_date: "Debe ser una fecha válida.",
         contractCreateFailed: "Error al crear el contrato.",
+        contractSignFailed: "Error al subir el contrato.",
       },
       api: {
         success: {
@@ -548,6 +550,7 @@ export default defineI18nConfig(() => ({
             "The contract is already signed by the landlord. Tenant signature pending.",
           fullySigned: "Fully signed contract",
         },
+        signed_success_message: "Contract signed and uploaded successfully.",
         selectTemplate: "Select a template",
         defaultTemplate: "Default template",
         customTemplate: "Custom template",
@@ -914,6 +917,7 @@ export default defineI18nConfig(() => ({
         total_rooms_too_low:
           "You cannot reduce the total number of rooms below the {minRooms} existing rooms.",
         contractCreateFailed: "Error creating contract.",
+        contractSignFailed: "Error uploading the contract.",
       },
       api: {
         success: {

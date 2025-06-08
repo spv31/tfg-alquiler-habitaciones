@@ -1,122 +1,247 @@
 <template>
-  <div class="grid gap-6 md:grid-cols-2 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6">
-    <!-- Sección de Imagen -->
-    <div class="relative group overflow-hidden rounded-lg aspect-square min-h-[300px]">
-      <div v-if="loadingImage" class="absolute inset-0 bg-gray-100 animate-pulse"></div>
-      
-      <div v-else-if="!imageUrl" class="h-full w-full flex flex-col items-center justify-center bg-gray-50">
-        <i class="pi pi-image text-4xl text-gray-300 mb-3"></i>
-        <span class="text-gray-400 text-sm">Imagen no disponible</span>
+  <div class="grid gap-6 grid-cols-1 lg:grid-cols-6 px-6 pb-6 pt-2">
+    <div class="col-span-1 lg:col-span-2 flex justify-center">
+      <div
+        class="relative group overflow-hidden rounded-lg aspect-square min-h-[300px] w-full max-w-md"
+      >
+        <div
+          v-if="loadingImage"
+          class="absolute inset-0 bg-gray-100 animate-pulse"
+        ></div>
+        <div
+          v-else-if="!rentable.main_image_url"
+          class="h-full w-full flex flex-col items-center justify-center bg-gray-50"
+        >
+          <i class="pi pi-image text-4xl text-gray-300 mb-3"></i>
+          <span class="text-gray-400 text-sm">Imagen no disponible</span>
+        </div>
+        <img
+          v-else
+          :src="rentable.main_image_url"
+          :alt="imageAltText"
+          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
       </div>
-      
-      <img
-        v-else
-        :src="imageUrl"
-        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        :alt="imageAltText"
-        @error="handleImageError"
-      />
     </div>
 
     <!-- Detalles -->
-    <div class="flex flex-col gap-4">
-      <!-- Encabezado -->
+    <div class="col-span-1 lg:col-span-4 flex flex-col gap-4">
       <div class="flex flex-col gap-2 border-b pb-4">
         <div class="flex items-center gap-2">
+          <i
+            class="pi pi-map-marker text-red-600"
+            style="font-size: 1.2rem"
+          ></i>
+          <h2 class="text-2xl font-bold text-gray-900 leading-tight">
+            {{ rentable.address }}
+          </h2>
+        </div>
+        <div class="flex items-center gap-2">
           <Tag
-            :value="data.type === 'Property' ? 'Propiedad completa' : 'Habitación'"
+            value="Vivienda completa"
             class="text-xs font-semibold py-1 px-3 rounded-full"
           />
-          <Badge
-            :value="statusLabel"
-            :severity="statusSeverity"
-            class="py-1 px-3 text-xs"
-          />
-        </div>
-        <h2 class="text-2xl font-bold text-gray-900 leading-tight">
-          {{ title }}
-        </h2>
-        <div class="flex items-center gap-2 text-gray-600">
-          <i class="pi pi-map-marker text-primary"></i>
-          <span class="text-sm">{{ address }}</span>
         </div>
       </div>
 
       <!-- Precio y características principales -->
       <div class="space-y-4">
-        <div v-if="data.type === 'Room'" class="bg-blue-50 p-4 rounded-lg">
-          <p class="text-lg font-semibold text-blue-800">
-            <i class="pi pi-credit-card mr-2"></i>
-            {{ rentalPrice }} / mes
-          </p>
-        </div>
-
-        <!-- Descripción -->
         <div class="prose max-w-none text-gray-600 relative">
-          <div ref="descriptionContainer" class="overflow-hidden" :style="{ maxHeight: isExpanded ? 'none' : '6em' }">
-            <p class="m-0">{{ descriptionText }}</p>
+          <div
+            ref="descriptionContainer"
+            class="overflow-hidden"
+            :style="{ maxHeight: isExpanded ? 'none' : '6em' }"
+          >
+            <p class="m-0">{{ rentable.description }}</p>
           </div>
           <button
             v-if="showExpandButton"
             @click="isExpanded = !isExpanded"
             class="text-primary hover:text-primary-dark text-sm font-medium mt-1 flex items-center"
           >
-            {{ isExpanded ? $t('common.readLess') : $t('common.readMore') }}
-            <i class="pi ml-1" :class="isExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            {{ isExpanded ? $t("common.readLess") : $t("common.readMore") }}
+            <i
+              class="pi ml-1"
+              :class="isExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
+            ></i>
           </button>
         </div>
 
-        <!-- Características -->
-        <div v-if="features.length" class="space-y-2">
-          <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-            <i class="pi pi-star mr-2 text-primary"></i>
-            Características principales
-          </h3>
-          <div class="flex flex-wrap gap-2">
-            <Chip
-              v-for="(feature, index) in features"
-              :key="index"
-              :label="feature"
-              class="text-sm bg-gray-100 hover:bg-gray-200 transition-colors"
-            />
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start gap-4 p-4 bg-gray-50 rounded-xl border border-info/10 shadow-sm"
+        >
+          <div
+            class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap"
+          >
+            <div class="relative">
+              <img
+                :src="owner?.profile_image || defaultAvatar"
+                :alt="owner?.name || 'Propietario'"
+                class="w-14 h-14 rounded-full border-4 border-white shadow-md object-cover"
+              />
+              <div
+                v-if="owner?.profile_image"
+                class="absolute -bottom-1 -right-1 bg-green-500 p-1 rounded-full"
+              >
+                <i class="pi pi-check text-white text-xs"></i>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <p
+                  class="text-gray-900 font-bold flex items-center gap-2 whitespace-nowrap"
+                >
+                  <i class="pi pi-user text-blue-600"></i>
+                  {{ owner!.name }}
+                </p>
+                <Tag
+                  value="Propietario"
+                  severity="info"
+                  class="text-xs whitespace-nowrap"
+                />
+              </div>
+              <div class="mt-2 flex flex-col gap-1">
+                <a
+                  :href="`mailto:${owner!.email}`"
+                  class="text-gray-700 hover:text-blue-700 text-sm flex items-center gap-2"
+                >
+                  <i class="pi pi-envelope text-blue-500"></i>
+                  {{ owner!.email }}
+                </a>
+                <p
+                  v-if="owner!.phone"
+                  class="text-gray-700 text-sm flex items-center gap-2"
+                >
+                  <i class="pi pi-phone text-blue-500"></i>
+                  {{ owner!.phone }}
+                </p>
+              </div>
+            </div>
           </div>
+
+          <Button
+            icon="pi pi-comments"
+            class="chat-button rounded-lg p-2 h-10"
+            aria-label="Abrir chat con propietario"
+            @click="$emit('open-chat')"
+          />
         </div>
 
         <!-- Detalles específicos -->
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <template v-if="data.type === 'Property'">
-            <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <i class="pi pi-ruler text-primary"></i>
-              <div>
-                <p class="font-medium text-gray-900">{{ data.rentable.details?.size || 'N/D' }} m²</p>
-                <p class="text-xs text-gray-500">Superficie</p>
+        <div
+          class="grid gap-4 text-sm grid-cols-1 <!-- <640 --> md:grid-cols-2 <!-- 640–1535 --> 3xl:grid-cols-4"
+        >
+          <div
+            class="bg-gray-50 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border border-info/10 w-full min-w-0"
+          >
+            <div class="grid grid-cols-[auto_1fr] grid-rows-2 gap-y-1">
+              <div class="row-span-2 flex items-center justify-center mr-4">
+                <div
+                  class="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center"
+                >
+                  <i class="pi pi-box" style="font-size: 1.5rem"></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <p
+                  class="text-lg sm:text-2xl font-bold text-gray-800 break-words whitespace-normal leading-tight"
+                >
+                  {{ rentable.details?.property_size }}
+                  <span class="text-lg font-medium text-gray-500">m²</span>
+                </p>
+              </div>
+              <div class="flex items-start">
+                <p class="text-sm font-medium text-gray-500 tracking-wider">
+                  Superficie
+                </p>
               </div>
             </div>
-            <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <i class="pi pi-bed text-primary"></i>
-              <div>
-                <p class="font-medium text-gray-900">{{ data.rentable.total_rooms }}</p>
-                <p class="text-xs text-gray-500">Dormitorios</p>
-              </div>
-            </div>
-          </template>
+          </div>
 
-          <template v-if="data.type === 'Room'">
-            <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <i class="pi pi-building text-primary"></i>
-              <div>
-                <p class="font-medium text-gray-900">#{{ roomNumber }}</p>
-                <p class="text-xs text-gray-500">Número</p>
+          <div
+            class="bg-gray-50 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border border-info/10 w-full min-w-0"
+          >
+            <div class="grid grid-cols-[auto_1fr] grid-rows-2 gap-y-1">
+              <div class="row-span-2 flex items-center justify-center mr-4">
+                <div
+                  class="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center"
+                >
+                  <i class="pi pi-home" style="font-size: 1.5rem"></i>
+                </div>
+              </div>
+
+              <div class="flex items-end">
+                <p
+                  class="text-lg sm:text-2xl font-bold text-gray-800 break-words whitespace-normal leading-none"
+                >
+                  {{ rentable.total_rooms }}
+                </p>
+              </div>
+
+              <div class="flex items-start">
+                <p
+                  class="text-sm font-medium text-gray-500 tracking-wider whitespace-normal break-words"
+                >
+                  Habitaciones
+                </p>
               </div>
             </div>
-            <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-              <i class="pi pi-calendar text-primary"></i>
-              <div>
-                <p class="font-medium text-gray-900">{{ formattedDate }}</p>
-                <p class="text-xs text-gray-500">Disponible desde</p>
+          </div>
+
+          <div
+            class="bg-gray-50 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border border-info/10"
+          >
+            <div class="grid grid-cols-[auto_1fr] grid-rows-2 gap-y-1">
+              <div class="row-span-2 flex items-center justify-center mr-4">
+                <div
+                  class="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center"
+                >
+                  <i class="pi pi-credit-card" style="font-size: 1.5rem"></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <p class="text-lg font-bold text-gray-800">
+                  {{
+                    Number(rentable.details?.rental_price).toLocaleString(
+                      "es-ES",
+                      { style: "currency", currency: "EUR" }
+                    )
+                  }}
+                </p>
+              </div>
+              <div class="flex items-start">
+                <p class="text-sm font-medium text-gray-500 tracking-wider">
+                  Alquiler / mes
+                </p>
               </div>
             </div>
-          </template>
+          </div>
+
+          <div
+            class="bg-gray-50 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1 border border-info/10"
+          >
+            <div class="grid grid-cols-[auto_1fr] grid-rows-2 gap-y-1">
+              <div class="row-span-2 flex items-center justify-center mr-4">
+                <div
+                  class="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center"
+                >
+                  <i class="pi pi-hashtag" style="font-size: 1.5rem"></i>
+                </div>
+              </div>
+
+              <div class="flex items-end">
+                <p class="text-lg font-semibold text-gray-800 break-all">
+                  {{ rentable.cadastral_reference || "—" }}
+                </p>
+              </div>
+
+              <div class="flex items-start">
+                <p class="text-sm font-medium text-gray-500 tracking-wider">
+                  Ref. catastral
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -124,115 +249,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { usePropertiesStore } from '~/store/properties'
-import type { Property, Room } from '~/types/property'
+import type { Owner } from "~/types/owner";
+import type { Property } from "~/types/property";
+import defaultAvatar from "~/assets/images/default.jpg";
 
 const props = defineProps<{
   data: {
-    type: 'Property' | 'Room'
-    rentable: Property | Room
-  }
-}>()
+    type: "Property";
+    rentable: Property;
+  };
+}>();
 
-const propertiesStore = usePropertiesStore()
-const imageUrl = ref<string | null>(null)
-const loadingImage = ref(false)
-const imageError = ref(false)
-const isExpanded = ref(false)
-const showExpandButton = ref(false)
-const descriptionContainer = ref<HTMLElement | null>(null)
+const type = computed<String>(() => props.data.type);
+const rentable = computed<Property>(() => props.data.rentable);
+const owner = rentable.value.owner;
 
-// Utilidades de formato
-const formatCurrency = (value: number) => 
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value)
+const loadingImage = ref(false);
+const isExpanded = ref(false);
+const showExpandButton = ref(false);
+const descriptionContainer = ref<HTMLElement | null>(null);
 
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('es-ES')
-
-// Descripción
-const descriptionText = computed(() => {
-  const text = props.data.type === 'Property' 
-    ? (props.data.rentable as Property).description 
-    : (props.data.rentable as Room).description
-  
-  return text || 'Descripción no disponible'
-})
-
-// Verificar si se necesita el botón de expandir
 const checkDescriptionHeight = async () => {
-  await nextTick()
+  await nextTick();
   if (descriptionContainer.value) {
-    showExpandButton.value = descriptionContainer.value.scrollHeight > 96
+    showExpandButton.value = descriptionContainer.value.scrollHeight > 96;
   }
-}
+};
 
-watch(descriptionText, checkDescriptionHeight)
-onMounted(checkDescriptionHeight)
+watch(checkDescriptionHeight());
+onMounted(() => {
+  checkDescriptionHeight();
+  console.log("Propiedad: ", rentable.value);
+  console.log("Superficie: ", rentable.value.details);
+  console.log("URL IMAGEN: ", rentable.value.main_image_url);
+  console.log("ID Propietario: ", rentable.value.owner);
+});
 
-// Computed properties
-const isProperty = computed(() => props.data.type === 'Property')
-const currentProperty = computed(() => isProperty.value ? props.data.rentable as Property : null)
-const currentRoom = computed(() => !isProperty.value ? props.data.rentable as Room : null)
-
-const imageAltText = computed(() => 
-  isProperty.value 
-    ? `Imagen de la propiedad ${currentProperty.value?.address}`
-    : `Imagen de la habitación ${currentRoom.value?.room_number}`
-)
-
-const address = computed(() => {
-  if (isProperty.value) {
-    return currentProperty.value?.address || 'Dirección no disponible'
-  }
-  return currentRoom.value?.property?.address || 'Dirección no disponible'
-})
-
-const roomNumber = computed(() => 
-  !isProperty.value ? currentRoom.value?.room_number : null
-)
-
-const statusLabel = computed(() => {
-  const statusMap: Record<string, string> = {
-    available: 'Disponible',
-    occupied: 'Ocupada',
-    unavailable: 'No disponible',
-    partially_occupied: 'Parcialmente ocupada'
-  }
-  return statusMap[props.data.rentable.status] || props.data.rentable.status
-})
-
-const statusSeverity = computed(() => {
-  const status = props.data.rentable.status
-  return status === 'available' ? 'success' 
-    : status === 'occupied' ? 'danger' 
-    : 'warning'
-})
-
-const title = computed(() => {
-  if (isProperty.value) {
-    return currentProperty.value?.description || 'Propiedad sin nombre'
-  }
-  return `Habitación ${roomNumber.value}`
-})
-
-const rentalPrice = computed(() => {
-  if (!isProperty.value) {
-    return formatCurrency(currentRoom.value?.rental_price || 0)
-  }
-  return null
-})
-
-const features = computed(() => {
-  if (isProperty.value) {
-    return currentProperty.value?.details?.amenities || []
-  }
-  return currentRoom.value?.description?.split(',') || []
-})
-
-const formattedDate = computed(() => 
-  formatDate(props.data.rentable.created_at)
-)
+const imageAltText = computed(
+  () => `Imagen de la propiedad ${rentable.value?.address}`
+);
 </script>
 
 <style scoped>
@@ -255,5 +310,17 @@ const formattedDate = computed(() =>
 
 .group:hover .group-hover\:scale-105 {
   transform: scale(1.05);
+}
+
+::v-deep .chat-button.p-button {
+  @apply bg-info/10 text-gray-600 border border-info/10 !important;
+}
+
+::v-deep .chat-button.p-button:hover {
+  @apply bg-info/20 text-gray-800 border-info/10 !important;
+}
+
+::v-deep .chat-button.p-button:focus {
+  @apply border-info/10 !important;
 }
 </style>
