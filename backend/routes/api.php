@@ -3,8 +3,10 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractTemplateController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
 use App\Http\Controllers\RoomController;
@@ -77,6 +79,16 @@ Route::middleware('auth:sanctum')->group(function () {
     [ContractController::class, 'uploadSigned']
   )->name('contracts.uploadSigned');
   Route::get('contracts/{contract}/pdf', [ContractController::class, 'previewPdf']);
+
+  // Get all conversations
+  Route::get('conversations', [ConversationController::class, 'index']);
+  // Get messages from conversation
+  Route::get('conversations/{conversation}/messages', [MessageController::class, 'index']);
+  // Send message
+  Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
+
+  // Create or get conversation related to tenant or owner
+  Route::post('conversations', [ConversationController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tenant'])
