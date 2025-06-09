@@ -1,5 +1,6 @@
 import type { Tenant } from "./tenant";
 import type { Invitation } from "./invitation";
+import type { Owner } from "./owner";
 
 export interface Room {
   id: number,
@@ -12,6 +13,7 @@ export interface Room {
   main_image_url: string,
   images: string[],
 
+  owner?: Owner,
   tenant?: Tenant,
   invitations?: Invitation[],
 

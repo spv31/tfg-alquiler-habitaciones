@@ -23,7 +23,7 @@ class RoomResource extends JsonResource
       'status' => $this->status,
 
       'main_image_url' => $this->main_image_url,
-
+      'owner' => new OwnerResource($this->property->owner),
       'tenant' => $this->whenLoaded('tenant', fn() => new TenantResource($this->tenant)),
       'invitations' => InvitationResource::collection($this->whenLoaded('invitations')),
       'created_at' => $this->created_at,

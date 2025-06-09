@@ -27,7 +27,6 @@
           <PropertyCard
             v-if="assignedRentable"
             :data="assignedRentable"
-            @open-chat="openChat"
             class="border-0"
           />
           <div v-else class="text-center py-8 text-gray-500">
@@ -37,97 +36,124 @@
         </template>
       </Card>
 
-      <div class="grid gap-6 md:grid-cols-2">
-        <ContractSection :contract="currentContract!" />
+      <div class="grid gap-6 lg:grid-cols-5 auto-rows-max">
+        <div class="lg:col-span-3 col-span-5">
+          <ContractSection :contract="currentContract!" />
+        </div>
 
-        <Card
-          class="rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
-        >
-          <template #title>
-            <div class="flex items-center gap-3 p-4">
-              <i class="pi pi-credit-card text-2xl text-info"></i>
-              <h3 class="text-lg font-semibold text-gray-900">
-                Estado de Pagos
-              </h3>
+        <div class="lg:col-span-2 col-span-5 flex flex-col gap-6 h-full">
+          <div class="flex-1">
+            <Chat
+              v-if="chatCtx"
+              :context="chatCtx"
+              :rentable="assignedRentable"
+            />
+
+            <div
+              v-else
+              class="h-full flex items-center justify-center text-gray-500 border border-info/10 rounded-xl"
+            >
+              <i class="pi pi-info-circle text-2xl mr-2" />
+              Selecciona una propiedad para habilitar el chat
             </div>
-          </template>
-          <template #content>
-            <div class="p-4 space-y-6">
-              <div v-if="currentContract" class="space-y-6">
-                <div
-                  class="flex items-center justify-between p-4 bg-blue-50 rounded-lg"
-                >
-                  <div>
-                    <p class="font-medium text-gray-900">Estado actual</p>
-                    <p class="text-sm text-gray-500">Mes en curso</p>
-                  </div>
-                  <Badge
-                    :value="currentContract.paid ? 'Pagado' : 'Pendiente'"
-                    :severity="currentContract.paid ? 'success' : 'warning'"
-                    class="text-sm"
-                  />
+          </div>
+
+          <div>
+            <Card
+              class="rounded-xl border border-info/10 h-full"
+            >
+              <template #title>
+                <div class="flex items-center gap-3 p-4">
+                  <i class="pi pi-credit-card text-2xl text-info"></i>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Estado de Pagos
+                  </h3>
                 </div>
+              </template>
+              <template #content>
+                <div class="p-4 space-y-6">
+                  <div v-if="currentContract" class="space-y-6">
+                    <div
+                      class="flex items-center justify-between p-4 bg-blue-50 rounded-lg"
+                    >
+                      <div>
+                        <p class="font-medium text-gray-900">Estado actual</p>
+                        <p class="text-sm text-gray-500">Mes en curso</p>
+                      </div>
+                      <Badge
+                        :value="currentContract.paid ? 'Pagado' : 'Pendiente'"
+                        :severity="currentContract.paid ? 'success' : 'warning'"
+                        class="text-sm"
+                      />
+                    </div>
 
-                <div class="space-y-4">
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">Monto mensual:</span>
-                    <span class="font-semibold text-lg text-gray-900"
-                      >${{ currentContract.rent_amount }}</span
-                    >
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Monto mensual:</span>
+                        <span class="font-semibold text-lg text-gray-900">
+                          ${{ currentContract.rent_amount }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Próximo vencimiento:</span>
+                        <span class="font-medium text-gray-900">
+                          05 {{ nextMonth }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Button
+                      label="Pagar ahora"
+                      icon="pi pi-check"
+                      class="w-full"
+                      :disabled="currentContract.paid"
+                      severity="success"
+                    />
                   </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">Próximo vencimiento:</span>
-                    <span class="font-medium text-gray-900"
-                      >05 {{ nextMonth }}</span
-                    >
+
+                  <div v-else class="text-center py-6 text-gray-500">
+                    <i class="pi pi-info-circle text-2xl mb-3"></i>
+                    <p>No hay información de pagos disponible</p>
                   </div>
                 </div>
-
-                <Button
-                  label="Pagar ahora"
-                  icon="pi pi-check"
-                  class="w-full"
-                  :disabled="currentContract.paid"
-                  severity="success"
-                />
-              </div>
-
-              <div v-else class="text-center py-6 text-gray-500">
-                <i class="pi pi-info-circle text-2xl mb-3"></i>
-                <p>No hay información de pagos disponible</p>
-              </div>
-            </div>
-          </template>
-        </Card>
+              </template>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
-
-    <Dialog
-      v-model:visible="showChat"
-      header="Chat con el Propietario"
-      :style="{ width: 'min(95vw, 600px)', borderRadius: '1rem' }"
-      :modal="true"
-    >
-      <!-- <Chat :rentable="assignedRentable" /> -->
-      <Chat v-if="chatCtx" :context="chatCtx" :rentable="assignedRentable" />
-    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import PropertyCard from "~/components/ui/tenant/PropertyCard.vue";
+import { useAuthStore } from "~/store/auth";
 import { useTenantStore } from "~/store/tenant";
+import type { Property } from "~/types/property";
+import type { Room } from "~/types/room";
 
 const tenantStore = useTenantStore();
+const authStore = useAuthStore();
 const { currentContract, assignedRentable, alreadyLoaded } =
   storeToRefs(tenantStore);
-const showChat = ref(false);
-const chatCtx    = ref<{ ownerId: number; tenantId: number } | null>(null);
+const tenantId = computed(() => authStore.user?.id);
 
-const openChat = (payload: { ownerId: number; tenantId: number }) => {
-  chatCtx.value = payload;
-  showChat.value = true;
-}
+const chatCtx = ref<{ ownerId: number; tenantId: number } | null>(null);
+
+watchEffect(() => {
+  if (assignedRentable.value && tenantId.value) {
+    const ownerId =
+      assignedRentable.value.type === "Property"
+        ? (assignedRentable.value.rentable as Property).owner?.id
+        : (assignedRentable.value.rentable as Room).owner?.id;
+    chatCtx.value = {
+      ownerId: ownerId!,
+      tenantId: tenantId.value,
+    };
+  } else {
+    chatCtx.value = null;
+  }
+});
 
 const nextMonth = computed(() => {
   const months = [
@@ -149,10 +175,6 @@ const nextMonth = computed(() => {
 });
 
 onMounted(async () => {
-  console.log("fetchTenanantData es llamado dos veces mola");
-
-  await nextTick();
-
   if (!alreadyLoaded.value) {
     try {
       await tenantStore.fetchTenantData();

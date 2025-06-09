@@ -95,6 +95,7 @@ class TenantController extends Controller
                 'rentable' => new PropertyResource($rentable),
             ];
         } elseif ($rentable instanceof Room) {
+            $rentable->load('property.owner');
             $rentableData = [
                 'type'     => 'Room',
                 'rentable' => new RoomResource($rentable),
