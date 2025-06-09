@@ -27,7 +27,7 @@
           <PropertyCard
             v-if="assignedRentable"
             :data="assignedRentable"
-            @open-chat="showChat = true"
+            @open-chat="openChat"
             class="border-0"
           />
           <div v-else class="text-center py-8 text-gray-500">
@@ -108,7 +108,8 @@
       :style="{ width: 'min(95vw, 600px)', borderRadius: '1rem' }"
       :modal="true"
     >
-      <Chat :rentable="assignedRentable" />
+      <!-- <Chat :rentable="assignedRentable" /> -->
+      <Chat v-if="chatCtx" :context="chatCtx" :rentable="assignedRentable" />
     </Dialog>
   </div>
 </template>
@@ -121,6 +122,12 @@ const tenantStore = useTenantStore();
 const { currentContract, assignedRentable, alreadyLoaded } =
   storeToRefs(tenantStore);
 const showChat = ref(false);
+const chatCtx    = ref<{ ownerId: number; tenantId: number } | null>(null);
+
+const openChat = (payload: { ownerId: number; tenantId: number }) => {
+  chatCtx.value = payload;
+  showChat.value = true;
+}
 
 const nextMonth = computed(() => {
   const months = [

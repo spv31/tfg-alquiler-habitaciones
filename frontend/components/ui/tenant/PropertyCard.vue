@@ -123,7 +123,7 @@
             icon="pi pi-comments"
             class="chat-button rounded-lg p-2 h-10"
             aria-label="Abrir chat con propietario"
-            @click="$emit('open-chat')"
+            @click="emitChat"
           />
         </div>
 
@@ -253,6 +253,9 @@ import type { Owner } from "~/types/owner";
 import type { Property } from "~/types/property";
 import defaultAvatar from "~/assets/images/default.jpg";
 
+import { useAuthStore } from '~/store/auth';
+const authStore = useAuthStore();
+
 const props = defineProps<{
   data: {
     type: "Property";
@@ -262,7 +265,7 @@ const props = defineProps<{
 
 const type = computed<String>(() => props.data.type);
 const rentable = computed<Property>(() => props.data.rentable);
-const owner = rentable.value.owner;
+const owner = computed(() => rentable.value.owner);
 
 const loadingImage = ref(false);
 const isExpanded = ref(false);
@@ -288,6 +291,24 @@ onMounted(() => {
 const imageAltText = computed(
   () => `Imagen de la propiedad ${rentable.value?.address}`
 );
+
+const emit = defineEmits<{
+  (e: 'open-chat', payload: { ownerId: number; tenantId: number }): void
+}>()
+
+const emitChat = () => {
+  const ownerId  = rentable.value.owner?.id;
+  const tenantId = authStore.user?.id;
+
+  console.log('Rentable value: ', rentable.value.owner);
+    console.log('Rentable TENANT: ', tenantId);
+
+  if (!ownerId || !tenantId) {
+    console.warn('OwnerId o TenantId ausentes');
+    return;
+  }
+  emit('open-chat', { ownerId, tenantId });
+}
 </script>
 
 <style scoped>

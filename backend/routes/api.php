@@ -80,13 +80,15 @@ Route::middleware('auth:sanctum')->group(function () {
   )->name('contracts.uploadSigned');
   Route::get('contracts/{contract}/pdf', [ContractController::class, 'previewPdf']);
 
+  /**
+   * Routes for chats
+   */
   // Get all conversations
   Route::get('conversations', [ConversationController::class, 'index']);
   // Get messages from conversation
   Route::get('conversations/{conversation}/messages', [MessageController::class, 'index']);
   // Send message
   Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
-
   // Create or get conversation related to tenant or owner
   Route::post('conversations', [ConversationController::class, 'store']);
 });
