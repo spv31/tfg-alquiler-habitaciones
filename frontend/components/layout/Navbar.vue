@@ -1,25 +1,25 @@
 <template>
   <nav class="bg-white relative">
     <div
-      class="max-w-screen-xl mx-auto py-5 px-5 flex items-center justify-between"
+      class="max-w-screen-xl mx-auto pt-2 px-5 flex items-center justify-between"
     >
-      <!-- Logo -->
       <div class="flex items-center space-x-6 mr-12">
-        <NuxtLink 
+        <NuxtLink
           v-if="authStore.isAuthenticated"
-          :to="$localePath('dashboard')" 
-          class="flex items-center">
-          <span class="text-2xl font-medium"> MyRentHub </span>
+          :to="
+            authStore.user?.role === 'tenant'
+              ? $localePath('/tenant/dashboard')
+              : $localePath('dashboard')
+          "
+          class="flex items-center"
+        >
+          <img src="/logo.png" alt="MyRentHub Logo" class="h-24 w-auto" />
         </NuxtLink>
-        <NuxtLink 
-          v-if="!authStore.isAuthenticated"
-          :to="$localePath('login')" 
-          class="flex items-center">
-          <span class="text-2xl font-medium"> MyRentHub </span>
+        <NuxtLink v-else :to="$localePath('login')" class="flex items-center">
+          <img src="/logo.png" alt="MyRentHub Logo" class="h-24 w-auto" />
         </NuxtLink>
       </div>
 
-      <!-- Opciones de navegación (desktop) -->
       <div
         class="hidden xl:flex flex-grow items-center justify-between space-x-6"
       >
@@ -40,104 +40,80 @@
           </div>
         </template>
 
-        <template v-else>
-          <ul v-if="authStore.user?.role === 'owner'" class="flex space-x-6">
+        <template v-else-if="authStore.user?.role === 'owner'">
+          <ul class="flex space-x-6">
             <li>
               <NuxtLink
                 :to="$localePath('properties')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.owner.properties") }}</NuxtLink
               >
-                {{ $t("navbar.owner.properties") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('statistics')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.owner.statistics") }}</NuxtLink
               >
-                {{ $t("navbar.owner.statistics") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('contract-templates')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.owner.contracts") }}</NuxtLink
               >
-                {{ $t("navbar.owner.contracts") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('chats')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.owner.chats") }}</NuxtLink
               >
-                {{ $t("navbar.owner.chats") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('profile')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.owner.profile") }}</NuxtLink
               >
-                {{ $t("navbar.owner.profile") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('invitations')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.owner.invitations") }}</NuxtLink
               >
-                {{ $t("navbar.owner.invitations") }}
-              </NuxtLink>
             </li>
           </ul>
+        </template>
 
-          <ul v-if="authStore.user?.role === 'tenant'" class="flex space-x-6">
+        <template v-else>
+          <ul class="flex space-x-6">
             <li>
               <NuxtLink
-                :to="$localePath('my-home')"
+                :to="$localePath('/tenant/dashboard')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >Dashboard</NuxtLink
               >
-                {{ $t("navbar.tenant.home") }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('payments')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-              >
-                {{ $t("navbar.tenant.payments") }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('my-contract')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-              >
-                {{ $t("navbar.tenant.contract") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('profile')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.tenant.profile") }}</NuxtLink
               >
-                {{ $t("navbar.tenant.profile") }}
-              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('support')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+                >{{ $t("navbar.tenant.support") }}</NuxtLink
               >
-                {{ $t("navbar.tenant.support") }}
-              </NuxtLink>
             </li>
           </ul>
         </template>
       </div>
 
-      <!-- Botón de Logout (desktop) -->
       <template v-if="authStore.isAuthenticated">
         <button
           @click="logout"
@@ -147,10 +123,9 @@
         </button>
       </template>
 
-      <!-- Botón de menú hamburguesa (mobile) -->
       <button @click="toggleMenu" class="text-blue-900 xl:hidden">
         <svg
-          class="w-6 h-6"
+          class="w-8 h-8"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -166,9 +141,8 @@
       </button>
     </div>
 
-    <!-- Menú hamburguesa (mobile) -->
     <div
-      :class="[isMenuOpen ? 'block' : 'hidden', 'xl:hidden w-full bg-blue-100']"
+      :class="[isMenuOpen ? 'block bg-gray-50' : 'hidden', 'xl:hidden w-full']"
     >
       <ul class="flex flex-col space-y-3 p-4">
         <template v-if="!authStore.isAuthenticated">
@@ -243,12 +217,44 @@
               {{ $t("navbar.logout") }}
             </button>
           </ul>
+
+          <ul v-else class="space-y-2">
+            <li>
+              <NuxtLink
+                :to="$localePath('/tenant/dashboard')"
+                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+              >
+                Dashboard
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                :to="$localePath('profile')"
+                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+              >
+                {{ $t("navbar.tenant.profile") }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink
+                :to="$localePath('support')"
+                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+              >
+                {{ $t("navbar.tenant.support") }}
+              </NuxtLink>
+            </li>
+            <button
+              @click="logout"
+              class="font-medium text-base hover:text-info_dark transition-colors duration-200"
+            >
+              {{ $t("navbar.logout") }}
+            </button>
+          </ul>
         </template>
       </ul>
     </div>
   </nav>
 </template>
-
 
 <script setup lang="ts">
 import { useAuthStore } from "~/store/auth";

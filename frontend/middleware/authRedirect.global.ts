@@ -1,6 +1,6 @@
 import { useAuthStore } from "~/store/auth";
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware(async (to) => {
   const { $localePath } = useNuxtApp();
   const authStore = useAuthStore();
 
@@ -21,16 +21,9 @@ export default defineNuxtRouteMiddleware((to) => {
     registerTenant,
   ];
 
-  const isTenantRegistration = to.path.startsWith("/register/tenant");
+  const isTenantRegistration = to.path.startsWith("/register/tenant"); 
 
-  console.log("Autenticación: ", authStore.isAuthenticated);
-  if (
-    !authStore.isAuthenticated &&
-    !authPages.includes(to.path) &&
-    !isTenantRegistration
-  ) {
-    return navigateTo(login);
-  }
+  await authStore.getUser();
 
   if (
     !authStore.isAuthenticated &&

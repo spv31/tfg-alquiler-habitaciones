@@ -116,9 +116,8 @@ async function send() {
 </script> -->
 <template>
   <div
-    class="flex flex-col h-[32rem] md:h-[27.25rem] rounded-xl border border-info/10 overflow-hidden"
+    class="flex flex-col h-[32rem] md:h-[27.25rem] rounded-xl border border-blue-100 overflow-hidden"
   >
-    <!-- Encabezado -->
     <div class="border-b bg-white border-gray-200 p-4 flex items-center gap-3">
       <div class="relative">
         <img
@@ -140,7 +139,6 @@ async function send() {
       </div>
     </div>
 
-    <!-- Mensajes -->
     <div
       ref="messagesContainer"
       class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
@@ -154,7 +152,6 @@ async function send() {
           'justify-start': message.sender === 'owner',
         }"
       >
-        <!-- Avatar Owner -->
         <img
           v-if="message.sender === 'owner'"
           :src="ownerAvatar"
@@ -162,7 +159,6 @@ async function send() {
           @error="handleImageError"
         />
 
-        <!-- Burbuja + Hora -->
         <div class="flex flex-col max-w-[70%]">
           <div
             class="px-4 py-2 rounded-2xl shadow-sm"
@@ -186,7 +182,6 @@ async function send() {
           </span>
         </div>
 
-        <!-- Avatar Tenant -->
         <img
           v-if="message.sender === 'tenant'"
           :src="tenantAvatar"
@@ -202,7 +197,6 @@ async function send() {
     <!-- Input + Emojis -->
     <div class="bg-white p-4">
       <div class="flex items-center gap-2">
-        <!-- Smile visible con text-info -->
         <Button
           icon="pi pi-face-smile"
           rounded
@@ -217,7 +211,6 @@ async function send() {
           @keyup.enter="sendMessage"
         />
 
-        <!-- Botón enviar con bg-info -->
         <Button
           icon="pi pi-send"
           rounded
