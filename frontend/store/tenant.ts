@@ -2,6 +2,7 @@ import type { PersistenceOptions } from "pinia-plugin-persistedstate";
 import type { Contract } from "~/types/contract";
 import type { Property } from "~/types/property";
 import type { Room } from "~/types/room";
+import { useAuthStore } from "./auth";
 
 type RentableType = "Property" | "Room";
 
@@ -61,10 +62,6 @@ export const useTenantStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      console.log("Datos recibidos: ", data);
-      console.log("Contract: ", data.contract);
-      console.log("Rentable: ", data.rentable);
-
       currentContract.value = data.contract;
       assignedRentable.value = data.rentable
         ? normalizeRentable(data.rentable, apiBaseUrl)
@@ -97,7 +94,6 @@ export const useTenantStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      console.log("Datos recibidos: ", data);
       currentContract.value = data;
     };
 
@@ -119,7 +115,6 @@ export const useTenantStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      console.log("Datos recibidos: ", data);
       assignedRentable.value = normalizeRentable(data, apiBaseUrl);
     };
 
@@ -194,6 +189,12 @@ export const useTenantStore = defineStore(
       return cloned;
     };
 
+    const reset = () => {
+      currentContract.value = null;
+      assignedRentable.value = null;
+      alreadyLoaded.value = false;
+    };
+
     return {
       currentContract,
       assignedRentable,
@@ -202,6 +203,7 @@ export const useTenantStore = defineStore(
       fetchTenantRentable,
       loading,
       alreadyLoaded,
+      reset
     };
   },
 

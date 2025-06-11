@@ -5,7 +5,6 @@ import { getCsrfToken } from "~/utils/auth";
 export default defineNuxtPlugin(async () => {
   // @ts-ignore
   window.Pusher = Pusher;
-  const csrf = await getCsrfToken();
 
   const echo = new Echo({
     broadcaster: "reverb",
@@ -15,9 +14,9 @@ export default defineNuxtPlugin(async () => {
     forceTLS: false,
     enabledTransports: ["ws"],
     authEndpoint: "/api/broadcasting/auth",
-    authorizer: (channel, options) => {
+    authorizer: (channel: any, options: any) => {
       return {
-        authorize: async (socketId, callback) => {
+        authorize: async (socketId: any, callback: any) => {
           try {
             const csrf = await getCsrfToken();
 

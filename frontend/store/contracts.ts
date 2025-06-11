@@ -112,8 +112,6 @@ export const useContractsStore = defineStore(
       const { data, error } = await tryCatch(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
-        console.log("id: ", id);
-        console.log("Formulario: ", form.name);
 
         return $fetch<{ data: ContractTemplate }>(
           `${apiBaseUrl}/contract-templates/${id}`,
@@ -173,7 +171,7 @@ export const useContractsStore = defineStore(
       if (error) throw error;
       if (!data) throw new Error("No data received");
 
-      contracts.value = data.data;
+      contracts.value = data;
     };
 
     const fetchContract = async () => {
@@ -367,6 +365,17 @@ export const useContractsStore = defineStore(
       return data.data;
     };
 
+    const reset = () => {
+      contractTemplates.value = [];
+      currentContractTemplate.value = null;
+      contracts.value = [];
+      currentContract.value = null;
+      templatePreviewCache.value = {};
+      lastFetchedPreviewAt.value = {};
+      contractPreviewCache.value = {};
+      lastFetchedContractAt.value = {};
+    };
+
     return {
       contractTemplates,
       currentContractTemplate,
@@ -391,6 +400,7 @@ export const useContractsStore = defineStore(
       downloadContractPdf,
       downloadSignedContractPdf,
       uploadSigned,
+      reset
     };
   },
   {

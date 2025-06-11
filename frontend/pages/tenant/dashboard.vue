@@ -25,7 +25,12 @@
         </template>
         <template #content>
           <PropertyCard
-            v-if="assignedRentable"
+            v-if="assignedRentable && assignedRentable.type === 'Property'"
+            :data="assignedRentable"
+            class="border-0"
+          />
+          <RoomCard
+            v-else-if="assignedRentable && assignedRentable.type === 'Room'"
             :data="assignedRentable"
             class="border-0"
           />
@@ -36,17 +41,19 @@
         </template>
       </Card>
 
-      <div class="grid gap-6 lg:grid-cols-5 auto-rows-max">
-        <div class="lg:col-span-3 col-span-5">
+      <div v-if="assignedRentable" class="grid gap-6 grid-cols-1 lg:grid-cols-5 auto-rows-max">
+        <div class="lg:col-span-3 col-span-1">
           <ContractSection :contract="currentContract!" />
         </div>
 
-        <div class="lg:col-span-2 col-span-5 flex flex-col gap-6 h-full">
+        <div class="lg:col-span-2 col-span-1 flex flex-col gap-6 h-full">
           <div class="flex-1">
             <Chat
               v-if="chatCtx"
               :context="chatCtx"
               :rentable="assignedRentable"
+              :current-user-id="tenantId!"
+              :current-user-role="'tenant'"
             />
 
             <div
@@ -121,6 +128,7 @@
 
 <script setup lang="ts">
 import PropertyCard from "~/components/ui/tenant/PropertyCard.vue";
+import RoomCard from "~/components/ui/tenant/RoomCard.vue";
 import { useAuthStore } from "~/store/auth";
 import { useTenantStore } from "~/store/tenant";
 import type { Property } from "~/types/property";

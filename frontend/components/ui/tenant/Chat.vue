@@ -1,119 +1,3 @@
-<!-- <template>
-  <Card class="shadow-md h-[28rem] flex flex-col rounded-2xl">
-    <template #title>
-      <span class="font-semibold text-base">Chat con el propietario</span>
-    </template>
-
-    <template #content>
-      <div
-        ref="messagesContainer"
-        class="flex-1 overflow-y-auto px-4 py-2 space-y-3"
-      >
-        <div
-          v-for="m in chatStore.messages"
-          :key="m.id"
-          :class="{
-            'flex justify-end': m.sender_id === userId,
-            'flex justify-start': m.sender_id !== userId,
-          }"
-        >
-          <div
-            class="max-w-[70%] px-3 py-2 rounded-2xl shadow-md break-words"
-            :class="
-              m.sender_id === userId
-                ? 'bg-blue-600 text-white rounded-br-sm'
-                : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-            "
-          >
-            {{ m.body }}
-          </div>
-        </div>
-
-        <div
-          v-for="m in chatStore.messages"
-          :key="'ts-' + m.id"
-          :class="{
-            'flex justify-end pr-1': m.sender_id === userId,
-            'flex justify-start pl-1': m.sender_id !== userId,
-          }"
-        >
-          <small
-            v-if="m.sent_at && !isNaN(Date.parse(m.sent_at))"
-            class="text-[10px] text-gray-400 mt-1"
-          >
-            {{ timeFormatter.format(new Date(m.sent_at)) }}
-          </small>
-        </div>
-      </div>
-
-      <div class="mt-2 flex gap-2 px-4 pb-3">
-        <InputText
-          v-model="newMessage"
-          placeholder="Escribe un mensaje…"
-          class="flex-1 text-sm"
-          @keyup.enter="send"
-        />
-        <Button
-          icon="pi pi-send"
-          rounded
-          severity="info"
-          :disabled="!newMessage.trim()"
-          @click="send"
-        />
-      </div>
-    </template>
-  </Card>
-</template>
-
-<script setup lang="ts">
-import Card from "primevue/card";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-
-import { useChatStore } from "~/store/chat";
-import { useAuthStore } from "~/store/auth";
-import { getCsrfToken } from "~/utils/auth";
-
-interface Props {
-  context: { ownerId: number; tenantId: number };
-}
-const props = defineProps<Props>();
-
-const chatStore = useChatStore();
-const authStore = useAuthStore();
-const userId = computed(() => authStore.user?.id);
-
-const newMessage = ref("");
-const messagesContainer = ref<HTMLElement | null>(null);
-
-function scrollBottom() {
-  messagesContainer.value?.scrollTo({
-    top: messagesContainer.value.scrollHeight,
-    behavior: "smooth",
-  });
-}
-
-onMounted(async () => {
-  await chatStore.openConversation(
-    props.context.ownerId,
-    props.context.tenantId
-  );
-  scrollBottom();
-});
-
-watch(
-  () => chatStore.messages.length,
-  () => nextTick(scrollBottom)
-);
-
-async function send() {
-  const text = newMessage.value.trim();
-  if (!text) return;
-
-  await chatStore.sendMessage(text);
-  newMessage.value = "";
-}
-</script> -->
 <template>
   <div
     class="flex flex-col h-[32rem] md:h-[27.25rem] rounded-xl border border-blue-100 overflow-hidden"
@@ -126,14 +10,14 @@ async function send() {
           @error="handleImageError"
         />
         <span
-          v-if="isOnline"
+          v-if="isPeerOnline"
           class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"
         />
       </div>
       <div>
-        <p class="font-semibold text-gray-900">{{ ownerName }}</p>
+        <p class="font-semibold text-gray-900">{{ owner?.name }}</p>
         <p class="text-xs text-gray-500">
-          <span v-if="isOnline" class="text-green-500">En línea</span>
+          <span v-if="isPeerOnline" class="text-green-500">En línea</span>
           <span v-else>Desconectado</span>
         </p>
       </div>
@@ -144,8 +28,8 @@ async function send() {
       class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
     >
       <div
-        v-for="(message, i) in messages"
-        :key="i"
+        v-for="message in chatMessages"
+        :key="message.id"
         class="flex items-end gap-3"
         :class="{
           'justify-end': message.sender === 'tenant',
@@ -191,10 +75,8 @@ async function send() {
       </div>
     </div>
 
-    <!-- Separador -->
     <div class="border-t border-gray-200"></div>
 
-    <!-- Input + Emojis -->
     <div class="bg-white p-4">
       <div class="flex items-center gap-2">
         <Button
@@ -204,12 +86,14 @@ async function send() {
           @click="toggleEmojiPicker"
         />
 
-        <InputText
-          v-model="newMessage"
-          placeholder="Escribe un mensaje…"
-          class="flex-1 input-custom"
-          @keyup.enter="sendMessage"
-        />
+        <div class="flex-1">
+          <InputText
+            v-model="newMessage"
+            placeholder="Escribe un mensaje…"
+            class="w-full input-custom"
+            @keyup.enter="sendMessage"
+          />
+        </div>
 
         <Button
           icon="pi pi-send"
@@ -242,14 +126,63 @@ async function send() {
 <script setup lang="ts">
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
+import type { Property } from "~/types/property";
+import type { Room } from "~/types/room";
+
+import { useChatStore } from "~/store/chat";
+import type { PropType } from "vue";
+const chatStore = useChatStore();
+const { messages: storeMessages, isPeerOnline } = storeToRefs(chatStore);
+
+const parseDate = (iso: string) => new Date(iso);
+
+type RentableWrapper = {
+  type: "Property" | "Room";
+  rentable: Property | Room;
+};
 
 const props = defineProps({
-  context: { type: Object, required: true },
-  rentable: { type: Object, default: null },
+  context: {
+    type: Object as PropType<{ ownerId: number; tenantId: number }>,
+    required: true,
+  },
+  rentable: {
+    type: Object as PropType<RentableWrapper>,
+    required: true,
+  },
+  currentUserId: {
+    type: Number,
+    required: true,
+  },
+  currentUserRole: {
+    type: String as PropType<"tenant" | "owner">,
+    required: true,
+  },
+});
+
+const chatMessages = computed(() =>
+  storeMessages.value.map((m) => ({
+    id: m.id,
+    text: m.body,
+    sender:
+      m.sender_id === props.currentUserId
+        ? props.currentUserRole
+        : props.currentUserRole === "tenant"
+          ? "owner"
+          : "tenant",
+    time: parseDate(m.sent_at),
+  }))
+);
+
+onMounted(async () => {
+  await chatStore.openConversation(
+    props.context.ownerId,
+    props.context.tenantId
+  );
+  scrollToBottom();
 });
 
 const newMessage = ref("");
-const messages = ref([]);
 const messagesContainer = ref<HTMLElement | null>(null);
 const showEmojiPicker = ref(false);
 
@@ -272,7 +205,8 @@ const emojis = ref([
   "🎉",
 ]);
 
-// Owner y tenant info
+const owner = computed(() => props.rentable.rentable.owner);
+
 const ownerInfo = computed(() => ({
   name: props.rentable?.owner?.name || "Propietario",
   avatar: props.rentable?.owner?.avatar || "/avatars/default.jpg",
@@ -283,86 +217,43 @@ const ownerAvatar = computed(() => ownerInfo.value.avatar);
 const isOnline = computed(() => ownerInfo.value.isOnline);
 const tenantAvatar = computed(() => "/avatars/default.jpg");
 
-// Formato hora
 const formatTime = (d: Date) =>
   new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-// Foto por defecto sin bucle
-function handleImageError(e: Event) {
+const handleImageError = (e: Event) => {
   const img = e.target as HTMLImageElement;
   if (img.dataset.fallback) return;
   img.dataset.fallback = "1";
   img.src = "/avatars/default.jpg";
-}
+};
 
-// Emoji picker
 const toggleEmojiPicker = () =>
   (showEmojiPicker.value = !showEmojiPicker.value);
 const addEmoji = (emoji: string) => (newMessage.value += emoji);
 
-// Enviar mensajes
 const scrollToBottom = () =>
   nextTick(() => {
     if (messagesContainer.value)
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   });
 
-const sendMessage = () => {
+const sendMessage = async () => {
   if (!newMessage.value.trim()) return;
-  messages.value.push({
-    text: newMessage.value,
-    sender: "tenant",
-    time: new Date(),
-    status: "sent",
-  });
-  newMessage.value = "";
-  showEmojiPicker.value = false;
-  scrollToBottom();
-
-  setTimeout(() => {
-    messages.value.push({
-      text: "Respuesta simulada del propietario.",
-      sender: "owner",
-      time: new Date(),
-      status: "delivered",
-    });
-    scrollToBottom();
-  }, 1500);
+  try {
+    await chatStore.sendMessage(newMessage.value.trim());
+    newMessage.value = "";
+    showEmojiPicker.value = false;
+  } catch (err) {
+    console.error("Error enviando mensaje:", err);
+  }
 };
 
-// Mensajes iniciales
-onMounted(() => {
-  messages.value = [
-    {
-      text: "Hola, ¿cómo estás?",
-      sender: "owner",
-      time: new Date(Date.now() - 3600000),
-      status: "read",
-    },
-    {
-      text: "Bien, gracias. Tú?",
-      sender: "tenant",
-      time: new Date(Date.now() - 3500000),
-      status: "read",
-    },
-    {
-      text: "Todo ok.",
-      sender: "owner",
-      time: new Date(Date.now() - 3400000),
-      status: "read",
-    },
-  ];
-  scrollToBottom();
-});
-watch(() => messages.value.length, scrollToBottom);
+watch(() => storeMessages.value.length, scrollToBottom);
 </script>
 
 <style scoped>
 .bg-blue-600 {
   @apply bg-info/90;
-}
-.bg-white {
-  background-color: #ffffff;
 }
 .rounded-bl-none {
   border-bottom-left-radius: 0 !important;

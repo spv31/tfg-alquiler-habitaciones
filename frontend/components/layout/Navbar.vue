@@ -1,7 +1,7 @@
 <template>
   <nav class="bg-white relative">
     <div
-      class="max-w-screen-xl mx-auto pt-2 px-5 flex items-center justify-between"
+      class="max-w-screen-xl mx-auto py-4 px-5 flex items-center justify-between"
     >
       <div class="flex items-center space-x-6 mr-12">
         <NuxtLink
@@ -13,10 +13,11 @@
           "
           class="flex items-center"
         >
-          <img src="/logo.png" alt="MyRentHub Logo" class="h-24 w-auto" />
+          <!-- <img src="/logo.png" alt="MyRentHub Logo" class="h-16 w-auto" /> -->
+          <img src="/logo.png" alt="MyRentHub Logo" class="h-16 w-auto mt-[-16px]" />
         </NuxtLink>
         <NuxtLink v-else :to="$localePath('login')" class="flex items-center">
-          <img src="/logo.png" alt="MyRentHub Logo" class="h-24 w-auto" />
+          <img src="/logo.png" alt="MyRentHub Logo" class="h-16 w-auto" />
         </NuxtLink>
       </div>
 

@@ -24,7 +24,6 @@
       </div>
     </div>
 
-    <!-- Detalles -->
     <div class="col-span-1 lg:col-span-4 flex flex-col gap-4">
       <div class="flex flex-col gap-2 border-b pb-4">
         <div class="flex items-center gap-2">
@@ -44,7 +43,6 @@
         </div>
       </div>
 
-      <!-- Precio y características principales -->
       <div class="space-y-4">
         <div class="prose max-w-none text-gray-600 relative">
           <div
@@ -118,16 +116,8 @@
               </div>
             </div>
           </div>
-
-          <Button
-            icon="pi pi-comments"
-            class="chat-button rounded-lg p-2 h-10"
-            aria-label="Abrir chat con propietario"
-            @click="emitChat"
-          />
         </div>
 
-        <!-- Detalles específicos -->
         <div
           class="grid gap-4 text-sm grid-cols-1 <!-- <640 --> md:grid-cols-2 <!-- 640–1535 --> 3xl:grid-cols-4"
         >
@@ -249,7 +239,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Owner } from "~/types/owner";
 import type { Property } from "~/types/property";
 import defaultAvatar from "~/assets/images/default.jpg";
 
@@ -282,33 +271,11 @@ const checkDescriptionHeight = async () => {
 watch(checkDescriptionHeight());
 onMounted(() => {
   checkDescriptionHeight();
-  console.log("Propiedad: ", rentable.value);
-  console.log("Superficie: ", rentable.value.details);
-  console.log("URL IMAGEN: ", rentable.value.main_image_url);
-  console.log("ID Propietario: ", rentable.value.owner);
 });
 
 const imageAltText = computed(
   () => `Imagen de la propiedad ${rentable.value?.address}`
 );
-
-const emit = defineEmits<{
-  (e: 'open-chat', payload: { ownerId: number; tenantId: number }): void
-}>()
-
-const emitChat = () => {
-  const ownerId  = rentable.value.owner?.id;
-  const tenantId = authStore.user?.id;
-
-  console.log('Rentable value: ', rentable.value.owner);
-    console.log('Rentable TENANT: ', tenantId);
-
-  if (!ownerId || !tenantId) {
-    console.warn('OwnerId o TenantId ausentes');
-    return;
-  }
-  emit('open-chat', { ownerId, tenantId });
-}
 </script>
 
 <style scoped>

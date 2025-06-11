@@ -56,6 +56,7 @@ class TenantController extends Controller
                 $rentable->load('details');
                 $resource = new PropertyResource($rentable);
             } else if ($rentable instanceof Room) {
+                $rentable->load('property.owner');
                 $resource = new RoomResource($rentable);
             } else {
                 return response()->json([

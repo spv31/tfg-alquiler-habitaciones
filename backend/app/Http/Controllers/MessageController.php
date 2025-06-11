@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
+use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
 use Illuminate\Http\Request;
 
@@ -23,7 +24,7 @@ class MessageController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        return response()->json($messages);
+        return MessageResource::collection($messages);
     }
 
     /**

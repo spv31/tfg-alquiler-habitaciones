@@ -5,6 +5,11 @@ import type { RegisterUser } from "~/types/registerUser";
 import type { CustomUser } from "~/types/customUser";
 import { getCsrfToken } from "~/utils/auth";
 import { tryCatch } from "~/utils/tryCatch";
+import { useContractsStore } from "./contracts";
+import { useChatStore } from "./chat";
+import { useInvitationsStore } from "./invitations";
+import { usePropertiesStore } from "./properties";
+import { useTenantStore } from "./tenant";
 
 export const useAuthStore = defineStore(
   "auth",
@@ -14,7 +19,7 @@ export const useAuthStore = defineStore(
     const { isAuthenticated, login, logout, refreshIdentity } =
       useSanctumAuth();
 
-    const user = useSanctumUser<CustomUser>();
+    const user = useSanctumUser<CustomUser>() as Ref<CustomUser | null>;
     const loading = ref(false);
     const userImagesCache = ref<Record<string, string>>({});
 
@@ -207,6 +212,27 @@ export const useAuthStore = defineStore(
     const signOut = async () => {
       const { error } = await tryCatch(async () => {
         await logout();
+        sessionStorage.clear();
+        localStorage.clear();
+        const authStore = useAuthStore();
+        const chatStore = useChatStore();
+        const contractStore = useContractsStore();
+        const invitationsStore = useInvitationsStore();
+        const propertiesStore = usePropertiesStore();
+        const tenantStore = useTenantStore();
+        
+        authStore.reset();
+        chatStore.reset();
+        contractStore.reset();
+        invitationsStore.reset(); 
+        propertiesStore.reset();
+        tenantStore.reset();
+
+        useChatStore().$reset();
+        useContractsStore().$reset();
+        useInvitationsStore().$reset();
+        usePropertiesStore().$reset();
+        useTenantStore().$reset();
       });
 
       if (error) {
@@ -261,6 +287,11 @@ export const useAuthStore = defineStore(
       }
     };
 
+    const reset = () => {
+      user.value = null;
+      userImagesCache.value = {};
+    };    
+
     return {
       user,
       isAuthenticated,
@@ -274,12 +305,13 @@ export const useAuthStore = defineStore(
       fetchUserImage,
       fetchUserImageUrl,
       userImagesCache,
+      reset
     };
   },
   {
     persist: {
       storage: localStorage,
-      paths: ["userImagesCache"],
+      pick: ["userImagesCache"],
     },
   }
 );

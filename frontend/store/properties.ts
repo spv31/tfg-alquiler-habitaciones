@@ -1080,6 +1080,13 @@ export const usePropertiesStore = defineStore(
       );
     }
 
+    const reset = () => {
+      properties.value = [];
+      currentProperty.value = null;
+      currentRoom.value = null;
+      loading.value = false;
+    };
+
     return {
       properties,
       currentProperty,
@@ -1114,6 +1121,7 @@ export const usePropertiesStore = defineStore(
       fetchPropertyImageUrl,
       fetchRoomImageUrl,
       propertyImagesCache,
+      reset,
     };
   },
   {

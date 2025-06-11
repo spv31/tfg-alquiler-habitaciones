@@ -54,10 +54,15 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "~/store/auth";
+import { useRouter, useNuxtApp } from "#imports";
 
 const { t: $t } = useI18n();
-
+const { $localePath } = useNuxtApp();
 const authStore = useAuthStore();
+const router = useRouter();
+
+const { user } = storeToRefs(authStore);
+
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
@@ -77,8 +82,6 @@ const handleLogin = async () => {
 
   try {
     await authStore.signIn({ email: email.value, password: password.value });
-    alertMessage.value = $t("login.success");
-    alertType.value = "success";
   } catch (error) {
     alertMessage.value = $t("login.errors.invalid_credentials");
     alertType.value = "error";
@@ -86,5 +89,4 @@ const handleLogin = async () => {
 };
 </script>
 
-<style>
-</style>
+<style></style>

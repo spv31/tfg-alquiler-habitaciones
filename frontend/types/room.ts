@@ -14,6 +14,10 @@ export interface Room {
   images: string[],
 
   owner?: Owner,
+  property?: {
+    address: string,
+    cadastral_reference: string
+  },
   tenant?: Tenant,
   invitations?: Invitation[],
 

@@ -1,47 +1,46 @@
 import { useAuthStore } from "~/store/auth";
+import { useNuxtApp } from "#imports";
+import { storeToRefs } from "pinia";
 
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware(async (to, from) => {
   const { $localePath } = useNuxtApp();
-  const authStore = useAuthStore();
+  const auth = useAuthStore();
+  const { user } = storeToRefs(auth);
 
-  const login = $localePath("login");
-  const register = $localePath("register");
-  const resetPassword = $localePath("reset-password");
-  const registerOwner = $localePath("/register/owner");
-  const registerTenant = $localePath("/register/tenant");
+  const LOGIN           = $localePath("login");
+  const REGISTER_OWNER  = $localePath("register-owner");
+  const REGISTER_TENANT = $localePath("register-tenant");
+  const RESET_PSW       = $localePath("reset-password");
+  const AUTH_PAGES      = [LOGIN, REGISTER_OWNER, REGISTER_TENANT, RESET_PSW];
 
-  const ownerDashboard = $localePath("dashboard");
-  const tenantDashboard = $localePath("/tenant/dashboard");
+  const OWNER_HOME  = $localePath("properties");
+  const TENANT_HOME = $localePath("tenant-dashboard");
 
-  const authPages = [
-    login,
-    register,
-    resetPassword,
-    registerOwner,
-    registerTenant,
-  ];
+  const localeRoot = $localePath("/");
 
-  const isTenantRegistration = to.path.startsWith("/register/tenant"); 
-
-  await authStore.getUser();
-
-  if (
-    !authStore.isAuthenticated &&
-    !authPages.includes(to.path) &&
-    !isTenantRegistration
-  ) {
-    return navigateTo(login);
+  if (auth.isAuthenticated && !user.value) {
+    await auth.getUser();
   }
 
-  if (authStore.isAuthenticated && authPages.includes(to.path)) {
-    const role = authStore.user?.role;
+  if (!auth.isAuthenticated && !AUTH_PAGES.includes(to.path)) {
+    return navigateTo(LOGIN);
+  }
 
-    if (role === "owner" && to.path !== ownerDashboard) {
-      return navigateTo(ownerDashboard);
-    }
+  if (
+    auth.isAuthenticated &&
+    [LOGIN, REGISTER_OWNER, REGISTER_TENANT].includes(from.path) &&
+    to.path === localeRoot
+  ) {
+    const role = user.value?.role;
+    if (role === "owner")  return navigateTo(OWNER_HOME);
+    if (role === "tenant") return navigateTo(TENANT_HOME);
+    return;
+  }
 
-    if (role === "tenant" && to.path !== tenantDashboard) {
-      return navigateTo(tenantDashboard);
-    }
+  if (auth.isAuthenticated && AUTH_PAGES.includes(to.path)) {
+    const role = user.value?.role;
+    if (role === "owner")  return navigateTo(OWNER_HOME);
+    if (role === "tenant") return navigateTo(TENANT_HOME);
+    return;
   }
 });

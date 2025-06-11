@@ -260,6 +260,17 @@ export const useInvitationsStore = defineStore(
       return data;
     };
 
+    const reset = () => {
+      invitations.value = [];
+      currentInvitation.value = null;
+      pagination.value = {
+        links: {},
+        meta: {},
+      };
+      loading.value = false;
+      error.value = null;
+    };
+
     return {
       invitations,
       currentInvitation,
@@ -272,6 +283,7 @@ export const useInvitationsStore = defineStore(
       updateInvitation,
       deleteInvitation,
       regenerateInvitation,
+      reset
     };
   },
   {

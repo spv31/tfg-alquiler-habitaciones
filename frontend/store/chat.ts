@@ -5,6 +5,11 @@ import type { Conversation } from "~/types/conversation";
 import type { Message } from "~/types/message";
 import type Echo from "laravel-echo";
 
+interface UserConnected {
+  id: number;
+  name: string;
+}
+
 export const useChatStore = defineStore(
   "chat",
   () => {
@@ -21,6 +26,16 @@ export const useChatStore = defineStore(
     const { $echo } = useNuxtApp();
     const echo = $echo as Echo<any>;
 
+    const usersConnected = ref<UserConnected[]>([]);
+    const isPeerOnline = computed(() => {
+      return usersConnected.value.length === 2;
+    });
+
+    /**
+     * We subscribe to converstion and presence channel
+     *
+     * @param {number} conversationId
+     */
     const subscribeToChannel = (conversationId: number) => {
       echo
         .private(`conversation.${conversationId}`)
@@ -35,8 +50,28 @@ export const useChatStore = defineStore(
             conversations.value[idx].updated_at = e.sent_at;
           }
         });
+
+      echo
+        .join(`conversation.${conversationId}`)
+        .here((users: Array<{ id: number; name: string }>) => {
+          usersConnected.value = users;
+        })
+        .joining((user: { id: number; name: string }) => {
+          usersConnected.value.push(user);
+        })
+        .leaving((user: { id: number; name: string }) => {
+          usersConnected.value = usersConnected.value.filter(
+            (userConnected) => userConnected.id !== user.id
+          );
+        });
     };
 
+    /**
+     * Fetch all conversations
+     *
+     * @async
+     * @returns {*}
+     */
     const fetchConversations = async () => {
       if (alreadyLoaded.value || loading.value) return;
       const { data, error } = await tryCatch<Conversation[]>(async () => {
@@ -55,12 +90,18 @@ export const useChatStore = defineStore(
       conversations.value.forEach((c) => subscribeToChannel(c.id));
     };
 
-    // Carga mensajes de una conversación dada
+    /**
+     * Fetch messages related to conversation
+     *
+     * @async
+     * @param {number} conversationId
+     * @returns {*}
+     */
     const fetchMessages = async (conversationId: number) => {
-      const { data, error } = await tryCatch<Message[]>(async () => {
+      const { data, error } = await tryCatch<{ data: Message[] }>(async () => {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
-        return $fetch<Message[]>(
+        return $fetch<{ data: Message[] }>(
           `${apiBaseUrl}/conversations/${conversationId}/messages`,
           {
             method: "GET",
@@ -71,17 +112,23 @@ export const useChatStore = defineStore(
       }, loading);
       if (error) throw error;
       if (!data) throw new Error("No data received");
-      messages.value = data;
+      messages.value = data.data;
     };
 
-    // Activa una conversación y carga sus mensajes
+    // actives a conversation and charges its messages related
     const setActiveConversation = async (conversation: Conversation) => {
       activeConversation.value = conversation;
       await fetchMessages(conversation.id);
       subscribeToChannel(conversation.id);
     };
 
-    // Envia un mensaje a la conversación activa
+    /**
+     * Sends a new message
+     *
+     * @async
+     * @param {string} body
+     * @returns {*}
+     */
     const sendMessage = async (body: string) => {
       if (!activeConversation.value) return;
       const { data, error } = await tryCatch<Message>(async () => {
@@ -99,18 +146,29 @@ export const useChatStore = defineStore(
       }, loading);
       if (error) throw error;
       if (!data) throw new Error("No data received");
-      messages.value.push(data);
+
+      const raw = (data as any).data ?? data;
+      const msg: Message = {
+        ...raw,
+        sent_at: raw.sent_at ?? raw.updated_at,
+      };
+      messages.value.push(msg);
     };
 
-    // Abre (get or create) una conversación y la activa
+    /**
+     * Opens a conversation
+     *
+     * @async
+     * @param {number} ownerId
+     * @param {number} tenantId
+     * @returns {unknown}
+     */
     const openConversation = async (ownerId: number, tenantId: number) => {
-      // Cargar conversaciones si es primera vez
       if (!alreadyLoaded.value) await fetchConversations();
-      // Buscar conversación existente
       let convo = conversations.value.find(
         (c) => c.owner_id === ownerId && c.tenant_id === tenantId
       );
-      // Crear si no existe
+
       if (!convo) {
         const csrf = await getCsrfToken();
         if (!csrf) throw new Error("Error getting CSRF Token");
@@ -122,9 +180,17 @@ export const useChatStore = defineStore(
         });
         conversations.value.push(convo);
       }
-      // Activar conversación
+
       await setActiveConversation(convo);
       return convo;
+    };
+
+    const reset = () => {
+      conversations.value = [];
+      activeConversation.value = null;
+      messages.value = [];
+      alreadyLoaded.value = false;
+      usersConnected.value = [];
     };
 
     return {
@@ -133,11 +199,13 @@ export const useChatStore = defineStore(
       messages,
       loading,
       alreadyLoaded,
+      isPeerOnline,
       fetchConversations,
       fetchMessages,
       setActiveConversation,
       sendMessage,
       openConversation,
+      reset
     };
   },
   {
