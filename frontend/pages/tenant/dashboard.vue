@@ -41,7 +41,7 @@
         </template>
       </Card>
 
-      <div v-if="assignedRentable" class="grid gap-6 grid-cols-1 lg:grid-cols-5 auto-rows-max">
+      <!-- <div v-if="assignedRentable" class="grid gap-6 grid-cols-1 lg:grid-cols-5 auto-rows-max">
         <div class="lg:col-span-3 col-span-1">
           <ContractSection :contract="currentContract!" />
         </div>
@@ -121,6 +121,138 @@
             </div>
           </div>
         </div>
+      </div> -->
+      <div
+        v-if="assignedRentable"
+        class="grid gap-6 grid-cols-1 lg:grid-cols-5 auto-rows-max"
+      >
+        <template v-if="currentContract">
+          <!-- Mismo diseño si hay contrato -->
+          <div class="lg:col-span-3 col-span-1">
+            <ContractSection :contract="currentContract" />
+          </div>
+
+          <div class="lg:col-span-2 col-span-1 flex flex-col gap-6 h-full">
+            <div class="flex-1">
+              <Chat
+                v-if="chatCtx"
+                :context="chatCtx"
+                :rentable="assignedRentable"
+                :current-user-id="tenantId!"
+                :current-user-role="'tenant'"
+              />
+
+              <div
+                v-else
+                class="h-full flex items-center justify-center text-gray-500 border border-info/10 rounded-xl"
+              >
+                <i class="pi pi-info-circle text-2xl mr-2" />
+                Selecciona una propiedad para habilitar el chat
+              </div>
+            </div>
+
+            <div>
+              <!-- Sección de pagos completa -->
+              <div class="rounded-xl border border-blue-100 h-full bg-white">
+                <div
+                  class="flex items-center gap-3 p-4 border-b border-gray-200"
+                >
+                  <i class="pi pi-credit-card text-2xl text-info"></i>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Estado de Pagos
+                  </h3>
+                </div>
+                <div class="p-4 space-y-6">
+                  <div v-if="currentContract" class="space-y-6">
+                    <div
+                      class="flex items-center justify-between p-4 bg-blue-50 rounded-lg"
+                    >
+                      <div>
+                        <p class="font-medium text-gray-900">Estado actual</p>
+                        <p class="text-sm text-gray-500">Mes en curso</p>
+                      </div>
+                      <Badge
+                        :value="currentContract.paid ? 'Pagado' : 'Pendiente'"
+                        :severity="currentContract.paid ? 'success' : 'warning'"
+                        class="text-sm"
+                      />
+                    </div>
+
+                    <div class="space-y-4">
+                      <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Monto mensual:</span>
+                        <span class="font-semibold text-lg text-gray-900">
+                          ${{ currentContract.rent_amount }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Próximo vencimiento:</span>
+                        <span class="font-medium text-gray-900">
+                          05 {{ nextMonth }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <Button
+                      label="Pagar ahora"
+                      icon="pi pi-check"
+                      class="w-full"
+                      :disabled="currentContract.paid"
+                      severity="success"
+                    />
+                  </div>
+
+                  <div v-else class="text-center py-6 text-gray-500">
+                    <i class="pi pi-info-circle text-2xl mb-3"></i>
+                    <p>No hay información de pagos disponible</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-else>
+          <!-- Diseño adaptado si NO hay contrato -->
+          <div class="lg:col-span-3 col-span-1">
+            <div class="flex-1 mb-6">
+              <Chat
+                v-if="chatCtx"
+                :context="chatCtx"
+                :rentable="assignedRentable"
+                :current-user-id="tenantId!"
+                :current-user-role="'tenant'"
+              />
+
+              <div
+                v-else
+                class="h-full flex items-center justify-center text-gray-500 border border-info/10 rounded-xl"
+              >
+                <i class="pi pi-info-circle text-2xl mr-2" />
+                Selecciona una propiedad para habilitar el chat
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 col-span-1 flex flex-col gap-6 h-full">
+            <ContractSection :contract="null" />
+
+            <div class="rounded-xl border border-blue-100 h-full bg-white">
+              <div class="flex items-center gap-3 p-4 border-b border-gray-200">
+                <i class="pi pi-credit-card text-2xl text-info"></i>
+                <h3 class="text-lg font-semibold text-gray-900">
+                  Estado de Pagos
+                </h3>
+              </div>
+              <div class="p-4">
+                <div class="text-center py-6 text-gray-500">
+                  <i class="pi pi-info-circle text-2xl mb-3"></i>
+                  <p>No hay información de pagos disponible</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </div>

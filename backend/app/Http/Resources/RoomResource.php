@@ -26,7 +26,7 @@ class RoomResource extends JsonResource
       'owner' => new OwnerResource($this->property->owner),
       'property' => [
         'address' => $this->property->address,
-        'cadastral' => $this->property->cadastral,
+        'cadastral_reference' => $this->property->cadastral_reference,
       ],
       'tenant' => $this->whenLoaded('tenant', fn() => new TenantResource($this->tenant)),
       'invitations' => InvitationResource::collection($this->whenLoaded('invitations')),

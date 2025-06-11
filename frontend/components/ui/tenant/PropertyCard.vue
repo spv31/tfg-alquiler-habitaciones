@@ -19,7 +19,8 @@
           v-else
           :src="rentable.main_image_url"
           :alt="imageAltText"
-          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+          @click="showImageModal = true"
         />
       </div>
     </div>
@@ -66,55 +67,45 @@
         </div>
 
         <div
-          class="flex flex-col sm:flex-row justify-between items-start gap-4 p-4 bg-gray-50 rounded-xl border border-info/10 shadow-sm"
+          class="flex flex-col min-[500px]:flex-row items-start gap-4 p-4 bg-gray-50 rounded-xl border border-info/10 shadow-sm"
         >
           <div
-            class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap"
+            class="flex-shrink-0 flex justify-center min-[500px]:block w-full min-[500px]:w-auto"
           >
-            <div class="relative">
-              <img
-                :src="owner?.profile_image || defaultAvatar"
-                :alt="owner?.name || 'Propietario'"
-                class="w-14 h-14 rounded-full border-4 border-white shadow-md object-cover"
-              />
-              <div
-                v-if="owner?.profile_image"
-                class="absolute -bottom-1 -right-1 bg-green-500 p-1 rounded-full"
+            <img
+              :src="owner?.profile_image || defaultAvatar"
+              :alt="owner?.name || 'Propietario'"
+              class="w-14 h-14 rounded-full border-4 border-white shadow-md object-cover mx-auto min-[500px]:mx-0"
+            />
+          </div>
+          <div class="flex flex-col gap-1 w-full">
+            <div class="flex items-center gap-2 flex-wrap">
+              <p
+                class="text-gray-900 font-bold flex items-center gap-2 whitespace-nowrap"
               >
-                <i class="pi pi-check text-white text-xs"></i>
-              </div>
+                <i class="pi pi-user text-blue-600"></i>
+                {{ owner!.name }}
+              </p>
+              <Tag
+                value="Propietario"
+                severity="info"
+                class="text-xs whitespace-nowrap"
+              />
             </div>
-            <div class="flex flex-col gap-1 flex-wrap">
-              <div class="flex items-center gap-2 flex-wrap">
-                <p
-                  class="text-gray-900 font-bold flex items-center gap-2 whitespace-nowrap"
-                >
-                  <i class="pi pi-user text-blue-600"></i>
-                  {{ owner!.name }}
-                </p>
-                <Tag
-                  value="Propietario"
-                  severity="info"
-                  class="text-xs whitespace-nowrap"
-                />
-              </div>
-              <div class="mt-2 flex flex-col gap-1">
-                <a
-                  :href="`mailto:${owner!.email}`"
-                  class="text-gray-700 hover:text-blue-700 text-sm flex items-center gap-2"
-                >
-                  <i class="pi pi-envelope text-blue-500"></i>
-                  {{ owner!.email }}
-                </a>
-                <p
-                  v-if="owner!.phone"
-                  class="text-gray-700 text-sm flex items-center gap-2"
-                >
-                  <i class="pi pi-phone text-blue-500"></i>
-                  {{ owner!.phone }}
-                </p>
-              </div>
-            </div>
+            <a
+              :href="`mailto:${owner!.email}`"
+              class="text-gray-700 hover:text-blue-700 text-sm flex items-center gap-2 break-all"
+            >
+              <i class="pi pi-envelope text-blue-500"></i>
+              {{ owner!.email }}
+            </a>
+            <p
+              v-if="owner!.phone"
+              class="text-gray-700 text-sm flex items-center gap-2 break-words"
+            >
+              <i class="pi pi-phone text-blue-500"></i>
+              {{ owner!.phone }}
+            </p>
           </div>
         </div>
 
@@ -233,6 +224,18 @@
             </div>
           </div>
         </div>
+        <Dialog
+          v-model:visible="showImageModal"
+          modal
+          header="Imagen ampliada"
+          :style="{ width: '90vw', maxWidth: '800px' }"
+        >
+          <img
+            :src="rentable.main_image_url"
+            :alt="imageAltText"
+            class="w-full h-auto rounded-lg"
+          />
+        </Dialog>
       </div>
     </div>
   </div>
@@ -241,8 +244,8 @@
 <script setup lang="ts">
 import type { Property } from "~/types/property";
 import defaultAvatar from "~/assets/images/default.jpg";
-
-import { useAuthStore } from '~/store/auth';
+import Dialog from "primevue/dialog";
+import { useAuthStore } from "~/store/auth";
 const authStore = useAuthStore();
 
 const props = defineProps<{
@@ -257,6 +260,7 @@ const rentable = computed<Property>(() => props.data.rentable);
 const owner = computed(() => rentable.value.owner);
 
 const loadingImage = ref(false);
+const showImageModal = ref(false);
 const isExpanded = ref(false);
 const showExpandButton = ref(false);
 const descriptionContainer = ref<HTMLElement | null>(null);

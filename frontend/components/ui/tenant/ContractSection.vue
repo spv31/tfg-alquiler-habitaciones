@@ -7,7 +7,7 @@
     </div>
 
     <div v-if="!contract" class="text-gray-500 text-center py-8">
-      No hay contrato asociado a tu alquiler.
+      No hay un contrato asociado a tu alquiler.
     </div>
 
     <div v-else class="space-y-6">
