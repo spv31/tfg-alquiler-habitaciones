@@ -4,8 +4,10 @@ export interface User {
   email: string;
   user_type: "individual" | "company";
   role: "owner" | "tenant";
-  phone: string;
+  phone_number: string;
   address: string;
-  profile_image: string;
+  email_verified_at: string | null, 
+  profile_image_filename: string | null;
+  profile_image_url: string | null;
   created_at: string;
 }

@@ -127,7 +127,6 @@
         class="grid gap-6 grid-cols-1 lg:grid-cols-5 auto-rows-max"
       >
         <template v-if="currentContract">
-          <!-- Mismo diseño si hay contrato -->
           <div class="lg:col-span-3 col-span-1">
             <ContractSection :contract="currentContract" />
           </div>

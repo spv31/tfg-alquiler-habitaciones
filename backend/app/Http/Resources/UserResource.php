@@ -19,13 +19,13 @@ class UserResource extends JsonResource
             'name'        => $this->name,
             'email'       => $this->email,
             'user_type'   => $this->user_type,
+            'identifier'  => $this->identifier,
             'role'        => $this->role,
-            'phone'       => $this->phone_number,
+            'phone_number'       => $this->phone_number,
             'address'     => $this->address,
-            'profile_image' => route('image.user.show', [
-                'user' => $this->id,
-                'filename' => $this->profile_image_url
-            ]),
+            'email_verified_at' => $this->email_verified_at,
+            'profile_image_filename' => $this->profile_image_filename,
+            'profile_image_url'     => $this->profile_image_url,
             'created_at'  => $this->created_at,
         ];
     }

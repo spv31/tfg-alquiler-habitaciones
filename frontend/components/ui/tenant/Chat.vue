@@ -5,7 +5,7 @@
     <div class="border-b bg-white border-gray-200 p-4 flex items-center gap-3">
       <div class="relative">
         <img
-          :src="ownerAvatar"
+          :src="ownerImage"
           class="w-10 h-10 rounded-full object-cover"
           @error="handleImageError"
         />
@@ -206,15 +206,7 @@ const emojis = ref([
 ]);
 
 const owner = computed(() => props.rentable.rentable.owner);
-
-const ownerInfo = computed(() => ({
-  name: props.rentable?.owner?.name || "Propietario",
-  avatar: props.rentable?.owner?.avatar || "/avatars/default.jpg",
-  isOnline: true,
-}));
-const ownerName = computed(() => ownerInfo.value.name);
-const ownerAvatar = computed(() => ownerInfo.value.avatar);
-const isOnline = computed(() => ownerInfo.value.isOnline);
+const ownerImage = computed(() => owner.value.profile_image)
 const tenantAvatar = computed(() => "/avatars/default.jpg");
 
 const formatTime = (d: Date) =>

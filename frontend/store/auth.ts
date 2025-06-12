@@ -10,16 +10,18 @@ import { useChatStore } from "./chat";
 import { useInvitationsStore } from "./invitations";
 import { usePropertiesStore } from "./properties";
 import { useTenantStore } from "./tenant";
+import type { User } from "~/types/user";
+import { data } from "autoprefixer";
 
 export const useAuthStore = defineStore(
   "auth",
   () => {
     const config = useRuntimeConfig();
-    const apiBaseUrl = config.app.apiBaseUrl;
+    const apiBaseUrl = config.app.apiBaseURL;
     const { isAuthenticated, login, logout, refreshIdentity } =
       useSanctumAuth();
 
-    const user = useSanctumUser<CustomUser>() as Ref<CustomUser | null>;
+    const user = useSanctumUser<User>() as Ref<User | null>;
     const loading = ref(false);
     const userImagesCache = ref<Record<string, string>>({});
 
@@ -32,6 +34,9 @@ export const useAuthStore = defineStore(
     const getUser = async () => {
       const { error } = await tryCatch(async () => {
         await refreshIdentity();
+        if (user.value && "data" in user.value) {
+          user.value = user.value.data as User;
+        }
       });
 
       if (error) {
@@ -107,6 +112,71 @@ export const useAuthStore = defineStore(
       if (error) {
         throw error;
       }
+    };
+
+    /**
+     * Updates profile data
+     * @param payload
+     */
+    const updateProfile = async (payload: {
+      name?: string;
+      user_type?: "individual" | "company";
+      phone_number?: string | null;
+      address?: string | null;
+    }) => {
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+
+        const formData = new FormData();
+        formData.append("_method", "PUT");
+
+        for (const [key, value] of Object.entries(payload)) {
+          if (value != null) {
+            formData.append(key, value.toString());
+          }
+        }
+
+        return await $fetch<{ data: User }>(
+          `${apiBaseUrl}/users/${user.value!.id}`,
+          {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+            headers: {
+              "X-XSRF-TOKEN": csrf,
+              Accept: "application/json",
+            },
+          }
+        );
+      });
+
+      if (error) throw error;
+      if (data) user.value = data.data;
+    };
+
+    /**
+     * Updates profile avatar
+     * @param base64
+     */
+    const changeAvatar = async (base64: string) => {
+      const { error, data } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+
+        return await $fetch<{ data: User }>(
+          `${apiBaseUrl}/users/${user.value!.id}/avatar`,
+          {
+            method: "POST",
+            body: { image_base64: base64 },
+            credentials: "include",
+            headers: { "X-XSRF-TOKEN": csrf },
+          }
+        );
+      });
+
+      if (error) throw error;
+      if (data) user.value = data.data;
     };
 
     /**
@@ -204,6 +274,26 @@ export const useAuthStore = defineStore(
     };
 
     /**
+     * Resend email verification
+     */
+    const resendVerification = async () => {
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+
+        await $fetch(
+          "http://localhost:8000/api/email/verification-notification",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "X-XSRF-TOKEN": csrf },
+          }
+        );
+        if (error) throw error;
+      })
+    };
+
+    /**
      * Sends a request to the API to logout
      *
      * @async
@@ -220,11 +310,11 @@ export const useAuthStore = defineStore(
         const invitationsStore = useInvitationsStore();
         const propertiesStore = usePropertiesStore();
         const tenantStore = useTenantStore();
-        
+
         authStore.reset();
         chatStore.reset();
         contractStore.reset();
-        invitationsStore.reset(); 
+        invitationsStore.reset();
         propertiesStore.reset();
         tenantStore.reset();
 
@@ -244,23 +334,20 @@ export const useAuthStore = defineStore(
       userId: number,
       filename: string
     ): Promise<Blob> => {
-      const { data, error } = await tryCatch<Blob>(async () => {
+      const { data: any, error } = await tryCatch(async () => {
         const csrfToken = await getCsrfToken();
         if (!csrfToken) throw new Error("Error getting CSRF Token");
 
-        const response = await fetch(
-          `${apiBaseUrl}/users/${userId}/avatar/${filename}`,
-          {
-            method: "GET",
-            credentials: "include",
-            headers: {
-              "X-XSRF-TOKEN": csrfToken,
-              Accept: "image/*",
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch user image");
-        return await response.blob();
+        await $fetch(`${apiBaseUrl}/users/${userId}/avatar/${filename}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "X-XSRF-TOKEN": csrfToken,
+            Accept: "image/*",
+          },
+        });
+        if (error) throw error;
+        return await data.blob();
       }, loading);
 
       if (error) throw error;
@@ -290,7 +377,7 @@ export const useAuthStore = defineStore(
     const reset = () => {
       user.value = null;
       userImagesCache.value = {};
-    };    
+    };
 
     return {
       user,
@@ -298,6 +385,8 @@ export const useAuthStore = defineStore(
       getUser,
       registerOwner,
       registerTenant,
+      updateProfile,
+      changeAvatar,
       signIn,
       forgotPassword,
       resetPassword,
@@ -305,7 +394,8 @@ export const useAuthStore = defineStore(
       fetchUserImage,
       fetchUserImageUrl,
       userImagesCache,
-      reset
+      resendVerification,
+      reset,
     };
   },
   {

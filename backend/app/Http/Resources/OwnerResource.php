@@ -14,20 +14,12 @@ class OwnerResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $avatarUrl = null;
-
-        if ($this->profile_image_url) {
-            $avatarUrl = route('image.user.show', [
-                'user'     => $this->id,
-                'filename' => $this->profile_image_url,
-            ]);
-        }
         return [
-            'id'          => $this->id,
-            'name'        => $this->name,
-            'email'       => $this->email,
-            'phone'       => $this->phone_number,
-            'profile_image' => $avatarUrl,
+            'id'            => $this->id,
+            'name'          => $this->name,
+            'email'         => $this->email,
+            'phone'         => $this->phone_number,
+            'profile_image' => $this->profile_image_url,
         ];
     }
 }

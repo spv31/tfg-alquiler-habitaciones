@@ -20,6 +20,7 @@
     "@pinia/nuxt": "0.9.0",
     "@primeuix/themes": "^1.0.3",
     "@primevue/forms": "^4.3.3",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tiptap/extension-bubble-menu": "^2.11.7",
     "@tiptap/extension-font-family": "^2.11.7",

@@ -13,14 +13,54 @@ use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantAssignmentController;
 use App\Http\Middleware\ExpireInvitationsMiddleware;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\URL;
+use App\Models\User;
 
 Route::get('/user', function (Request $request) {
-  return $request->user();
+  return new UserResource($request->user());
 })->middleware('auth:sanctum');
 
+Route::get('/verify-email/{id}/{hash}', function (Request $request, $id, $hash) {
+  if (! URL::hasValidSignature($request)) {
+    abort(403, 'Invalid or expired verification link.');
+  }
+
+  $user = User::findOrFail($id);
+
+  if (! hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+    abort(403, 'Invalid verification hash.');
+  }
+
+  if (! $user->hasVerifiedEmail()) {
+    $user->markEmailAsVerified();
+    event(new Verified($user));
+  }
+
+  return redirect(env('FRONTEND_URL') . '/profile');
+})->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+
+// Resend email verification
+Route::post('/email/verification-notification', function (Request $request) {
+  if ($request->user()->hasVerifiedEmail()) {
+    return response()->json(['message' => 'email_already_verified'], 400);
+  }
+  $request->user()->sendEmailVerificationNotification();
+  return response()->json(['message' => 'verification_link_sent']);
+})->middleware(['auth:sanctum', 'throttle:6,1'])->name('verification.send');
+
 Route::middleware('auth:sanctum')->group(function () {
+  // User
+  Route::put('/users/{user}', [AuthController::class, 'update'])
+    ->name('users.update');
+  Route::post('/users/{user}/avatar', [AuthController::class, 'updateAvatar'])
+    ->name('users.avatar.update');
+
   // Properties
   Route::apiResource('properties', PropertyController::class);
   Route::post('/properties/{id}/update', [PropertyController::class, 'update']);

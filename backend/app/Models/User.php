@@ -6,13 +6,14 @@ namespace App\Models;
 
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
   /** @use HasFactory<\Database\Factories\UserFactory> */
   use HasFactory, Notifiable, HasApiTokens, CanResetPassword, HasRoles;
@@ -83,14 +84,20 @@ class User extends Authenticatable
     return $this->morphOne(Image::class, 'imageable');
   }
 
-  public function getProfileImageUrlAttribute()
+  public function getProfileImageFilenameAttribute(): ?string
   {
     if (!$this->relationLoaded('profileImage')) {
       $this->load('profileImage');
     }
 
-    return $this->profileImage
-      ? route('image.user.show ', ['user' => $this->id, 'filename' => $this->profileImage->image_path])
+    return $this->profileImage?->image_path;   
+  }
+
+  public function getProfileImageUrlAttribute(): ?string
+  {
+    $filename = $this->profile_image_filename;   
+    return $filename
+      ? route('image.user.show', ['user' => $this->id, 'filename' => $filename])
       : null;
   }
 
@@ -116,7 +123,7 @@ class User extends Authenticatable
       ->latestOfMany();
   }
 
-  public function propertyTenant()   
+  public function propertyTenant()
   {
     return $this->hasOne(PropertyTenant::class, 'tenant_id');
   }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Room;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -160,6 +161,12 @@ class UserService
     $user = new User($userData);
     $user->save();
 
+    event(new Registered($user));
+
+    if (!empty($validatedData['role'])) {
+      $user->assignRole($validatedData['role']);
+    }
+
     if ($user->role === 'owner') {
       app(MailService::class)->sendOwnerRegistrationMail($user);
     } else {
@@ -167,6 +174,41 @@ class UserService
     }
 
     return $user;
+  }
+
+  public function updateProfile(User $user, array $data): User
+  {
+    $user->fill([
+      'name'         => $data['name']          ?? $user->name,
+      'phone_number' => $data['phone_number']  ?? $user->phone_number,
+      'address'      => $data['address']       ?? $user->address,
+    ]);
+
+    $user->save();
+
+    return $user->refresh();
+  }
+
+  public function updateProfilePicture(User $user, array $data): User
+  {
+    if ($user->profileImage) {
+      $this->uploadFilesService->deleteFile('images/profile_pictures/' . $user->profileImage->image_path);
+      $user->profileImage()->delete();
+    }
+
+    if (isset($data['image_base64'])) {
+      $fileName = $this->uploadFilesService->storeProfileImage($data['image_base64']);
+    } else {
+      $file = $data['file'];
+      $fileName = uniqid('file_') . '.' . $file->getClientOriginalExtension();
+      $file->storeAs('images/profile_pictures', $fileName, 'private');
+    }
+
+    $user->profileImage()->create([
+      'image_path' => basename($fileName),
+    ]);
+
+    return $user->refresh(); 
   }
 
   public function sendPasswordResetLink(string $email)

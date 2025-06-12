@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\UserService;
 use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+
+  use AuthorizesRequests;
+
   public function __construct(
     protected UserService $userService,
     protected InvitationService $invitationService,
@@ -37,7 +43,7 @@ class AuthController extends Controller
         return response()->json(['error_key' => 'user_already_exists'], 400);
       }
 
-      return response()->json(['message' => 'owner_registered', 'user' => $result['user']], 201);
+      return response()->json(['message' => 'owner_registered', 'user' => new UserResource($result['user'])], 201);
     } catch (Exception $e) {
       return response()->json(['error_key' => 'unexpected_error'], 500);
     }
@@ -62,7 +68,7 @@ class AuthController extends Controller
         return response()->json(['error_key' => $result['error_key']], 400);
       }
 
-      return response()->json(['message' => 'tenant_registered', 'user' => $result['user']], 201);
+      return response()->json(['message' => 'tenant_registered', 'user' => new UserResource($result['user'])], 201);
     } catch (Exception $e) {
       return response()->json(['error_key' => 'unexpected_error'], 500);
     }
@@ -77,7 +83,7 @@ class AuthController extends Controller
 
     if (Auth::attempt($credentials)) {
       $request->session()->regenerate();
-      return response()->json(['message' => 'login_successful', 'user' => Auth::user()], 200);
+      return response()->json(['message' => 'login_successful', 'user' => new UserResource(Auth::user())], 200);
     }
 
     return response()->json(['error_key' => 'invalid_credentials'], 401);
@@ -118,5 +124,34 @@ class AuthController extends Controller
     } catch (ValidationException $e) {
       return response()->json(['error_key' => 'password_reset_failed'], 400);
     }
+  }
+
+  public function update(Request $request, User $user)
+  {
+    $this->authorize('update', $user);
+
+    $validated = $request->validate([
+      'name'         => 'sometimes|string|max:255',
+      'phone_number' => 'sometimes|nullable|string|max:15',
+      'address'      => 'sometimes|nullable|string|max:255',
+    ]);
+
+    $user = $this->userService->updateProfile($user, $validated);
+
+    return new UserResource($user);
+  }
+
+  public function updateAvatar(Request $request, User $user)
+  {
+    $this->authorize('update', $user);
+
+    $validated = $request->validate([
+      'image_base64' => 'required_without:file|string',
+      'file'         => 'required_without:image_base64|image|max:2048',
+    ]);
+
+    $user = $this->userService->updateProfilePicture($user, $validated);
+
+    return new UserResource($user);
   }
 }

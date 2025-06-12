@@ -1,4 +1,4 @@
-import Aura from '@primeuix/themes/aura';
+import Aura from "@primeuix/themes/aura";
 export default defineNuxtConfig({
   ssr: false,
   typescript: {
@@ -13,20 +13,20 @@ export default defineNuxtConfig({
     "@nuxtjs/tailwindcss",
     "nuxt-tiptap-editor",
     "@primevue/nuxt-module",
-    'pinia-plugin-persistedstate/nuxt',
+    "pinia-plugin-persistedstate/nuxt",
   ],
   colorMode: {
-    preference: 'light',
-    fallback: 'light',
-    classSuffix: '', 
-    classPrefix: '', 
+    preference: "light",
+    fallback: "light",
+    classSuffix: "",
+    classPrefix: "",
   },
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   css: [
     "~/assets/css/main.css",
-    "~/assets/css/tailwind.css", 
-    'primeicons/primeicons.css',
+    "~/assets/css/tailwind.css",
+    "primeicons/primeicons.css",
   ],
   vite: {
     server: {
@@ -56,13 +56,13 @@ export default defineNuxtConfig({
   tiptap: { prefix: "Tiptap" },
   primevue: {
     options: {
-        theme: {
-            preset: Aura,
-            options: {
-              darkModeSelector: '.dark',
-            }
-        }
-    }
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: ".dark",
+        },
+      },
+    },
   },
   runtimeConfig: {
     app: {
@@ -83,7 +83,7 @@ export default defineNuxtConfig({
     },
   },
   build: {
-    transpile: ['primevue', '@primeuix/themes'],
+    transpile: ["primevue", "@primeuix/themes"],
   },
   imports: {
     autoImport: true,
