@@ -31,15 +31,25 @@ class ContractService
         }
     }
 
-    private function replaceTokens(string $html, array $tokens): string
-    {
-        foreach ($tokens as $key => $value) {
-            $replacement = $value ?: '____________';
-            $pattern = '/(data-token="' . preg_quote($key, '/') . '".*?>)([\s\S]*?)(<\/span>)/';
-            $html = preg_replace($pattern, '$1' . $replacement . '$3', $html);
-        }
-        return $html;
+   private function replaceTokens(string $html, array $tokens): string
+{
+    foreach ($tokens as $key => $value) {
+        $replacement = $value !== null && $value !== '' ? $value : '____________';
+
+        // admite cualquier orden de atributos dentro del <span>
+        $pattern = '/(<span[^>]*\bdata-token="' . preg_quote($key, '/') . '"[^>]*>)(.*?)<\/span>/si';
+
+        $html = preg_replace_callback(
+            $pattern,
+            fn ($m) => $m[1] . $replacement . '</span>',
+            $html
+        );
     }
+
+    return $html;
+}
+
+    
     /**
      * It creates new contract 
      * 
