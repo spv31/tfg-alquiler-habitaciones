@@ -1,17 +1,21 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BillShareController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractTemplateController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;
+use App\Http\Controllers\RentPaymentController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantAssignmentController;
+use App\Http\Controllers\UtilityBillController;
 use App\Http\Middleware\ExpireInvitationsMiddleware;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -131,6 +135,26 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
   // Create or get conversation related to tenant or owner
   Route::post('conversations', [ConversationController::class, 'store']);
+
+  /**
+   * Routes for payments (rental and supplies)
+   */
+  // Utility Bills
+  Route::apiResource('utility-bills', UtilityBillController::class)
+    ->except(['edit', 'create']);
+
+  // Bill Shares (división de factura)
+  Route::get('utility-bills/{bill}/shares', [BillShareController::class, 'index']);
+  Route::post('utility-bills/{bill}/shares', [BillShareController::class, 'store']);
+
+  // Rent Payments (mensualidades)
+  Route::apiResource('rent-payments', RentPaymentController::class)
+    ->only(['index', 'show', 'store', 'update']);
+
+  // Payments (pagos de Stripe/manual)
+  Route::post('payments/stripe-intent', [PaymentController::class, 'createStripeIntent']);
+  Route::post('payments/{payment}/capture', [PaymentController::class, 'capture']);
+  Route::post('payments/{payment}/manual', [PaymentController::class, 'markManual']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tenant'])
