@@ -28,6 +28,7 @@ class Contract extends Model
         'extension_date',
         'status',
         'pdf_path',
+        'iban',
         'pdf_path_signed',
         'final_content',
         'token_values',
@@ -50,6 +51,7 @@ class Contract extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'extension_date' => 'date',
+        'iban' => 'string',
         'token_values' => 'array',
         'signed_by_owner_at'  => 'datetime',
         'signed_by_tenant_at' => 'datetime',
@@ -95,8 +97,13 @@ class Contract extends Model
         return $this->belongsTo(User::class, 'tenant_id');
     }
 
-    public function contracts()
+    /**
+     * RentPayments related
+     *
+     * @return void
+     */
+    public function rentPayments()          
     {
-        return $this->hasMany(Contract::class);
+        return $this->hasMany(RentPayment::class);
     }
 }

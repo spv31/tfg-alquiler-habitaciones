@@ -117,4 +117,12 @@ class Property extends Model
   {
     return $this->morphMany(PropertyTenant::class, 'rentable');
   }
+
+  /**
+   *  All bills issued by the owner for this property.
+   */
+  public function utilityBills()
+  {
+    return $this->hasMany(UtilityBill::class);
+  }
 }

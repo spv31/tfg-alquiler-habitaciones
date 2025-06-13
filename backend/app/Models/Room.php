@@ -80,4 +80,12 @@ class Room extends Model
   {
     return $this->hasMany(Contract::class);
   }
+
+  /**
+   *  All bills issued by the owner for this room (optional).
+   */
+  public function utilityBills()
+  {
+    return $this->hasMany(UtilityBill::class);
+  }
 }

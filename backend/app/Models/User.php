@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -39,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmail
     'role',
     'phone_number',
     'address',
+    'stripe_account_id',
+    'stripe_customer_id'
   ];
 
   /**
@@ -61,6 +61,8 @@ class User extends Authenticatable implements MustVerifyEmail
     return [
       'email_verified_at' => 'datetime',
       'password' => 'hashed',
+      'stripe_account_id' => 'string',
+      'stripe_customer_id'=>'string',
     ];
   }
 
@@ -90,12 +92,12 @@ class User extends Authenticatable implements MustVerifyEmail
       $this->load('profileImage');
     }
 
-    return $this->profileImage?->image_path;   
+    return $this->profileImage?->image_path;
   }
 
   public function getProfileImageUrlAttribute(): ?string
   {
-    $filename = $this->profile_image_filename;   
+    $filename = $this->profile_image_filename;
     return $filename
       ? route('image.user.show', ['user' => $this->id, 'filename' => $filename])
       : null;
@@ -126,5 +128,50 @@ class User extends Authenticatable implements MustVerifyEmail
   public function propertyTenant()
   {
     return $this->hasOne(PropertyTenant::class, 'tenant_id');
+  }
+
+  public function utilityBills()
+  {
+    return $this->hasMany(UtilityBill::class, 'owner_id');
+  }
+
+  /**
+   * Bill shares for which you are responsible as tenant
+   */
+  public function billShares()
+  {
+    return $this->hasMany(BillShare::class, 'tenant_id');
+  }
+
+  /**
+   * Payments made per user / tenant   
+   */
+  public function payments()
+  {
+    return $this->hasManyThrough(
+      Payment::class,
+      BillShare::class,
+      'tenant_id',
+      'bill_share_id',
+      'id',
+      'id'
+    );
+  }
+
+  /**
+   * Rentpayments made per tenant
+   *
+   * @return void
+   */
+  public function rentPayments()
+  {
+    return $this->hasManyThrough(
+      RentPayment::class,
+      Contract::class,
+      'tenant_id',      
+      'contract_id',   
+      'id',
+      'id'
+    );
   }
 }
