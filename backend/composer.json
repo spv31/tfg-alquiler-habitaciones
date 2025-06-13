@@ -14,7 +14,8 @@
         "laravel/reverb": "^1.5",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "spatie/laravel-permission": "^6.18"
+        "spatie/laravel-permission": "^6.18",
+        "stripe/stripe-php": "^17.3"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.5",

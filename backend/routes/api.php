@@ -144,8 +144,8 @@ Route::middleware('auth:sanctum')->group(function () {
     ->except(['edit', 'create']);
 
   // Bill Shares (división de factura)
-  Route::get('utility-bills/{bill}/shares', [BillShareController::class, 'index']);
-  Route::post('utility-bills/{bill}/shares', [BillShareController::class, 'store']);
+  Route::get('utility-bills/{utilityBill}/shares', [BillShareController::class, 'index']);
+  Route::post('utility-bills/{utilityBill}/shares', [BillShareController::class, 'store']);
 
   // Rent Payments (mensualidades)
   Route::apiResource('rent-payments', RentPaymentController::class)
@@ -155,6 +155,11 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::post('payments/stripe-intent', [PaymentController::class, 'createStripeIntent']);
   Route::post('payments/{payment}/capture', [PaymentController::class, 'capture']);
   Route::post('payments/{payment}/manual', [PaymentController::class, 'markManual']);
+
+  Route::get('payments', [PaymentController::class, 'index']);
+  Route::get('payments/{payment}', [PaymentController::class, 'show']);
+ 
+  Route::post(uri: 'stripe/webhook', action: [PaymentController::class, 'handleStripeWebhook']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tenant'])

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('contracts', function (Blueprint $table) {
             $table->string('iban')->nullable()->after('pdf_path');
+            $table->string('stripe_payment_method_id')->nullable();
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('contracts', function (Blueprint $table) {
             $table->dropColumn('iban');
+            $table->dropColumn('stripe_payment_method_id');
         });
     }
 };

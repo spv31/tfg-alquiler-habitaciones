@@ -74,6 +74,11 @@ class ContractService
                 ->generatePdfFromHtml($htmlFilled, 'contracts', 'contrato-' . ($template->name ?? ''));
             $validatedData['pdf_path'] = $pdfPath;
 
+            $tokens = $validatedData['token_values'] ?? [];
+            if (!empty($tokens['banco_iban'])) {
+                $validatedData['banco_iban'] = $tokens['banco_iban'];
+            }
+
             $contract = Contract::create($validatedData);
 
             DB::commit();

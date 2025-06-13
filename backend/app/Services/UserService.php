@@ -7,13 +7,54 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Stripe\StripeClient;
 
 class UserService
 {
   public function __construct(
     protected InvitationService $invitationService,
     protected UploadFilesService $uploadFilesService,
+    protected StripeClient $stripe,
   ) {}
+
+  /**
+   * Ensures the owner has a Stripe Connect account or creates one if missing
+   * 
+   * @param \App\Models\User $user
+   * @return string
+   */
+  public function ensureOwnerStripeAccount(User $user): string
+  {
+    if (!$user->stripe_account_id && $user->role === 'owner') {
+      $account = $this->stripe->accounts->create([
+        'type'  => 'express',
+        'email' => $user->email,
+      ]);
+      $user->stripe_account_id = $account->id;
+      $user->save();
+    }
+    return $user->stripe_account_id;
+  }
+
+  /**
+   * Ensures the tenant has a Stripe Customer or creatis one if missing
+   * 
+   * @param \App\Models\User $user
+   * @return string
+   */
+  public function ensureTenantStripeCustomer(User $user): string
+  {
+    if (!$user->stripe_customer_id && $user->role === 'tenant') {
+      $customer = $this->stripe->customers->create([
+        'name'  => $user->name,
+        'email' => $user->email,
+      ]);
+      $user->stripe_customer_id = $customer->id;
+      $user->save();
+    }
+    return $user->stripe_customer_id;
+  }
+
 
   public function findUserByEmail(string $email)
   {
@@ -41,6 +82,8 @@ class UserService
 
     $validatedData['role'] = 'owner';
     $user = $this->createUser($validatedData);
+
+    $this->ensureOwnerStripeAccount($user);
 
     return [
       'status'  => 'owner_registered',
@@ -83,6 +126,8 @@ class UserService
     $validatedData['user_type'] = 'individual';
     $user = $this->createUser($validatedData);
     $this->invitationService->acceptInvitation($invitation, $user);
+
+    $this->ensureTenantStripeCustomer($user);
 
     return [
       'status'  => 'tenant_registered',
@@ -208,7 +253,7 @@ class UserService
       'image_path' => basename($fileName),
     ]);
 
-    return $user->refresh(); 
+    return $user->refresh();
   }
 
   public function sendPasswordResetLink(string $email)
