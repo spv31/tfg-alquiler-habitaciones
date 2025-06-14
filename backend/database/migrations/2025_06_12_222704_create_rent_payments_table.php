@@ -16,8 +16,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignIdFor(Contract::class)->constrained()->cascadeOnDelete();
-            
-            $table->date('period_start');         
+
+            $table->date('period_start');
             $table->date('period_end');
             $table->date('due_date');
 
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'paid', 'overdue'])->default('pending');
             $table->string('stripe_payment_intent_id')->nullable();
             $table->string('stripe_mandate_id')->nullable();
+            $table->string('stripe_checkout_session_id')->nullable();
 
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();

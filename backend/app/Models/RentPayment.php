@@ -17,6 +17,7 @@ class RentPayment extends Model
         'status',
         'stripe_payment_intent_id',
         'stripe_mandate_id',
+        'stripe_checkout_session_id',
         'paid_at'
     ];
 

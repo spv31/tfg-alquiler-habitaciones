@@ -45,19 +45,16 @@ class RentPaymentService
     }
 
     /**
-     * Create a rent payment and (optionally) a Stripe SEPA PaymentIntent on behalf of the owner.
-     * The Request layer decides if a PaymentIntent is needed (flag create_intent).
+     * Creates a rent payment (pending)
      * 
      * @param array $data
-     * @param bool $createIntent
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
      * @return RentPayment
      */
-    public function create(array $data, bool $createIntent = true): RentPayment
+    public function create(array $data): RentPayment
     {
         DB::beginTransaction();
         try {
-            /** @var Contract $contract */
             $contract = Contract::with('tenant')
                 ->where('id', $data['contract_id'])
                 ->where('status', 'active')
@@ -67,52 +64,14 @@ class RentPaymentService
                 throw new ModelNotFoundException('Contract not found or not yours');
             }
 
-            $this->users->ensureTenantStripeCustomer(user: $contract->tenant);
-            $this->users->ensureOwnerStripeAccount(user: $contract->property->owner);
-
-            // Normalize dates if frontend omitted them (common case -> full calendar month)
-            /**
-             * Normalize datos of rental payments (will depend on contract dates or full callendar month (01 - 30))
-             * @var mixed
-             */
-            $periodStart = Carbon::parse($data['period_start']);
-            $periodEnd   = Carbon::parse($data['period_end']);
-
-            /** @var RentPayment $rp */
             $rp = RentPayment::create([
-                'contract_id' => $contract->id,
-                'period_start' => $periodStart,
-                'period_end'  => $periodEnd,
-                'due_date'    => $data['due_date'],
-                'amount'      => $data['amount'],
-                'status'      => 'pending',
+                'contract_id'  => $contract->id,
+                'period_start' => Carbon::parse($data['period_start']),
+                'period_end'   => Carbon::parse($data['period_end']),
+                'due_date'     => $data['due_date'],
+                'amount'       => $data['amount'],
+                'status'       => 'pending',
             ]);
-
-
-            // Creates a PaymentIntent if tenant has IBAN and owner wants Stripe collection
-            if ($createIntent) {
-                $paymentMethodId = $this->ensureSepaPaymentMethod($contract);
-
-                if ($paymentMethodId) {
-                    $pi = $this->stripe->paymentIntents->create([
-                        'amount'               => (int) round($rp->amount * 100),
-                        'currency'             => 'eur',
-                        'customer'             => $contract->tenant->stripe_customer_id,
-                        'payment_method'       => $paymentMethodId,
-                        'payment_method_types' => ['sepa_debit'],
-                        'description'          => "Pago de alquiler #{$rp->id}",
-                        'on_behalf_of'         => $contract->property->stripe_account_id,
-                        'confirm'              => true,
-                        'off_session'          => true,
-                        'setup_future_usage'   => 'off_session',
-                    ]);
-
-                    $rp->update([
-                        'stripe_payment_intent_id' => $pi->id,
-                        'stripe_mandate_id'        => $pi->payment_method ? $pi->payment_method->sepa_debit->mandate : null,
-                    ]);
-                }
-            }
 
             DB::commit();
             return $rp->load('contract.tenant');
@@ -201,43 +160,39 @@ class RentPaymentService
     }
 
     /**
-     * Ensure the tenant has a SEPA PaymentMethod attached built from the IBAN stored
-     * in the contract. Returns the PaymentMethod id ready to use in a PaymentIntent
-     * 
-     * @param \App\Models\Contract $contract
-     * @return string|null
+     * Creates a Checkout Session to pay rent
+     *
+     * @param RentPayment $rp
+     * @return string
      */
-    private function ensureSepaPaymentMethod(Contract $contract): ?string
+    public function createPaySession(RentPayment $rp): string
     {
-        if (!$contract->iban || !$contract->tenant->stripe_customer_id) {
-            return null; // no IBAN in contract
-        }
+        $contract   = $rp->contract;
+        $customerId = $this->users->ensureTenantStripeCustomer($contract->tenant);
+        $accountId  = $this->users->ensureOwnerStripeAccount($contract->property->owner);
 
-        if ($contract->stripe_payment_method_id) {
-            return $contract->stripe_payment_method_id;
-        }
-
-        // creats PaymentMethod SEPA 
-        $pm = $this->stripe->paymentMethods->create([
-            'type'       => 'sepa_debit',
-            'sepa_debit' => [
-                'iban' => $contract->iban,
+        $session = $this->stripe->checkout->sessions->create([
+            'mode'                 => 'payment',                      
+            'customer'             => $customerId,
+            'payment_method_types' => ['sepa_debit'],
+            'line_items'           => [[
+                'price_data' => [
+                    'currency'     => 'eur',
+                    'product_data' => ['name' => "Alquiler {$rp->period_start->format('F Y')}"],
+                    'unit_amount'  => (int) round($rp->amount * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'on_behalf_of'         => $accountId,
+            'payment_intent_data'  => [
+                'metadata' => ['rent_payment_id' => $rp->id],
             ],
-            'billing_details' => [
-                'name'  => $contract->tenant->name,
-                'email' => $contract->tenant->email,
-            ],
+            'success_url'          => config('app.frontend_url') . '/pagos/exito',
+            'cancel_url'           => config('app.frontend_url') . '/pagos/cancelado',
         ]);
 
-        // attachh to customer
-        $this->stripe->paymentMethods->attach($pm->id, [
-            'customer' => $contract->tenant->stripe_customer_id,
-        ]);
+        $rp->update(['stripe_checkout_session_id' => $session->id]);
 
-        // persist payment method for following rental payments
-        $contract->stripe_payment_method_id = $pm->id;
-        $contract->save();
-
-        return $pm->id;
+        return $session->id;
     }
 }

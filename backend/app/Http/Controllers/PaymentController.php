@@ -41,31 +41,6 @@ class PaymentController extends Controller
     }
 
     /**
-     * Generates a new PaymentIntent 
-     * 
-     * @param \App\Http\Requests\CreatePaymentIntentRequest $request
-     * @return mixed|\Illuminate\Http\JsonResponse
-     */
-    public function createStripeIntent(CreatePaymentIntentRequest $request)
-    {
-        $dto = $this->paymentService->createIntent($request->validated());
-        return response()->json($dto, 201);
-    }
-
-    /**
-     * Summary of capture
-     * 
-     * @param \App\Models\Payment $payment
-     * @param \App\Http\Requests\CreatePaymentIntentRequest $request
-     * @return PaymentResource
-     */
-    public function capture(Payment $payment, CreatePaymentIntentRequest $request)
-    {
-        $updated = $this->paymentService->captureIntent($payment, $request->input('receipt_email'));
-        return new PaymentResource($updated);
-    }
-
-    /**
      * Manual payments
      * 
      * @param \App\Models\Payment $payment

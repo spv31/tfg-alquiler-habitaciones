@@ -166,7 +166,6 @@ class BillShareService
 		}
 	}
 
-
 	/**
 	 * Ensure the authenticated owner owns the bill.
 	 * 
@@ -179,5 +178,39 @@ class BillShareService
 		if ($bill->owner_id !== Auth::id()) {
 			throw new ModelNotFoundException();
 		}
+	}
+
+	public function createPaySession(BillShare $share): string
+	{
+		$contract   = $share->tenant->contracts()
+			->where('property_id', $share->utilityBill->property_id)
+			->where('status', 'active')->firstOrFail();
+
+		$customerId = app(UserService::class)->ensureTenantStripeCustomer($share->tenant);
+		$accountId  = app(UserService::class)->ensureOwnerStripeAccount($share->utilityBill->property->owner);
+
+		$session = $this->stripe->checkout->sessions->create([
+			'mode'                 => 'payment',
+			'customer'             => $customerId,
+			'payment_method_types' => ['sepa_debit'],
+			'line_items'           => [[
+				'price_data' => [
+					'currency' => 'eur',
+					'product_data' => ['name' => "Suministro #{$share->id}"],
+					'unit_amount' => (int) round($share->amount * 100),
+				],
+				'quantity' => 1,
+			]],
+			'on_behalf_of'         => $accountId,
+			'payment_intent_data'  => [
+				'metadata' => ['bill_share_id' => $share->id],
+			],
+			'success_url'          => config('app.frontend_url') . '/pagos/exito',
+			'cancel_url'           => config('app.frontend_url') . '/pagos/cancelado',
+		]);
+
+		$share->update(['stripe_checkout_session_id' => $session->id]);
+
+		return $session->id;
 	}
 }

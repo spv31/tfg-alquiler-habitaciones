@@ -42,62 +42,6 @@ class PaymentService
 	}
 
 	/**
-	 * Creates a Stripe PaymentIntent for a BillShare and store the local Payment record
-	 * 
-	 * @param array $data
-	 * @return array{client_secret: mixed, payment_id: mixed}
-	 */
-	public function createIntent(array $data): array
-	{
-		/** @var BillShare $share */
-		$share = BillShare::with('tenant', 'utilityBill.property.owner')
-			->findOrFail($data['bill_share_id']);
-
-		abort_unless($share->utilityBill->owner_id === Auth::id(), 404);
-
-		$customerId = $this->users->ensureTenantStripeCustomer($share->tenant);
-		$accountId  = $this->users->ensureOwnerStripeAccount($share->utilityBill->property->owner);
-
-		$pi = $this->stripe->paymentIntents->create([
-			'amount'               => (int) round($data['amount'] * 100),
-			'currency'             => 'eur',
-			'customer'             => $customerId,
-			'payment_method_types' => ['sepa_debit'],
-			'description'          => "Utility receipt #{$share->id}",
-			'on_behalf_of'         => $accountId,
-		]);
-
-		$payment = Payment::create([
-			'bill_share_id'            => $share->id,
-			'amount'                   => $data['amount'],
-			'method'                   => 'stripe',
-			'stripe_payment_intent_id' => $pi->id,
-		]);
-
-		return [
-			'payment_id'    => $payment->id,
-			'client_secret' => $pi->client_secret,
-		];
-	}
-
-	/**
-	 * Captures a previously created PaymentIntent, optionally sending a receipt
-	 * 
-	 * @param \App\Models\Payment $payment
-	 * @param mixed $receiptEmail
-	 * @return Payment
-	 */
-	public function captureIntent(Payment $payment, ?string $receiptEmail = null): Payment
-	{
-		$pi = $this->stripe->paymentIntents->retrieve($payment->stripe_payment_intent_id);
-		if ($pi->status === 'requires_capture') {
-			$this->stripe->paymentIntents->capture($pi->id, Arr::whereNotNull(['receipt_email' => $receiptEmail]));
-		}
-
-		return $payment->refresh();
-	}
-
-	/**
 	 * Marks a payment as paid manually and updates related BillShare
 	 * 
 	 * @param \App\Models\Payment $payment

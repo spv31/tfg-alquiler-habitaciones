@@ -15,6 +15,7 @@ class BillShare extends Model
         'status',                     // 'pending'|'paid'|'cancelled'
         'stripe_payment_intent_id', 
         'stripe_mandate_id', 
+        'stripe_checkout_session_id',
         'paid_at',                    
     ];
 
@@ -23,6 +24,7 @@ class BillShare extends Model
         'paid_at'                       => 'datetime',
         'stripe_payment_intent_id'      => 'string',
         'stripe_mandate_id'             => 'string',
+        'stripe_checkout_session_id'    => 'string',
     ];
 
     /**

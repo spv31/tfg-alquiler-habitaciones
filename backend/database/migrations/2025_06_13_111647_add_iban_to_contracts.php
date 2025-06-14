@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('contracts', function (Blueprint $table) {
-            $table->string('iban')->nullable()->after('pdf_path');
-            $table->string('stripe_payment_method_id')->nullable();
+            if (! Schema::hasColumn('contracts', 'owner_iban')) {
+                $table->string('owner_iban')->nullable()->after('pdf_path');
+            }
+            if (! Schema::hasColumn('contracts', 'tenant_iban')) {
+                $table->string('tenant_iban')->nullable()->after('owner_iban');
+            }
+            if (! Schema::hasColumn('contracts', 'stripe_payment_method_id')) {
+                $table->string('stripe_payment_method_id')->nullable()->after('tenant_iban');
+            }
         });
     }
 
@@ -23,8 +30,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('contracts', function (Blueprint $table) {
-            $table->dropColumn('iban');
-            $table->dropColumn('stripe_payment_method_id');
+            if (Schema::hasColumn('contracts', 'owner_iban')) {
+                $table->dropColumn('owner_iban');
+            }
+            if (Schema::hasColumn('contracts', 'tenant_iban')) {
+                $table->dropColumn('tenant_iban');
+            }
+            if (Schema::hasColumn('contracts', 'stripe_payment_method_id')) {
+                $table->dropColumn('stripe_payment_method_id');
+            }
         });
     }
 };

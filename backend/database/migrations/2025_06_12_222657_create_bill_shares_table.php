@@ -25,7 +25,8 @@ return new class extends Migration
             // Stripe PaymentIntent asociado (pagos online)
             $table->string('stripe_payment_intent_id')->nullable();
             $table->string('stripe_mandate_id')->nullable();
-            
+            $table->string('stripe_checkout_session_id')->nullable();
+
             $table->timestamp('paid_at')->nullable();
             $table->timestamps();
         });

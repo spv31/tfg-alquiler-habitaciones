@@ -143,23 +143,37 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::apiResource('utility-bills', UtilityBillController::class)
     ->except(['edit', 'create']);
 
-  // Bill Shares (división de factura)
+  // Compartir/facturar suministros
   Route::get('utility-bills/{utilityBill}/shares', [BillShareController::class, 'index']);
   Route::post('utility-bills/{utilityBill}/shares', [BillShareController::class, 'store']);
 
-  // Rent Payments (mensualidades)
+  // Pago manual de un suministro
+  Route::post('bill-shares/{billShare}/pay', [BillShareController::class, 'pay'])
+    ->name('bill-shares.pay');
+
+  // Pagos de renta (mensualidades)
   Route::apiResource('rent-payments', RentPaymentController::class)
     ->only(['index', 'show', 'store', 'update']);
 
-  // Payments (pagos de Stripe/manual)
-  Route::post('payments/stripe-intent', [PaymentController::class, 'createStripeIntent']);
-  Route::post('payments/{payment}/capture', [PaymentController::class, 'capture']);
+  // Pago manual de una mensualidad
+  Route::post('rent-payments/{rentPayment}/pay', [RentPaymentController::class, 'pay'])
+    ->name('rent-payments.pay');
+
+  // Callbacks tras la sesión de Checkout
+  Route::get('payments/stripe-success', [RentPaymentController::class, 'handleSepaSuccess'])
+    ->name('payments.success');
+  Route::get('payments/stripe-cancel',  [RentPaymentController::class, 'handleSepaCancel'])
+    ->name('payments.cancel');
+
+  // API de registros de pagos
+  Route::get('payments',           [PaymentController::class, 'index']);
+  Route::get('payments/{payment}', [PaymentController::class, 'show']);
+
+  // Marcado manual de un pago ya creado
   Route::post('payments/{payment}/manual', [PaymentController::class, 'markManual']);
 
-  Route::get('payments', [PaymentController::class, 'index']);
-  Route::get('payments/{payment}', [PaymentController::class, 'show']);
- 
-  Route::post(uri: 'stripe/webhook', action: [PaymentController::class, 'handleStripeWebhook']);
+  // Webhook de Stripe para sincronizar status
+  Route::post('stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 });
 
 Route::middleware(['auth:sanctum', 'role:tenant'])
