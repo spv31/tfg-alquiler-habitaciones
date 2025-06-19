@@ -8,7 +8,6 @@
       />
     </div>
 
-    <!-- Loader -->
     <div v-if="loading" class="flex flex-col items-center justify-center my-20">
       <div
         class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mb-4"
@@ -18,7 +17,6 @@
       </p>
     </div>
 
-    <!-- Error -->
     <div v-else-if="error" class="text-center my-20">
       <div
         class="inline-flex items-center bg-red-50 px-6 py-4 rounded-lg border border-red-200"
@@ -50,7 +48,7 @@
         :property="currentProperty"
         :propertyImage="propertyImage"
       />
-
+      <!-- 
       <TenantFormSection v-if="currentProperty.rental_type === 'full'" />
 
       <RoomsSection
@@ -59,6 +57,32 @@
         :propertyId="propertyId"
         :warning="roomsWarning"
       />
+
+      <ExpensesSection :property-id="propertyId"/> -->
+      <div class="space-y-8">
+        <!-- Alquiler por habitaciones: Rooms arriba, gastos debajo -->
+        <template
+          v-if="currentProperty.rental_type === 'per_room' && roomsReady"
+        >
+          <RoomsSection
+            :rooms="rooms"
+            :propertyId="propertyId"
+            :warning="roomsWarning"
+          />
+          <ExpensesSection :property-id="propertyId" />
+        </template>
+
+        <template v-else-if="currentProperty.rental_type === 'full'">
+          <div class="grid gap-8 md:grid-cols-2">
+            <div class="order-1 space-y-6 min-w-0">
+              <ExpensesSection :property-id="propertyId" />
+            </div>
+            <div class="order-2">
+              <TenantFormSection />
+            </div>
+          </div>
+        </template>
+      </div>
     </div>
   </div>
 </template>

@@ -22,14 +22,18 @@ class UpdateUtilityBillRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category'       => 'sometimes|required|string|in:supplies,tax,general',
-            'description'    => 'sometimes|nullable|string|max:255',
-            'total_amount'   => 'sometimes|required|numeric|min:0',
-            'issue_date'     => 'sometimes|required|date',
-            'due_date'       => 'sometimes|required|date|after_or_equal:issue_date',
-            'attachment'     => 'nullable|file|mimes:jpg,png,pdf',
-            'property_id'    => 'sometimes|required|exists:properties,id',
-            'room_id'        => 'nullable|exists:rooms,id',
+            'category'          => 'sometimes|required|string|in:utility,tax,general',
+            'remit_to_tenants'  => 'sometimes|boolean',
+            'description'       => 'sometimes|nullable|string|max:255',
+            'status'            => 'sometimes|string|in:pending,settled,split',
+            'total_amount'      => 'sometimes|required|numeric|min:0',
+            'issue_date'        => 'sometimes|required|date',
+            'due_date'          => 'sometimes|required|date|after_or_equal:issue_date',
+            'period_start'      => 'nullable|date',
+            'period_end'        => 'nullable|date|after_or_equal:period_start',
+            'attachment'        => 'nullable|file|mimes:jpg,png,pdf',
+            'property_id'       => 'sometimes|required|exists:properties,id',
+            'room_id'           => 'nullable|exists:rooms,id',
         ];
     }
 }

@@ -18,18 +18,20 @@ class UtilityBill extends Model
         'period_end',   
         'total_amount',   
         'category',         // 'utility'|'general'|'tax'
+        'remit_to_tenants',
         'description',      
         'attachment_path', 
         'status',           // 'pending'|'split'|'settled'
     ];
 
     protected $casts = [
-        'issue_date'    => 'date',
-        'due_date'      => 'date',
-        'period_start'  => 'date',
-        'period_end'    => 'date',
-        'total_amount'  => 'decimal:2',
-        'status'        => 'string',
+        'issue_date'        => 'date',
+        'due_date'          => 'date',
+        'period_start'      => 'date',
+        'period_end'        => 'date',
+        'total_amount'      => 'decimal:2',
+        'status'            => 'string',
+        'remit_to_tenants'  => 'boolean',
     ];
 
     /**

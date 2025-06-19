@@ -34,6 +34,13 @@ class ContractResource extends JsonResource
             'pdf_path_signed' => $this->pdf_path_signed,
             'final_content' => $this->final_content,
             'token_values' => $this->token_values,
+            'owner_iban'               => $this->owner_iban,
+            'tenant_iban'              => $this->tenant_iban,
+            'stripe_payment_method_id' => $this->stripe_payment_method_id,
+            'pdf_path_signed_owner'    => $this->pdf_path_signed_owner,
+            'pdf_path_signed_tenant'   => $this->pdf_path_signed_tenant,
+            'signed_by_owner_at'       => optional($this->signed_by_owner_at)->toDateTimeString(),
+            'signed_by_tenant_at'      => optional($this->signed_by_tenant_at)->toDateTimeString(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

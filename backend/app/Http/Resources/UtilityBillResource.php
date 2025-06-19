@@ -25,8 +25,11 @@ class UtilityBillResource extends JsonResource
             'period_end'        => optional($this->period_end)->toDateString(),
             'total_amount'      => $this->total_amount,
             'category'          => $this->category,
+            'remit_to_tenants'  => $this->remit_to_tenants,
             'description'       => $this->description,
-            'attachment_url'    => $this->attachment_path ? url("/api/files/{$this->attachment_path}") : null,
+            'attachment_url' => $this->attachment_path
+                ? route('utility-bills.attachment', $this->id)
+                : null,
             'status'            => $this->status,
             'bill_shares'       => BillShareResource::collection($this->whenLoaded('billShares')),
             'created_at'        => $this->created_at->toDateTimeString(),

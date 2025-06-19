@@ -18,12 +18,12 @@ class UtilityBillController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['property_id', 'room_id', 'status', 'from', 'to']);
+        $perPage  = (int) $request->get('per_page', 10);
 
-        $bills = $this->bills->list($filters);
+        $bills = $this->bills->list($filters, $perPage);
 
         return UtilityBillResource::collection($bills);
     }
-
 
     public function store(StoreUtilityBillRequest $request)
     {

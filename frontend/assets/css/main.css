@@ -107,3 +107,50 @@ body {
 .sr-only {
   @apply absolute w-0 h-0 opacity-0 overflow-hidden;
 }
+
+.p-datepicker-day-selected {
+  @apply bg-info text-white !important;
+}
+
+.p-datepicker-month-selected {
+  @apply border bg-info text-white !important;
+}
+
+.p-datepicker-year-selected {
+  @apply border bg-info text-white !important;
+}
+
+.p-select-option-selected {
+	@apply border bg-info/90 text-white !important;
+}
+
+.p-select.p-component.p-focus {
+  @apply border border-info !important;
+}
+
+.p-inputnumber-input.p-component.p-focus,
+.p-inputnumber-input.p-component:focus-within {
+  @apply border border-info !important;
+}
+
+.p-textarea-resizable.p-component.p-focus,
+.p-textarea-resizable.p-component:focus-within {
+  @apply border border-info !important;
+}
+
+.p-fileupload {
+  @apply border border-dashed border-gray-300 rounded-lg transition-colors;
+}
+
+.p-fileupload.p-fileupload-focus,
+.p-fileupload:hover {
+  @apply border-info !important;
+}
+
+.p-toggleswitch-checked .p-toggleswitch-slider {
+  @apply bg-info !important;
+}
+
+.p-paginator-page-selected {
+	@apply bg-info/90 text-white !important;
+}

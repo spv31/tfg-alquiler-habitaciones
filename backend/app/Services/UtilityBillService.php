@@ -7,14 +7,15 @@ use Auth;
 use Carbon\Carbon;
 use DB;
 use Exception;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class UtilityBillService
 {
 	public function __construct(private UploadFilesService $files) {}
 
-	public function list(array $filters = []): Collection
+	public function list(array $filters = [], int $perPage = 10): LengthAwarePaginator
 	{
 		$q = UtilityBill::query()
 			->with(['property', 'room', 'billShares'])
@@ -26,7 +27,7 @@ class UtilityBillService
 		$q->when($filters['from'] ?? null, fn($q, $v) => $q->whereDate('issue_date', '>=', $v));
 		$q->when($filters['to'] ?? null, fn($q, $v) => $q->whereDate('issue_date', '<=', $v));
 
-		return $q->orderByDesc('issue_date')->get();
+		return $q->orderByDesc('issue_date')->paginate($perPage);
 	}
 
 	/**
@@ -44,19 +45,22 @@ class UtilityBillService
 					?? $issue->copy()->endOfMonth()->toDateString();
 			}
 
-			if (!empty($data['attachment'])) {
-				$data['attachment_path'] = $this->files->storeFile(
-					$data['attachment'],
-					'utility-bills',
-					$data['attachment_extension'] ?? 'pdf'
-				);
+			if (!empty($data['attachment']) && $data['attachment'] instanceof UploadedFile) {
+				$data['attachment_path'] = $data['attachment']
+					->store('utility-bills', 'private');
 			}
 
 			$data['owner_id'] = Auth::id();
-			$data['status']   = 'pending';
+			$data['status'] = $data['status'] ?? 'pending';
+			$data['remit_to_tenants'] = $data['remit_to_tenants'] ?? true;
 
 			$bill = UtilityBill::create($data);
-			app(BillShareService::class)->autoSplit(bill: $bill);
+
+			if ($bill->remit_to_tenants && $data['status'] === 'pending') {
+				app(BillShareService::class)->autoSplit($bill);
+				$bill->status = 'split';
+				$bill->save();
+			}
 
 			DB::commit();
 			return $bill->load('billShares');
@@ -98,15 +102,26 @@ class UtilityBillService
 					?? $issueDate->copy()->endOfMonth()->toDateString();
 			}
 
-			if (!empty($data['attachment'])) {
+			if (array_key_exists('remit_to_tenants', $data)) {
+				$new = (bool) $data['remit_to_tenants'];
+				$old = $bill->remit_to_tenants;
+
+				if (!$new && $old) {
+					$bill->billShares()->delete();
+					$data['status'] = 'pending';
+				}
+
+				if ($new && !$old && $bill->billShares()->count() === 0) {
+					app(BillShareService::class)->autoSplit($bill);
+					$data['status'] = 'split';
+				}
+			}
+
+			if (!empty($data['attachment']) && $data['attachment'] instanceof UploadedFile) {
 				if ($bill->attachment_path) {
 					$this->files->deleteFile($bill->attachment_path);
 				}
-				$data['attachment_path'] = $this->files->storeFile(
-					$data['attachment'],
-					'utility-bills',
-					$data['attachment_extension'] ?? 'pdf'
-				);
+				$data['attachment_path'] = $data['attachment']->store('utility-bills', 'private');
 			}
 
 			$bill->update($data);

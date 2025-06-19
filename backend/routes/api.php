@@ -174,6 +174,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
   // Webhook de Stripe para sincronizar status
   Route::post('stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
+
+  Route::get(
+    '/utility-bills/{utilityBill}/attachment',
+    [ImageController::class, 'showUtilityBillAttachment']
+  )->name('utility-bills.attachment');
 });
 
 Route::middleware(['auth:sanctum', 'role:tenant'])

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white/90 shadow-2xl rounded-2xl p-8 space-y-6 transition-all hover:shadow-3xl group"
+    class="bg-white shadow-lg rounded-xl p-8 space-y-6 transition-all hover:shadow-3xl group"
   >
     <Alert
       v-if="!hasContract || isDraft || isOwnerSigned"

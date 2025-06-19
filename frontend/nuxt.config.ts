@@ -27,6 +27,7 @@ export default defineNuxtConfig({
     "~/assets/css/main.css",
     "~/assets/css/tailwind.css",
     "primeicons/primeicons.css",
+    '@/assets/css/primevue-overrides.css',
   ],
   vite: {
     server: {

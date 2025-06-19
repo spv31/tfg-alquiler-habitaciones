@@ -20,6 +20,7 @@ class BillShareResource extends JsonResource
             'amount'                     => $this->amount,
             'status'                     => $this->status,
             'stripe_payment_intent_id'   => $this->stripe_payment_intent_id,
+            'stripe_checkout_session_id' => $this->stripe_checkout_session_id,
             'paid_at'                    => optional($this->paid_at)->toDateTimeString(),
             'created_at'                 => $this->created_at->toDateTimeString(),
             'updated_at'                 => $this->updated_at->toDateTimeString(),
