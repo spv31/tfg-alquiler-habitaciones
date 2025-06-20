@@ -6,6 +6,8 @@ export default defineNuxtPlugin(async () => {
   // @ts-ignore
   window.Pusher = Pusher;
 
+  const apiBaseUrl = 'http://localhost:8000'; 
+
   const echo = new Echo({
     broadcaster: "reverb",
     key: "my-rent-hub-key",
@@ -13,14 +15,14 @@ export default defineNuxtPlugin(async () => {
     wsPort: 8080,
     forceTLS: false,
     enabledTransports: ["ws"],
-    authEndpoint: "/api/broadcasting/auth",
+    authEndpoint: `${apiBaseUrl}/broadcasting/auth`,
     authorizer: (channel: any, options: any) => {
       return {
         authorize: async (socketId: any, callback: any) => {
           try {
             const csrf = await getCsrfToken();
 
-            const response = await $fetch("/api/broadcasting/auth", {
+            const response = await $fetch(`${apiBaseUrl}/broadcasting/auth`, {
               method: "POST",
               credentials: "include",
               headers: {
@@ -33,6 +35,7 @@ export default defineNuxtPlugin(async () => {
             });
 
             callback(null, response);
+            console.log('Response: ', response);
           } catch (error: any) {
             callback(new Error("Authorization failed"), error?.data || error);
           }

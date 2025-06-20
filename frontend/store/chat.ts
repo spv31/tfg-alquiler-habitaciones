@@ -13,6 +13,7 @@ interface UserConnected {
 export const useChatStore = defineStore(
   "chat",
   () => {
+    const subscribed = new Set<number>();
     const config = useRuntimeConfig();
     const apiBaseUrl = config.app.apiBaseURL;
 
@@ -33,37 +34,36 @@ export const useChatStore = defineStore(
 
     /**
      * We subscribe to converstion and presence channel
-     *
-     * @param {number} conversationId
+     * 
+     * @param conversationId 
+     * @returns 
      */
-    const subscribeToChannel = (conversationId: number) => {
-      echo
-        .private(`conversation.${conversationId}`)
-        .listen(".message.sent", (e: Message) => {
-          if (activeConversation.value?.id === conversationId) {
-            messages.value.push(e);
-          }
-          const idx = conversations.value.findIndex(
-            (c) => c.id === conversationId
-          );
-          if (idx !== -1) {
-            conversations.value[idx].updated_at = e.sent_at;
-          }
-        });
+    const subscribeToChannel = (conversationId: number): void => {
+      if (subscribed.has(conversationId)) return;
+      subscribed.add(conversationId);
 
       echo
         .join(`conversation.${conversationId}`)
-        .here((users: Array<{ id: number; name: string }>) => {
+        .here((users: UserConnected[]) => {
           usersConnected.value = users;
         })
-        .joining((user: { id: number; name: string }) => {
-          usersConnected.value.push(user);
+        .joining((u: UserConnected) => {
+          usersConnected.value.push(u);
         })
-        .leaving((user: { id: number; name: string }) => {
+        .leaving((u: UserConnected) => {
           usersConnected.value = usersConnected.value.filter(
-            (userConnected) => userConnected.id !== user.id
+            (x) => x.id !== u.id
           );
-        });
+        })
+        .error((err: any) => console.error(`[Presence][error]`, err));
+
+      echo
+        .private(`conversation.${conversationId}`)
+        .listen(".message.sent", (e: Message) => {
+          if (activeConversation.value?.id !== conversationId) return;
+          messages.value.push(e);
+        })
+        .error((err: any) => console.error("[Private] error: ", err));
     };
 
     /**
@@ -146,13 +146,6 @@ export const useChatStore = defineStore(
       }, loading);
       if (error) throw error;
       if (!data) throw new Error("No data received");
-
-      const raw = (data as any).data ?? data;
-      const msg: Message = {
-        ...raw,
-        sent_at: raw.sent_at ?? raw.updated_at,
-      };
-      messages.value.push(msg);
     };
 
     /**
@@ -205,7 +198,7 @@ export const useChatStore = defineStore(
       setActiveConversation,
       sendMessage,
       openConversation,
-      reset
+      reset,
     };
   },
   {

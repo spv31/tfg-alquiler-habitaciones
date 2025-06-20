@@ -5,7 +5,7 @@
     <div class="border-b bg-white border-gray-200 p-4 flex items-center gap-3">
       <div class="relative">
         <img
-          :src="ownerImage"
+          :src="peerAvatar"
           class="w-10 h-10 rounded-full object-cover"
           @error="handleImageError"
         />
@@ -15,7 +15,7 @@
         />
       </div>
       <div>
-        <p class="font-semibold text-gray-900">{{ owner?.name }}</p>
+        <p class="font-semibold text-gray-900">{{ peerName }}</p>
         <p class="text-xs text-gray-500">
           <span v-if="isPeerOnline" class="text-green-500">En línea</span>
           <span v-else>Desconectado</span>
@@ -28,18 +28,18 @@
       class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
     >
       <div
-        v-for="message in chatMessages"
-        :key="message.id"
+        v-for="m in chatMessages"
+        :key="m.id"
         class="flex items-end gap-3"
         :class="{
-          'justify-end': message.sender === 'tenant',
-          'justify-start': message.sender === 'owner',
+          'justify-end': m.sender === 'me',
+          'justify-start': m.sender === 'peer',
         }"
       >
         <img
-          v-if="message.sender === 'owner'"
-          :src="ownerAvatar"
-          class="w-8 h-8 rounded-full"
+          v-if="m.sender === 'peer'"
+          :src="peerAvatar"
+          class="w-8 h-8 rounded-full object-cover"
           @error="handleImageError"
         />
 
@@ -47,29 +47,29 @@
           <div
             class="px-4 py-2 rounded-2xl shadow-sm"
             :class="{
-              'bg-white border border-gray-200 rounded-bl-none':
-                message.sender === 'owner',
               'bg-blue-600 text-white rounded-br-none self-end':
-                message.sender === 'tenant',
+                m.sender === 'me',
+              'bg-white border border-gray-200 rounded-bl-none':
+                m.sender === 'peer',
             }"
           >
-            <p class="whitespace-pre-wrap">{{ message.text }}</p>
+            <p class="whitespace-pre-wrap">{{ m.text }}</p>
           </div>
           <span
             class="text-[10px] mt-1"
             :class="{
-              'text-gray-500': message.sender === 'owner',
-              'text-gray-500 self-end': message.sender === 'tenant',
+              'text-gray-500 self-end': m.sender === 'me', 
+              'text-gray-500': m.sender === 'peer', 
             }"
           >
-            {{ formatTime(message.time) }}
+            {{ formatTime(m.time) }}
           </span>
         </div>
 
         <img
-          v-if="message.sender === 'tenant'"
-          :src="tenantAvatar"
-          class="w-8 h-8 rounded-full"
+          v-if="m.sender !== 'peer'"
+          :src="myAvatar"
+          class="w-8 h-8 rounded-full object-cover"
           @error="handleImageError"
         />
       </div>
@@ -128,13 +128,13 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import type { Property } from "~/types/property";
 import type { Room } from "~/types/room";
-
 import { useChatStore } from "~/store/chat";
 import type { PropType } from "vue";
+import { useAuthStore } from "~/store/auth";
+
+const authStore = useAuthStore();
 const chatStore = useChatStore();
 const { messages: storeMessages, isPeerOnline } = storeToRefs(chatStore);
-
-const parseDate = (iso: string) => new Date(iso);
 
 type RentableWrapper = {
   type: "Property" | "Room";
@@ -146,30 +146,37 @@ const props = defineProps({
     type: Object as PropType<{ ownerId: number; tenantId: number }>,
     required: true,
   },
-  rentable: {
-    type: Object as PropType<RentableWrapper>,
-    required: true,
-  },
-  currentUserId: {
-    type: Number,
-    required: true,
-  },
+  rentable: { type: Object as PropType<RentableWrapper>, required: true },
+  currentUserId: { type: Number, required: true },
   currentUserRole: {
     type: String as PropType<"tenant" | "owner">,
     required: true,
   },
 });
 
+const getAvatar = (u: any) =>
+  u?.profile_image_url || u?.profile_image || "/avatars/default.jpg";
+
+const meIsOwner = computed(() => props.currentUserRole === "owner");
+
+const peer = computed(() =>
+  meIsOwner.value
+    ? props.rentable.rentable
+    : (props.rentable.rentable as any).owner
+);
+
+const peerName = computed(() => peer.value?.name ?? "—");
+const peerAvatar = computed(() => getAvatar(peer.value));
+
+const myAvatar = computed(() => getAvatar(authStore.user));
+
+const parseDate = (iso: string) => new Date(iso);
+
 const chatMessages = computed(() =>
   storeMessages.value.map((m) => ({
     id: m.id,
     text: m.body,
-    sender:
-      m.sender_id === props.currentUserId
-        ? props.currentUserRole
-        : props.currentUserRole === "tenant"
-          ? "owner"
-          : "tenant",
+    sender: m.sender_id === props.currentUserId ? "me" : "peer",
     time: parseDate(m.sent_at),
   }))
 );
@@ -185,7 +192,6 @@ onMounted(async () => {
 const newMessage = ref("");
 const messagesContainer = ref<HTMLElement | null>(null);
 const showEmojiPicker = ref(false);
-
 const emojis = ref([
   "😀",
   "😂",
@@ -204,10 +210,6 @@ const emojis = ref([
   "👏",
   "🎉",
 ]);
-
-const owner = computed(() => props.rentable.rentable.owner);
-const ownerImage = computed(() => owner.value.profile_image)
-const tenantAvatar = computed(() => "/avatars/default.jpg");
 
 const formatTime = (d: Date) =>
   new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

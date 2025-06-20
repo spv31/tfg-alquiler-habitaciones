@@ -14,15 +14,9 @@ Broadcast::channel('conversation.{id}', function ($user, $id) {
 /**
  * Channel for tracking users in a conversation
  */
-Broadcast::channel('presence.conversation.{id}', function ($user, $id) {
-    if (
-        (int) $user->id === Conversation::find($id)->owner_id
-        || (int) $user->id === Conversation::find($id)->tenant_id
-    ) {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-        ];
-    };
-    return false;
+Broadcast::channel('presence-conversation.{conversation}', function ($user, Conversation $conversation) {
+    if ($user->id === $conversation->owner_id || $user->id === $conversation->tenant_id) {
+        return ['id' => $user->id, 'name' => $user->name];
+    }
+    return false;  
 });

@@ -321,6 +321,16 @@
       @close="showViewer = false"
     />
     <UploadSignedDialog v-model:visible="showUpload" @submit="handleUpload" />
+    <ChatDialog
+      v-model:visible="showChat"
+      :context="{ ownerId: tenant.property_id, tenantId: tenant.id }"
+      :rentable="{
+        type: tenant.room_id ? 'Room' : 'Property',
+        rentable: tenant,
+      }"
+      :current-user-id="currentUserId!"
+      :current-user-role="currentUserRole!"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -330,14 +340,30 @@ import type { Tenant } from "~/types/tenant";
 import defaultAvatar from "~/assets/images/default.jpg";
 import { useMyToast } from "#imports";
 import type { Contract } from "../../types/contract";
+import { useAuthStore } from "~/store/auth";
 const { success, error: errorToast, info } = useMyToast();
 
 const props = defineProps<{
   tenant: Tenant;
 }>();
 
+const ContractViewerModal = defineAsyncComponent(
+  () => import("~/components/ui/ContractViewerModal.vue")
+);
+const CircleIconButton = defineAsyncComponent(
+  () => import("~/components/ui/CircleIconButton.vue")
+);
+const UploadSignedDialog = defineAsyncComponent(
+  () => import("~/components/ui/UploadSignedDialog.vue")
+);
+const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
+const ChatDialog = defineAsyncComponent(
+  () => import("~/components/ui/ChatDialog.vue")
+);
+
 const { locale, t } = useI18n();
 const contractsStore = useContractsStore();
+const authStore = useAuthStore();
 
 const contract = computed(() => props.tenant.contract);
 const hasContract = computed(() => !!contract.value);
@@ -350,28 +376,10 @@ const isActive = computed(() => contract.value?.status === "active");
 const showViewer = ref(false);
 const pdfUrl = ref("");
 const showUpload = ref(false);
-const selectedFile = ref<File | null>(null);
+const showChat = ref(false);
 
-const ContractViewerModal = defineAsyncComponent(
-  () => import("~/components/ui/ContractViewerModal.vue")
-);
-const CircleIconButton = defineAsyncComponent(
-  () => import("~/components/ui/CircleIconButton.vue")
-);
-const UploadSignedDialog = defineAsyncComponent(
-  () => import("~/components/ui/UploadSignedDialog.vue")
-);
-const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
-
-const fileInput = ref<HTMLInputElement | null>(null);
-
-const blobToBase64 = (blob: Blob): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+const currentUserId = computed(() => authStore.user?.id);
+const currentUserRole = computed(() => authStore.user?.role);
 
 const startContractFlow = () => {
   navigateTo({
@@ -384,7 +392,9 @@ const startContractFlow = () => {
   });
 };
 
-const onChat = () => {};
+const onChat = () => {
+  showChat.value = true;
+};
 const onRemove = () => {
   errorToast("Eliminación de inquilino en progreso", 5000);
 };

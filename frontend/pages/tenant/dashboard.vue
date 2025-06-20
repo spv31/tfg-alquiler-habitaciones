@@ -151,7 +151,6 @@
             </div>
 
             <div>
-              <!-- Sección de pagos completa -->
               <div class="rounded-xl border border-blue-100 h-full bg-white">
                 <div
                   class="flex items-center gap-3 p-4 border-b border-gray-200"
