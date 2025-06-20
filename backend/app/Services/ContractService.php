@@ -6,13 +6,15 @@ use App\Models\Contract;
 use App\Models\ContractTemplate;
 use Exception;
 use Illuminate\Contracts\Support\ValidatedData;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Storage;
 
 class ContractService
 {
     public function __construct(
-        private PdfGeneratorService $pdfGenerator
+        private PdfGeneratorService $pdfGenerator,
+        private UploadFilesService  $files
     ) {}
 
     private function replacePreviewPdf(Contract $contract, string $newHtml, ?string $name = null)
@@ -31,25 +33,25 @@ class ContractService
         }
     }
 
-   private function replaceTokens(string $html, array $tokens): string
-{
-    foreach ($tokens as $key => $value) {
-        $replacement = $value !== null && $value !== '' ? $value : '____________';
+    private function replaceTokens(string $html, array $tokens): string
+    {
+        foreach ($tokens as $key => $value) {
+            $replacement = $value !== null && $value !== '' ? $value : '____________';
 
-        // admite cualquier orden de atributos dentro del <span>
-        $pattern = '/(<span[^>]*\bdata-token="' . preg_quote($key, '/') . '"[^>]*>)(.*?)<\/span>/si';
+            // admite cualquier orden de atributos dentro del <span>
+            $pattern = '/(<span[^>]*\bdata-token="' . preg_quote($key, '/') . '"[^>]*>)(.*?)<\/span>/si';
 
-        $html = preg_replace_callback(
-            $pattern,
-            fn ($m) => $m[1] . $replacement . '</span>',
-            $html
-        );
+            $html = preg_replace_callback(
+                $pattern,
+                fn($m) => $m[1] . $replacement . '</span>',
+                $html
+            );
+        }
+
+        return $html;
     }
 
-    return $html;
-}
 
-    
     /**
      * It creates new contract 
      * 
@@ -68,7 +70,7 @@ class ContractService
                 $validatedData['token_values'] ?? []
             );
 
-            $validatedData['final_content'] = $htmlFilled; 
+            $validatedData['final_content'] = $htmlFilled;
 
             $pdfPath = $this->pdfGenerator
                 ->generatePdfFromHtml($htmlFilled, 'contracts', 'contrato-' . ($template->name ?? ''));
@@ -76,7 +78,7 @@ class ContractService
 
             $tokens = $validatedData['token_values'] ?? [];
             if (!empty($tokens['banco_iban'])) {
-                $validatedData['banco_iban'] = $tokens['banco_iban'];
+                $validatedData['owner_iban'] = $tokens['banco_iban'];
             }
 
             $contract = Contract::create($validatedData);
@@ -101,7 +103,7 @@ class ContractService
         DB::beginTransaction();
 
         try {
-			// We generate another pdf if content has changed
+            // We generate another pdf if content has changed
             if (array_key_exists('final_content', $validatedData) && $validatedData['final_content'] !== $contract->final_content) {
                 $this->replacePreviewPdf($contract, $validatedData['final_content'], 'contrato-' . ($contract->contractTemplate->name ?? ''));
             }
@@ -137,19 +139,21 @@ class ContractService
         }
     }
 
-    public function getPreviewFile(Contract $contract)
+    public function getPreviewFile(Contract $contract): array
     {
-        $path = $contract->pdf_path;
+        $path = $contract->pdf_path_signed_tenant
+            ?? $contract->pdf_path_signed_owner
+            ?? $contract->pdf_path;
 
         if (!$path) {
-            throw new Exception("No pdf_path definido para el template ID {$contract->id}");
+            throw new Exception("No hay archivo PDF definido para el contrato ID {$contract->id}");
         }
 
         try {
             $disk = Storage::disk('private');
 
             if (! $disk->exists($path)) {
-                throw new Exception("Fichero de preview no encontrado en: {$path}");
+                throw new Exception("Fichero no encontrado en: {$path}");
             }
 
             $content = $disk->get($path);
@@ -165,5 +169,40 @@ class ContractService
         } catch (Exception $e) {
             throw $e;
         }
+    }
+
+    public function storeSignedPdf(
+        Contract $contract,
+        UploadedFile $file,
+        ?string $providedName = null,
+        bool $isOwner = true
+    ): string {
+        $base = $providedName
+            ? pathinfo($providedName, PATHINFO_FILENAME)
+            : pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $ext = $file->getClientOriginalExtension();
+        $name = "{$base}.{$ext}";
+        $folder = 'contracts/signed/' . $contract->id . ($isOwner ? '/owner' : '/tenant');
+
+        $old = $isOwner ? $contract->pdf_path_signed_owner
+            : $contract->pdf_path_signed_tenant;
+        if ($old) {
+            $this->files->deleteFile($old);
+        }
+
+        $path = $file->storeAs($folder, $name, 'private');
+
+        if ($isOwner) {
+            $contract->pdf_path_signed_owner = $path;
+            $contract->signed_by_owner_at = now();
+            $contract->status = 'signed_by_owner';
+        } else {
+            $contract->pdf_path_signed_tenant = $path;
+            $contract->signed_by_tenant_at = now();
+            $contract->status = 'active';
+        }
+
+        $contract->save();
+        return $path;
     }
 }

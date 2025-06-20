@@ -180,36 +180,15 @@ class ContractController extends Controller
         UploadSignedRequest $request,
         Contract $contract,
     ) {
-        $file    = $request->file('file');
-        $user    = $request->user();
-        $isOwner = $contract->property?->user_id === $user->id;
+        $file     = $request->file('file');
+        $name     = $request->input('name');
+        $isOwner  = $contract->property?->user_id === $request->user()->id;
 
-        if ($isOwner && $contract->status !== 'draft') {
-            return response()->json(['error_key' => 'owner_cannot_sign_now'], 409);
-        }
-
-        if (!$isOwner && $contract->status !== 'signed_by_owner') {
-            return response()->json(['error_key' => 'tenant_cannot_sign_now'], 409);
-        }
-
-        $original = $request->input('name') ?? $file->getClientOriginalName();
-        $path = $file->storeAs("contracts/signed/{$contract->id}", $original, 'private');
-
-        if ($isOwner) {
-            $contract->pdf_path_signed_owner = $path;
-            $contract->signed_by_owner_at    = now();
-            $contract->status                = 'signed_by_owner';
-        } else {
-            $contract->pdf_path_signed_tenant = $path;
-            $contract->signed_by_tenant_at    = now();
-            $contract->status                 = 'active';               //  ✔️ contrato pasa a activo
-        }
-
-        $contract->save();
+        $this->contractServices->storeSignedPdf($contract, $file, $name, $isOwner);
 
         return new ContractResource($contract);
     }
-    
+
     /**
      * Returns contract PDF related
      */
