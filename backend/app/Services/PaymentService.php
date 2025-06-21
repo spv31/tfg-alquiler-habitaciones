@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
-use Auth;
-use Illuminate\Database\Eloquent\Collection;
-use Stripe\StripeClient;
 use App\Models\BillShare;
 use App\Models\Payment;
-use Arr;
+use App\Models\RentPayment;
+use Auth;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Stripe\Checkout\Session;
+use Stripe\StripeClient;
 
 class PaymentService
 {
@@ -17,10 +19,10 @@ class PaymentService
 	) {}
 
 	/**
-	 * Returns all payments for the authenticated owner (or filtered)
-	 * 
+	 * Retrieves all payments
+	 *
 	 * @param array $filters
-	 * @return Collection<int, Payment>
+	 * @return Collection
 	 */
 	public function list(array $filters = []): Collection
 	{
@@ -42,54 +44,108 @@ class PaymentService
 	}
 
 	/**
-	 * Marks a payment as paid manually and updates related BillShare
-	 * 
-	 * @param \App\Models\Payment $payment
+	 * Manual Payment
+	 *
+	 * @param Payment $payment
 	 * @return Payment
 	 */
 	public function markManual(Payment $payment): Payment
 	{
-		$payment->update([
-			'method'  => 'manual_transfer',
-			'paid_at' => now(),
-		]);
-
-		if ($payment->billShare) {
-			$payment->billShare->update([
-				'status'  => 'paid',
-				'paid_at' => $payment->paid_at,
+		return DB::transaction(function () use ($payment) {
+			$payment->update([
+				'method'  => 'manual_transfer',
+				'paid_at' => now(),
 			]);
-		}
 
-		return $payment->refresh();
+			if ($payment->billShare) {
+				$payment->billShare->update([
+					'status'  => 'paid',
+					'paid_at' => $payment->paid_at,
+				]);
+			}
+
+			return $payment->refresh();
+		});
 	}
 
 	/**
-	 * Synchronizes local Payment record when Stripe webhook notifies a succeeded intent
-	 * 
+	 * Webhook Stripe to update payments, billshares or rentpayments
+	 *
 	 * @param string $intentId
 	 * @return void
 	 */
 	public function syncWithStripe(string $intentId): void
 	{
-		$payment = Payment::where('stripe_payment_intent_id', $intentId)->first();
-		if (! $payment) {
-			return;
-		}
-
-		$pi = $this->stripe->paymentIntents->retrieve($intentId);
-		if ($pi->status === 'succeeded') {
-			$payment->update(['paid_at' => now()]);
-
-			if ($payment->billShare) {
-				$payment->billShare->update(['status' => 'paid', 'paid_at' => now()]);
+		DB::transaction(function () use ($intentId) {
+			$payment = Payment::where('stripe_payment_intent_id', $intentId)->first();
+			if (! $payment) {
+				return;
 			}
+
+			$pi = $this->stripe->paymentIntents->retrieve($intentId);
+			if ($pi->status !== 'succeeded') {
+				return;
+			}
+
+			if (! $payment->paid_at) {
+				$payment->update(['paid_at' => now()]);
+			}
+
+			if ($payment->billShare && $payment->billShare->status !== 'paid') {
+				$payment->billShare->update(['status' => 'paid', 'paid_at' => $payment->paid_at]);
+			}
+
 			if ($payment->rentPayment) {
 				app(RentPaymentService::class)->markPaid($payment->rentPayment, [
 					'method'  => 'stripe',
-					'paid_at' => now(),
+					'paid_at' => $payment->paid_at,
 				]);
 			}
-		}
+		});
+	}
+
+	/**
+	 * Creates Payment after checkout
+	 *
+	 * @param Session $session
+	 * @return void
+	 */
+	public function createFromCheckoutSession(Session $session): void
+	{
+		DB::transaction(function () use ($session) {
+			$billShare = BillShare::where('stripe_checkout_session_id', $session->id)->first();
+			if ($billShare) {
+				$exists = Payment::where('stripe_payment_intent_id', $session->payment_intent)->exists();
+				if (! $exists) {
+					$payment = Payment::create([
+						'bill_share_id'            => $billShare->id,
+						'amount'                   => $billShare->amount,
+						'method'                   => 'stripe',
+						'stripe_payment_intent_id' => $session->payment_intent,
+						'paid_at'                  => now(),
+					]);
+
+					$billShare->update([
+						'status'  => 'paid',
+						'paid_at' => $payment->paid_at,
+					]);
+
+					$utilityBill = $billShare->utilityBill;
+					if ($utilityBill) {
+						$allPaid = $utilityBill->billShares()->where('status', '!=', 'paid')->doesntExist();
+						if ($allPaid && $utilityBill->status !== 'settled') {
+							$utilityBill->update(['status' => 'settled']);
+						}
+					}
+				}
+
+				return; 
+			}
+
+			$rentPayment = RentPayment::where('stripe_checkout_session_id', $session->id)->first();
+			if ($rentPayment && ! $rentPayment->stripe_payment_intent_id) {
+				$rentPayment->update(['stripe_payment_intent_id' => $session->payment_intent]);
+			}
+		});
 	}
 }

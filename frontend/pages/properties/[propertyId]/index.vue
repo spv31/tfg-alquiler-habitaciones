@@ -48,19 +48,8 @@
         :property="currentProperty"
         :propertyImage="propertyImage"
       />
-      <!-- 
-      <TenantFormSection v-if="currentProperty.rental_type === 'full'" />
 
-      <RoomsSection
-        v-if="currentProperty.rental_type === 'per_room' && roomsReady"
-        :rooms="rooms"
-        :propertyId="propertyId"
-        :warning="roomsWarning"
-      />
-
-      <ExpensesSection :property-id="propertyId"/> -->
       <div class="space-y-8">
-        <!-- Alquiler por habitaciones: Rooms arriba, gastos debajo -->
         <template
           v-if="currentProperty.rental_type === 'per_room' && roomsReady"
         >
@@ -73,11 +62,11 @@
         </template>
 
         <template v-else-if="currentProperty.rental_type === 'full'">
-          <div class="grid gap-8 md:grid-cols-2">
-            <div class="order-1 space-y-6 min-w-0">
+          <div class="grid gap-8 lg:grid-cols-10">
+            <div class="order-1 col-span-6 space-y-6 min-w-0">
               <ExpensesSection :property-id="propertyId" />
             </div>
-            <div class="order-2">
+            <div class="order-2 col-span-4">
               <TenantFormSection />
             </div>
           </div>

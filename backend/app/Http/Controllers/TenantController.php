@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BillShareResource;
 use App\Http\Resources\ContractResource;
 use App\Http\Resources\PropertyResource;
 use App\Http\Resources\RoomResource;
+use App\Models\BillShare;
 use App\Models\Contract;
 use App\Models\Property;
 use App\Models\PropertyTenant;
 use App\Models\Room;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TenantController extends Controller
 {
@@ -106,11 +109,47 @@ class TenantController extends Controller
         $contract = Contract::where('tenant_id', $user->id)
             ->whereIn('status', ['signed_by_owner', 'active', 'draft'])
             ->latest()->first();
+        $contractData = $contract ? new ContractResource($contract) : null;
+
+        $perPage = max(1, (int) $request->integer('per_page', 10));
+        $sharesQuery = BillShare::with('utilityBill.property')
+            ->where('tenant_id', $user->id)
+            ->orderByDesc('created_at');
+        $paginator = $sharesQuery->paginate($perPage);
+
+        $sharesRes = BillShareResource::collection($paginator);
 
         return response()->json([
-            'rentable' => $rentableData,
-            'contract' => $contract ? new ContractResource($contract) : null,
+            'rentable'    => $rentableData,
+            'contract'    => $contractData,
+            'bill_shares' => $sharesRes->response()->getData(true),
         ]);
+    }
+
+    /**
+     * Returns billShares related to tenant (paid or not)
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function billShares(Request $request)
+    {
+        $user = $request->user();
+
+        $perPage = max(1, (int) $request->integer('per_page', 10));
+        $status  = $request->string('status')->value();
+
+        $q = BillShare::with(['utilityBill.property'])
+            ->where('tenant_id', $user->id)
+            ->orderByDesc('created_at');
+
+        if ($status) {
+            $q->where('status', $status);
+        }
+
+        return BillShareResource::collection(
+            $q->paginate($perPage)->appends($request->query())
+        );
     }
 
     public function previewPdf(Contract $contract) {}

@@ -55,6 +55,16 @@ export const getFlashMessage = (
       return { message: t("errors.contractCreateFailed"), type: "error" };
     case "tenant_reassigned":
       return { message: t("tenants.reassigned"), type: "success" };
+    case "payment_success":
+      return {
+        message: t("payments.success_message"),
+        type: "success",
+      };
+    case "payment_cancelled":
+      return {
+        message: t("payments.cancelled_message"),
+        type: "info",
+      };
     default:
       return null;
   }

@@ -94,6 +94,10 @@ export default defineI18nConfig(() => ({
           "¡Has subido tu firma correctamente! Solo falta la firma del inquilino para que el contrato quede activo.",
         signedUploadTenant: "¡Contrato totalmente firmado y activo!",
       },
+      payments: {
+        success_message: "Pago realizado con éxito.",
+        cancelled_message: "El pago ha sido cancelado.",
+      },
       expenses: {
         title: "Gastos",
         add: "Añadir gasto",
@@ -670,6 +674,10 @@ export default defineI18nConfig(() => ({
         signedUploadOwner:
           "Your signature was uploaded successfully! Tenant signature is still needed to activate the contract.",
         signedUploadTenant: "Contract fully signed and now active!",
+      },
+      payments: {
+        success_message: "Payment completed successfully.",
+        cancelled_message: "The payment was cancelled.",
       },
       expenses: {
         title: "Expenses",

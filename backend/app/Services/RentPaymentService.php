@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Stripe\StripeClient;
 
-
 class RentPaymentService
 {
     public function __construct(
@@ -160,7 +159,7 @@ class RentPaymentService
     }
 
     /**
-     * Creates a Checkout Session to pay rent
+     * Crates a Checkout Session to pay rent
      *
      * @param RentPayment $rp
      * @return string
@@ -171,28 +170,38 @@ class RentPaymentService
         $customerId = $this->users->ensureTenantStripeCustomer($contract->tenant);
         $accountId  = $this->users->ensureOwnerStripeAccount($contract->property->owner);
 
+        $period      = "{$rp->period_start->format('d/m/Y')} - {$rp->period_end->format('d/m/Y')}";
+        $description = "Alquiler ({$period})";
+
+        $locale  = app()->getLocale();   
+
         $session = $this->stripe->checkout->sessions->create([
-            'mode'                 => 'payment',                      
+            'mode'                 => 'payment',
             'customer'             => $customerId,
             'payment_method_types' => ['sepa_debit'],
-            'line_items'           => [[
+
+            'payment_intent_data'  => [
+                'on_behalf_of'  => $accountId,
+                'transfer_data' => ['destination' => $accountId],
+                'metadata'      => ['rent_payment_id' => $rp->id],
+                'description'   => $description,
+            ],
+
+            'line_items' => [[
                 'price_data' => [
                     'currency'     => 'eur',
-                    'product_data' => ['name' => "Alquiler {$rp->period_start->format('F Y')}"],
+                    'product_data' => ['name' => $description],
                     'unit_amount'  => (int) round($rp->amount * 100),
                 ],
                 'quantity' => 1,
             ]],
-            'on_behalf_of'         => $accountId,
-            'payment_intent_data'  => [
-                'metadata' => ['rent_payment_id' => $rp->id],
-            ],
-            'success_url'          => config('app.frontend_url') . '/pagos/exito',
-            'cancel_url'           => config('app.frontend_url') . '/pagos/cancelado',
+
+            'success_url' => config('app.frontend_url') . "/{$locale}/tenant/dashboard?msg=payment_success",
+            'cancel_url'  => config('app.frontend_url') . "/{$locale}/tenant/dashboard?msg=payment_cancelled",
         ]);
 
         $rp->update(['stripe_checkout_session_id' => $session->id]);
 
-        return $session->id;
+        return $session->url;
     }
 }

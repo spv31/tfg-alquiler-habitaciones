@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 gap-2">
       <div class="space-y-1">
         <label class="label flex items-center gap-2 text-gray-500">
           <svg

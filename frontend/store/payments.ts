@@ -5,6 +5,16 @@ import type { BillShare } from "~/types/billShare";
 import type { RentPayment, RentPaymentFilters } from "~/types/rentPayment";
 import type { Payment, PaymentFilters } from "~/types/payment";
 
+export interface PendingItem {
+  id: number;
+  source: "share" | "rent";
+  concept: string;
+  amount: number;
+  status: "pending" | "paid" | "cancelled" | "processing" | "overdue";
+  due_date: string;
+  paid_at: string | null;
+}
+
 export const usePaymentsStore = defineStore(
   "payments",
   () => {
@@ -23,6 +33,42 @@ export const usePaymentsStore = defineStore(
       per_page: 10,
       total: 0,
     });
+
+    const emptyMeta = () => ({
+      current_page: 1,
+      last_page: 1,
+      per_page: 10,
+      total: 0,
+    });
+
+    const tenantBillShares = ref<BillShare[]>([]);
+    const tenantBillSharesMeta = reactive(emptyMeta());
+
+    const movements = computed<PendingItem[]>(() => [
+      ...tenantBillShares.value.map<PendingItem>((s) => ({
+        id: s.id,
+        source: "share",
+        concept: s.utility_bill?.description ?? "Suministro",
+        amount: +s.amount,
+        status: s.status,
+        due_date: s.utility_bill?.due_date!,
+        paid_at: s.paid_at,
+      })),
+      ...rentPayments.value.map<PendingItem>((r) => ({
+        id: r.id,
+        source: "rent",
+        concept: "Renta mensual",
+        amount: +r.amount,
+        status: r.status,
+        due_date: r.due_date,
+        paid_at: r.paid_at,
+      })),
+    ]);
+
+    const pending = computed(() =>
+      movements.value.filter((m) => m.status === "pending")
+    );
+    const history = computed(() => movements.value);
 
     // Utility Bills
     const fetchUtilityBills = async (
@@ -116,7 +162,6 @@ export const usePaymentsStore = defineStore(
       if (!data) throw new Error("No data received");
 
       console.log("Recibo: ", data.data);
-      utilityBills.value.unshift(data.data);
       return data.data;
     };
 
@@ -453,11 +498,85 @@ export const usePaymentsStore = defineStore(
       return pay;
     };
 
+    const setTenantBillShares = (
+      list: BillShare[],
+      meta: Partial<typeof tenantBillSharesMeta>
+    ) => {
+      const map = new Map(tenantBillShares.value.map((s) => [s.id, s]));
+      list.forEach((s) => map.set(s.id, s));
+      tenantBillShares.value = Array.from(map.values());
+
+      Object.assign(tenantBillSharesMeta, { ...emptyMeta(), ...meta });
+    };
+
+    const fetchTenantBillShares = async (
+      opts: { status?: "pending" | "paid" | "cancelled" } = {},
+      page = tenantBillSharesMeta.current_page,
+      per = tenantBillSharesMeta.per_page
+    ) => {
+      const params: Record<string, string> = {
+        page: String(page),
+        per_page: String(per),
+      };
+      if (opts.status) params.status = opts.status;
+
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("Error getting CSRF Token");
+        return $fetch<{ data: BillShare[]; meta: typeof tenantBillSharesMeta }>(
+          `${apiBaseUrl}/tenant/bill-shares?${new URLSearchParams(params)}`,
+          { credentials: "include", headers: { "X-XSRF-TOKEN": csrf } }
+        );
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      setTenantBillShares(data.data, data.meta);
+    };
+
+    // Carga pendientes (solo pendiente, para la tarjeta)
+    const fetchPending = () =>
+      Promise.all([
+        fetchTenantBillShares({ status: "pending" }),
+        fetchRentPayments({ status: "pending" }),
+      ]);
+
+    // Carga completados (solo paid, NO pisa los pending gracias a merge)
+    const fetchPaid = () =>
+      Promise.all([
+        fetchTenantBillShares({ status: "paid" }),
+        fetchRentPayments({ status: "paid" }),
+      ]);
+
+    // Carga todo de una: primero pending, luego paid
+    const fetchAll = async () => {
+      await fetchPending();
+      await fetchPaid();
+    };
+
+    /**
+     * Receives stripe session for checkout
+     * 
+     * @param itemId 
+     * @param source 
+     */
+    const startPayment = async (itemId: number, source: "share" | "rent") => {
+      const sessionUrl =
+        source === "share"
+          ? await payBillShare(itemId) 
+          : await payRentPayment(itemId);
+
+      window.location.href = sessionUrl;
+    };
+
     const reset = () => {
       utilityBills.value = [];
       billShares.value = {};
       rentPayments.value = [];
       payments.value = [];
+      tenantBillShares.value = [];
+      Object.assign(tenantBillSharesMeta, emptyMeta());
     };
 
     return {
@@ -466,6 +585,16 @@ export const usePaymentsStore = defineStore(
       billShares,
       rentPayments,
       payments,
+      tenantBillShares,
+      tenantBillSharesMeta,
+      setTenantBillShares,
+      fetchTenantBillShares,
+      pending,
+      history,
+      fetchPending,
+      fetchPaid,
+      fetchAll,
+      startPayment,
       loading,
       fetchUtilityBills,
       fetchUtilityBill,
@@ -489,7 +618,14 @@ export const usePaymentsStore = defineStore(
   {
     persist: {
       storage: sessionStorage,
-      pick: ["utilityBills", "billShares", "rentPayments", "payments"],
+      pick: [
+        "utilityBills",
+        "billShares",
+        "rentPayments",
+        "payments",
+        "tenantBillShares",
+        "tenantBillSharesMeta",
+      ],
     } satisfies PersistenceOptions,
   }
 );

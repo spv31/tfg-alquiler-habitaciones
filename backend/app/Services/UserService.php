@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Models\Room;
 use App\Models\User;
+use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Str;
 use Stripe\StripeClient;
 
 class UserService
@@ -19,21 +21,99 @@ class UserService
 
   /**
    * Ensures the owner has a Stripe Connect account or creates one if missing
-   * 
-   * @param \App\Models\User $user
+   *
+   * @param User $user
    * @return string
    */
   public function ensureOwnerStripeAccount(User $user): string
   {
-    if (!$user->stripe_account_id && $user->role === 'owner') {
-      $account = $this->stripe->accounts->create([
-        'type'  => 'express',
-        'email' => $user->email,
+    if ($user->role !== 'owner') {
+      return $user->stripe_account_id ?? '';
+    }
+
+    if ($user->stripe_account_id) {
+      logger()->info('Owner ya tiene Stripe account, no se crea otra.', [
+        'user_id' => $user->id,
+        'stripe_account_id'  => $user->stripe_account_id,
       ]);
+
+      return $user->stripe_account_id;
+    }
+
+    logger()->info('Creando Stripe Connect account para owner…', [
+      'user_id' => $user->id,
+      'email' => $user->email,
+    ]);
+
+    $nameParts = Str::of($user->name)->explode(' ');
+    $firstName = $nameParts->first();
+    $lastName = $nameParts->slice(1)->implode(' ');
+
+    try {
+      $account = $this->stripe->accounts->create(
+        [
+          'type' => 'custom',
+          'country' => 'ES',
+          'email' => $user->email,
+          'business_type' => 'individual',
+
+          'individual' => [
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $user->email,
+            'dob' => ['day' => 1, 'month' => 1, 'year' => 1902],
+            'address' => [
+              'line1' => 'address_full_match',
+              'city' => 'Madrid',
+              'state' => 'M',
+              'postal_code' => '28001',
+              'country' => 'ES',
+            ],
+            'id_number'  => '000000000',
+            'phone'      => '0000000000',
+          ],
+          'business_profile' => [
+            'name' => $user->email,
+            'url' => 'https://accessible.stripe.com',
+            'product_description' => 'Gestión de alquileres y cobros de suministros',
+            'mcc' => '6513',
+          ],
+          'tos_acceptance' => [
+            'date' => time(),
+            'ip' => request()->ip() ?? '127.0.0.1',
+          ],
+          'capabilities' => [
+            'card_payments' => ['requested' => true],
+            'transfers' => ['requested' => true],
+            'sepa_debit_payments' => ['requested' => true],
+          ],
+          'external_account' => [
+            'object' => 'bank_account',
+            'country' => 'ES',
+            'currency' => 'eur',
+            'account_holder_name' => $firstName . ' ' . $lastName,
+            'account_holder_type' => 'individual',
+            'account_number' => 'ES0700120345030000067890',
+          ],
+        ]
+      );
+
+      logger()->info("Cuenta Stripe creada correctamente.", [
+        'user_id' => $user->id,
+        'stripe_account_id' => $account->id,
+      ]);
+
       $user->stripe_account_id = $account->id;
       $user->save();
+
+      return $account->id;
+    } catch (Exception $e) {
+      logger()->error("Error creando Stripe account: " . $e->getMessage(), [
+        'user_id' => $user->id,
+        'exception' => $e,
+      ]);
+      throw $e;
     }
-    return $user->stripe_account_id;
   }
 
   /**

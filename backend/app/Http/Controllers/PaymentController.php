@@ -10,7 +10,10 @@ use App\Services\PaymentService;
 use App\Services\RentPaymentService;
 use Exception;
 use Illuminate\Http\Request;
+use Log;
+use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
+use UnexpectedValueException;
 
 class PaymentController extends Controller
 {
@@ -55,9 +58,9 @@ class PaymentController extends Controller
 
     /**
      * Webhook for PaymentIntents
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return mixed|\Illuminate\Http\JsonResponse
+     *
+     * @param Request $request
+     * @return void
      */
     public function handleStripeWebhook(Request $request)
     {
@@ -67,22 +70,37 @@ class PaymentController extends Controller
 
         try {
             $event = Webhook::constructEvent($payload, $signature, $secret);
-        } catch (Exception $e) {
+        } catch (UnexpectedValueException $e) {
+            Log::warning('Stripe webhook – payload inválido');
+            return response()->json(['error' => 'Invalid payload'], 400);
+        } catch (SignatureVerificationException $e) {
+            Log::warning('Stripe webhook – firma inválida');
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
-        // Intents which arrived to succeed or processing
-        if (in_array($event->type, ['payment_intent.succeeded', 'payment_intent.processing'])) {
-            $intentId = $event->data->object->id;
+        Log::debug('Stripe webhook recibido', ['type' => $event->type]);
 
-            // monthly rent 
-            app(RentPaymentService::class)->syncWithStripe($intentId);
+        switch ($event->type) {
 
-            // utilities bills
-            app(BillShareService::class)->syncWithStripe($intentId);
+            // 1️⃣ El usuario terminó Checkout → creamos Payment “pendiente”
+            case 'checkout.session.completed':
+            case 'checkout.session.async_payment_succeeded':
+                /** @var \Stripe\Checkout\Session $session */
+                $session = $event->data->object;
+                $this->paymentService->createFromCheckoutSession($session);
+                break;
 
-            // 
-            $this->paymentService->syncWithStripe($intentId);
+            // 2️⃣ El dinero se ha cobrado → marcamos como pagado
+            case 'payment_intent.succeeded':
+                $intentId = $event->data->object->id;
+                $this->paymentService->syncWithStripe($intentId);
+                app(BillShareService::class)->syncWithStripe($intentId);
+                app(RentPaymentService::class)->syncWithStripe($intentId);
+                break;
+
+            // (opcional) si quieres ver intent.processing para debug
+            default:
+                // Ignorar otros eventos
         }
 
         return response()->json(['received' => true]);

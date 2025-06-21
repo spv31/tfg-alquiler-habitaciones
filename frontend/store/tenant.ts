@@ -3,6 +3,7 @@ import type { Contract } from "~/types/contract";
 import type { Property } from "~/types/property";
 import type { Room } from "~/types/room";
 import { useAuthStore } from "./auth";
+import { usePaymentsStore } from "~/store/payments";
 
 type RentableType = "Property" | "Room";
 
@@ -19,6 +20,7 @@ type TenantDashboardResponse = {
 export const useTenantStore = defineStore(
   "tenant",
   () => {
+    const paymentsStore = usePaymentsStore();
     const config = useRuntimeConfig();
     const apiBaseUrl = config.app.apiBaseURL;
     const currentContract = ref<Contract | null>();
@@ -66,6 +68,11 @@ export const useTenantStore = defineStore(
       assignedRentable.value = data.rentable
         ? normalizeRentable(data.rentable, apiBaseUrl)
         : null;
+
+      if ((data as any).bill_shares) {
+        const { data: shares, meta } = (data as any).bill_shares;
+        paymentsStore.setTenantBillShares(shares, meta);
+      }
 
       alreadyLoaded.value = true;
     };
@@ -203,7 +210,7 @@ export const useTenantStore = defineStore(
       fetchTenantRentable,
       loading,
       alreadyLoaded,
-      reset
+      reset,
     };
   },
 

@@ -172,14 +172,14 @@ Route::middleware('auth:sanctum')->group(function () {
   // Marcado manual de un pago ya creado
   Route::post('payments/{payment}/manual', [PaymentController::class, 'markManual']);
 
-  // Webhook de Stripe para sincronizar status
-  Route::post('stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
-
   Route::get(
     '/utility-bills/{utilityBill}/attachment',
     [ImageController::class, 'showUtilityBillAttachment']
   )->name('utility-bills.attachment');
 });
+
+// Webhook de Stripe para sincronizar status
+Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
 Route::middleware(['auth:sanctum', 'role:tenant'])
   ->prefix('tenant')
@@ -189,6 +189,7 @@ Route::middleware(['auth:sanctum', 'role:tenant'])
     Route::get('/contract', [TenantController::class, 'getCurrentContract']);
     Route::post('/contract/signed', [TenantController::class, 'uploadSigned']);
     Route::get('/contract/pdf', [TenantController::class, 'previewPdf']);
+    Route::get('/bill-shares', [TenantController::class, 'billShares']);
   });
 
 // Auth Routes for login, register and logout

@@ -1,4 +1,5 @@
 import type { Tenant } from "./tenant";
+import type { UtilityBill } from "./utilityBill";
 
 export interface BillShare {
   id: number;
@@ -10,5 +11,5 @@ export interface BillShare {
   paid_at: string | null;
   created_at: string;
   updated_at: string;
-  utility_bill_id?: number;
+  utility_bill?: UtilityBill;
 }

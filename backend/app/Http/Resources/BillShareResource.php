@@ -24,6 +24,7 @@ class BillShareResource extends JsonResource
             'paid_at'                    => optional($this->paid_at)->toDateTimeString(),
             'created_at'                 => $this->created_at->toDateTimeString(),
             'updated_at'                 => $this->updated_at->toDateTimeString(),
+            'utility_bill'               => new UtilityBillResource($this->whenLoaded('utilityBill')),
         ];
     }
 }

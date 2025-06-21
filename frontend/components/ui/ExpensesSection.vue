@@ -24,6 +24,7 @@
       <div class="overflow-x-auto">
         <DataTable
           :value="utilityBills"
+          dataKey="id"
           scrollable
           responsiveLayout="scroll"
           class="p-datatable-sm w-full"
