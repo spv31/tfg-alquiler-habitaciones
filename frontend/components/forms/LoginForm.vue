@@ -82,6 +82,15 @@ const handleLogin = async () => {
 
   try {
     await authStore.signIn({ email: email.value, password: password.value });
+    
+    const role = user.value?.role;
+    if (role === "owner") {
+      router.push($localePath("/statistics"));
+    } else if (role === "tenant") {
+      router.push($localePath("/tenant/dashboard"));
+    } else {
+      router.push($localePath("/"));
+    }
   } catch (error) {
     alertMessage.value = $t("login.errors.invalid_credentials");
     alertType.value = "error";
