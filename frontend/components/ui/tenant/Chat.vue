@@ -58,8 +58,8 @@
           <span
             class="text-[10px] mt-1"
             :class="{
-              'text-gray-500 self-end': m.sender === 'me', 
-              'text-gray-500': m.sender === 'peer', 
+              'text-gray-500 self-end': m.sender === 'me',
+              'text-gray-500': m.sender === 'peer',
             }"
           >
             {{ formatTime(m.time) }}
@@ -181,11 +181,15 @@ const chatMessages = computed(() =>
   }))
 );
 
+const ownerId = computed(() =>
+  meIsOwner.value ? props.currentUserId : peer.value.id
+);
+const tenantId = computed(() =>
+  meIsOwner.value ? peer.value.id : props.currentUserId
+);
+
 onMounted(async () => {
-  await chatStore.openConversation(
-    props.context.ownerId,
-    props.context.tenantId
-  );
+  await chatStore.openConversation(ownerId.value, tenantId.value);
   scrollToBottom();
 });
 

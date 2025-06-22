@@ -8,6 +8,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\OwnerStatisticsController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyDetailController;

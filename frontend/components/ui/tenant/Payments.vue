@@ -44,7 +44,7 @@
 
               <Badge
                 :value="item.paid_at ? 'Pagado' : 'Pendiente'"
-                :severity="item.paid_at ? 'success' : 'warning'"
+                :severity="item.paid_at ? 'success' : 'warn'"
               />
             </div>
 
@@ -114,7 +114,7 @@
           <template #body="{ data }">
             <Tag
               :value="data.source === 'rent' ? 'Renta' : 'Suministro'"
-              :severity="data.source === 'rent' ? 'info' : 'warning'"
+              :severity="data.source === 'rent' ? 'info' : 'warn'"
             />
           </template>
         </Column>
@@ -137,7 +137,7 @@
           <template #body="{ data }">
             <Badge
               :value="data.status === 'paid' ? 'Pagado' : 'Pendiente'"
-              :severity="data.status === 'paid' ? 'success' : 'warning'"
+              :severity="data.status === 'paid' ? 'success' : 'warn'"
             />
           </template>
         </Column>
@@ -192,7 +192,7 @@ const dueColor = (dateStr: string | null) => {
   const diffDays = Math.round((dueTime - today) / 8.64e7);
 
   if (diffDays < 0) return "danger";
-  if (diffDays <= 7) return "warning";
+  if (diffDays <= 7) return "warn";
   return "success";
 };
 

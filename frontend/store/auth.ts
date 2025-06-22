@@ -10,6 +10,7 @@ import { useChatStore } from "./chat";
 import { useInvitationsStore } from "./invitations";
 import { usePropertiesStore } from "./properties";
 import { useTenantStore } from "./tenant";
+import { useStatisticsStore } from "./statistics";
 import type { User } from "~/types/user";
 import { data } from "autoprefixer";
 
@@ -310,6 +311,7 @@ export const useAuthStore = defineStore(
         const invitationsStore = useInvitationsStore();
         const propertiesStore = usePropertiesStore();
         const tenantStore = useTenantStore();
+        const statisticsStore = useStatisticsStore();
 
         authStore.reset();
         chatStore.reset();
@@ -317,6 +319,7 @@ export const useAuthStore = defineStore(
         invitationsStore.reset();
         propertiesStore.reset();
         tenantStore.reset();
+        statisticsStore.reset();
 
         useChatStore().$reset();
         useContractsStore().$reset();

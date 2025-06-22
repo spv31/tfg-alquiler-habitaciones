@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\PropertyDetail;
+use App\Models\RentPayment;
 use App\Models\Room;
 use App\Models\User;
 use App\Models\UtilityBill;
@@ -14,6 +15,18 @@ use Illuminate\Support\Facades\DB;
 
 class StatisticsService
 {
+
+  protected function mapToFiscalType(string|null $raw): string
+  {
+    return match ($raw) {
+      'full', 'vivienda_habitual', null => 'vivienda_habitual',
+      'per_room', 'habitacion' => 'habitacion',
+      'turistica' => 'turistica',
+      'temporal' => 'temporal',
+      default => 'vivienda_habitual',
+    };
+  }
+
   /**
    *  Includes KPIs and monthly revenue/expense series.
    *
@@ -23,13 +36,13 @@ class StatisticsService
   public function getDashboardSummary(User $owner): array
   {
     return [
-      'propertyCount'   => $this->countProperties($owner),
+      'propertyCount' => $this->countProperties($owner),
       'rentedProperties' => $this->countRentedProperties($owner),
-      'roomTotal'       => $this->countRooms($owner),
-      'roomRented'      => $this->countRentedRooms($owner),
-      'netWorth'        => $this->calculateNetWorth($owner),
-      'incomeMonthly'   => $this->getMonthlyIncome($owner),
-      'expenseMonthly'  => $this->getMonthlyExpenses($owner),
+      'roomTotal' => $this->countRooms($owner),
+      'roomRented' => $this->countRentedRooms($owner),
+      'netWorth' => $this->calculateNetWorth($owner),
+      'incomeMonthly' => $this->getMonthlyIncome($owner),
+      'expenseMonthly' => $this->getMonthlyExpenses($owner),
     ];
   }
 
@@ -86,15 +99,16 @@ class StatisticsService
    */
   protected function getMonthlyIncome(User $owner): array
   {
-    return Payment::selectRaw('DATE_FORMAT(paid_at, "%Y-%m") as period, SUM(amount) as total')
-      ->whereNotNull('rent_payment_id')
-      ->whereNotNull('paid_at')
-      ->whereHas('rentPayment.contract.property', fn($q) => $q->where('user_id', $owner->id))
+    return RentPayment::selectRaw('DATE_FORMAT(period_start, "%Y-%m") as period, SUM(amount) as total')
+      ->where('status', 'paid')
+      ->whereHas('contract.property', fn($q) => $q->where('user_id', $owner->id))
       ->groupBy('period')
       ->orderBy('period')
       ->pluck('total', 'period')
+      ->map(fn($v) => (float)$v)
       ->toArray();
   }
+
 
   /**
    * Return expenses per month
@@ -109,6 +123,7 @@ class StatisticsService
       ->groupBy('period')
       ->orderBy('period')
       ->pluck('total', 'period')
+      ->map(fn($v) => (float) $v)
       ->toArray();
   }
 
@@ -134,10 +149,10 @@ class StatisticsService
     $daysByType = [];
 
     foreach ($contracts as $c) {
-      $type = $c->type ?? 'habitual';
+      $type  = $this->mapToFiscalType($c->type);
       $start = $c->start_date->greaterThan($from) ? $c->start_date : $from;
-      $end = $c->end_date && $c->end_date->lessThan($to) ? $c->end_date : $to;
-      $days = $start->diffInDays($end) + 1;
+      $end   = $c->end_date && $c->end_date->lessThan($to) ? $c->end_date : $to;
+      $days  = $start->diffInDays($end) + 1;
       $daysByType[$type] = ($daysByType[$type] ?? 0) + $days;
     }
 
@@ -154,15 +169,14 @@ class StatisticsService
    */
   protected function calculateIncomeByType(User $owner, Carbon $from, Carbon $to): array
   {
-    $payments = Payment::with(['rentPayment.contract'])
-      ->whereNotNull('rent_payment_id')
-      ->whereNotNull('paid_at')
-      ->whereBetween('paid_at', [$from, $to])
-      ->whereHas('rentPayment.contract.property', fn($q) => $q->where('user_id', $owner->id))
+    $rentPayments = RentPayment::with('contract.property')
+      ->where('status', 'paid')
+      ->whereBetween('period_start', [$from, $to])
+      ->whereHas('contract.property', fn($q) => $q->where('user_id', $owner->id))
       ->get()
-      ->groupBy(fn($p) => $p->rentPayment->contract->type ?? 'habitual');
+      ->groupBy(fn($rp) => $this->mapToFiscalType($rp->contract->type ?? null));
 
-    return $payments->map(fn($group) => $group->sum('amount'))->toArray();
+    return $rentPayments->map(fn($group) => (float) $group->sum('amount'))->toArray();
   }
 
   /**
@@ -176,19 +190,25 @@ class StatisticsService
   protected function calculateExpensesByCategory(User $owner, Carbon $from, Carbon $to): array
   {
     $bills = UtilityBill::with('property')
-      ->where('owner_id', $owner->id)
-      ->whereBetween('period_start', [$from, $to])
-      ->get();
+      ->where(function ($q) use ($from, $to) {
+        $q->whereBetween('period_start', [$from, $to])
+          ->orWhereBetween('period_end',   [$from, $to])
+          ->orWhere(
+            fn($qq) =>
+            $qq->where('period_start', '<=', $from)
+              ->where('period_end',   '>=', $to)
+          );
+      })->get();
 
     $daysByType = $this->calculateDaysRentedByType($owner, $from, $to);
 
     $expenses = [];
 
     foreach ($bills as $bill) {
-      $type = $bill->property->rental_type ?? 'habitual';
+      $type = $this->mapToFiscalType($bill->property->rental_type);
 
       $daysPeriod = $bill->period_start->diffInDays($bill->period_end) + 1;
-      $daysRented = $daysByType[$type] ?? 0;
+      $daysRented = $daysByType[$type] ?? array_sum($daysByType);
       $proportion = $daysPeriod > 0 ? min(1, $daysRented / $daysPeriod) : 0;
 
       $amountImputed = (float) $bill->total_amount * $proportion;
@@ -197,12 +217,16 @@ class StatisticsService
 
     foreach ($expenses as $category => &$data) {
       $totalCat = array_sum($data);
+
+      $updated = [];
       foreach ($data as $type => $amount) {
-        $data[$type] = [
+        $updated[$type] = [
           'amount'     => round($amount, 2),
           'percentage' => $totalCat > 0 ? round($amount / $totalCat * 100, 2) : 0.0,
         ];
       }
+
+      $data = $updated;
     }
 
     return $expenses;
