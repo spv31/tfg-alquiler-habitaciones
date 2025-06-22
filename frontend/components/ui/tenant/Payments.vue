@@ -82,7 +82,7 @@
 
     <div
       v-else
-      class="text-center py-8 border border-dashed border-gray-200 rounded-lg mt-4"
+      class="text-center py-8 rounded-lg mt-4"
     >
       <i class="pi pi-check-circle text-3xl text-green-500 mb-3"></i>
       <p class="text-gray-600">¡No tienes pagos pendientes!</p>

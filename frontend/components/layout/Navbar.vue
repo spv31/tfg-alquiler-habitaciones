@@ -13,8 +13,11 @@
           "
           class="flex items-center"
         >
-          <!-- <img src="/logo.png" alt="MyRentHub Logo" class="h-16 w-auto" /> -->
-          <img src="/logo.png" alt="MyRentHub Logo" class="h-16 w-auto mt-[-16px]" />
+          <img
+            src="/logo.png"
+            alt="MyRentHub Logo"
+            class="h-16 w-auto mt-[-16px]"
+          />
         </NuxtLink>
         <NuxtLink v-else :to="$localePath('login')" class="flex items-center">
           <img src="/logo.png" alt="MyRentHub Logo" class="h-16 w-auto" />
@@ -66,23 +69,9 @@
             </li>
             <li>
               <NuxtLink
-                :to="$localePath('chats')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-                >{{ $t("navbar.owner.chats") }}</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
                 :to="$localePath('profile')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
                 >{{ $t("navbar.owner.profile") }}</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('invitations')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-                >{{ $t("navbar.owner.invitations") }}</NuxtLink
               >
             </li>
           </ul>
@@ -94,21 +83,15 @@
               <NuxtLink
                 :to="$localePath('/tenant/dashboard')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-                >Dashboard</NuxtLink
               >
+                Mi alquiler
+              </NuxtLink>
             </li>
             <li>
               <NuxtLink
                 :to="$localePath('profile')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
                 >{{ $t("navbar.tenant.profile") }}</NuxtLink
-              >
-            </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('support')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-                >{{ $t("navbar.tenant.support") }}</NuxtLink
               >
             </li>
           </ul>
@@ -187,28 +170,13 @@
                 {{ $t("navbar.owner.contracts") }}
               </NuxtLink>
             </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('chats')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-              >
-                {{ $t("navbar.owner.chats") }}
-              </NuxtLink>
-            </li>
+
             <li>
               <NuxtLink
                 :to="$localePath('profile')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.owner.profile") }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('invitations')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-              >
-                {{ $t("navbar.owner.invitations") }}
               </NuxtLink>
             </li>
             <button
@@ -225,7 +193,7 @@
                 :to="$localePath('/tenant/dashboard')"
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
-                Dashboard
+                Mi alquiler
               </NuxtLink>
             </li>
             <li>
@@ -234,14 +202,6 @@
                 class="font-medium text-base hover:text-info_dark transition-colors duration-200"
               >
                 {{ $t("navbar.tenant.profile") }}
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink
-                :to="$localePath('support')"
-                class="font-medium text-base hover:text-info_dark transition-colors duration-200"
-              >
-                {{ $t("navbar.tenant.support") }}
               </NuxtLink>
             </li>
             <button

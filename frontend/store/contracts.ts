@@ -18,7 +18,7 @@ export const useContractsStore = defineStore(
 
     const templatePreviewCache = ref<Record<number, string>>({});
     const lastFetchedPreviewAt = ref<Record<number, number>>({});
-    const contractPreviewCache = ref<Record<number, string>>({});
+    const contractPreviewCache = ref<Record<number, Blob>>({});
     const lastFetchedContractAt = ref<Record<number, number>>({});
     const PREVIEW_TTL = 30 * 60 * 1000;
 
@@ -286,21 +286,36 @@ export const useContractsStore = defineStore(
       return data!;
     };
 
-    const fetchContractPdf = async (id: number): Promise<string> => {
+    // const fetchContractPdf = async (id: number): Promise<string> => {
+    //   const now = Date.now();
+    //   const last = lastFetchedContractAt.value[id] ?? 0;
+
+    //   if (contractPreviewCache.value[id] && now - last < PREVIEW_TTL) {
+    //     return contractPreviewCache.value[id];
+    //   }
+
+    //   const blob = await fetchContractPdfBlob(id);
+    //   const url = URL.createObjectURL(blob);
+
+    //   contractPreviewCache.value[id] = url;
+    //   lastFetchedContractAt.value[id] = now;
+
+    //   return url;
+    // };
+    const getContractPreviewUrl = async (id: number): Promise<string> => {
       const now = Date.now();
       const last = lastFetchedContractAt.value[id] ?? 0;
 
+      // Si tenemos el Blob en caché y no expiró, lo reutilizamos
       if (contractPreviewCache.value[id] && now - last < PREVIEW_TTL) {
-        return contractPreviewCache.value[id];
+        return URL.createObjectURL(contractPreviewCache.value[id]);
       }
 
+      // Sino, lo descargamos de nuevo
       const blob = await fetchContractPdfBlob(id);
-      const url = URL.createObjectURL(blob);
-
-      contractPreviewCache.value[id] = url;
+      contractPreviewCache.value[id] = blob;
       lastFetchedContractAt.value[id] = now;
-
-      return url;
+      return URL.createObjectURL(blob);
     };
 
     const fetchContractPdfBlob = async (id: number): Promise<Blob> => {
@@ -393,14 +408,14 @@ export const useContractsStore = defineStore(
       deleteContract,
       fetchContractTemplatePdf,
       fetchContractTemplatePdfBlob,
-      fetchContractPdf,
+      getContractPreviewUrl,
       fetchContractPdfBlob,
       fetchSignedContractPdf,
       downloadContractTemplatePdf,
       downloadContractPdf,
       downloadSignedContractPdf,
       uploadSigned,
-      reset
+      reset,
     };
   },
   {

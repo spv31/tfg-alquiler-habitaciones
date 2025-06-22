@@ -1,6 +1,5 @@
 <template>
   <div class="rounded-xl border border-blue-100 p-6 bg-white">
-    <!-- Título -->
     <div class="flex items-center gap-2 pb-4">
       <i class="pi pi-file-pdf text-2xl text-info"></i>
       <h3 class="text-lg font-semibold text-gray-900">Contrato actual</h3>
@@ -29,6 +28,7 @@
             <Suspense>
               <template #default>
                 <PreviewContract
+                  :key="contract.id"
                   :contract-id="contract.id"
                   class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />

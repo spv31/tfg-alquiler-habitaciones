@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-2">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="space-y-1">
         <label class="label flex items-center gap-2 text-gray-500">
           <svg
@@ -158,134 +158,58 @@
           }}
         </p>
       </div>
+
+      <p
+        v-if="hasContract && !hasCurrentMonthRentPayment"
+        class="flex items-center gap-1 text-sm font-medium text-yellow-600"
+      >
+        <i class="pi pi-exclamation-triangle text-xs"></i>
+        {{ $t("rentPayments.missingCurrentMonth") }}
+      </p>
+
+      <p
+        v-if="hasContract && hasCurrentMonthRentPayment"
+        class="flex items-center gap-1 text-sm font-medium text-green-600"
+      >
+        <i class="pi pi-check-circle text-xs"></i>
+        {{ $t("rentPayments.currentMonthAlreadyCreated") }}
+      </p>
+
+      <button
+        v-if="hasContract && !hasCurrentMonthRentPayment"
+        @click="openCreateRP(contract!.id)"
+        class="flex items-center gap-1.5 text-sm button-primary text-white px-3.5 py-1.5 rounded-full transition-all shadow-sm hover:shadow-md active:scale-[0.98] ring-1 ring-primary-500/20"
+        :title="$t('rentPayments.create')"
+      >
+        <i class="pi pi-plus text-xs"></i>
+        <span class="font-medium tracking-tight">{{
+          $t("rentPayments.create")
+        }}</span>
+      </button>
     </div>
 
-    <div class="flex flex-wrap gap-3 pt-6 border-t border-gray-200">
+    <div class="flex flex-wrap gap-6 pt-8 border-t border-gray-200">
       <CircleIconButton :label="$t('common.chat')" @click="onChat">
         <template #icon>
-          <svg
-            class="w-6 h-6 text-info"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
+          <i class="pi pi-comments text-info text-xl"></i>
         </template>
       </CircleIconButton>
 
       <CircleIconButton :label="$t('common.move')" @click="moveTenant">
         <template #icon>
-          <svg
-            class="h-5 w-5 text-purple-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
+          <i class="pi pi-directions-alt text-purple-600 text-lg"></i>
         </template>
       </CircleIconButton>
 
-      <CircleIconButton :label="$t('common.remove')" @click="onRemove">
-        <template #icon>
-          <svg
-            class="h-6 w-6 text-red-600 mx-auto"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M19 7l-.867 
-          12.142A2 2 0 0116.138 21H7.862a2 2 0 
-          01-1.995-1.858L5 7m5 
-          4v6m4-6v6m1-10V4a1 1 
-          0 00-1-1h-4a1 1 
-          0 00-1 1v3M4 
-          7h16"
-            />
-          </svg>
-        </template>
-      </CircleIconButton>
       <CircleIconButton
         :label="hasContract ? $t('contracts.view') : $t('contracts.generate')"
         @click="hasContract ? viewContract(contract!.id) : startContractFlow()"
       >
         <template #icon>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6 text-info"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M8 16h8M8 12h8M8 8h8M4 4h16v16H4V4z"
-            />
-          </svg>
-        </template>
-      </CircleIconButton>
-      <CircleIconButton
-        v-if="hasContract"
-        :label="$t('contracts.editContract')"
-        @click="editContract(contract!.id)"
-      >
-        <template #icon>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6 text-info"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
+          <i class="pi pi-file text-info text-xl"></i>
         </template>
       </CircleIconButton>
 
-      <CircleIconButton
-        v-if="hasContract"
-        :label="$t('contracts.deleteContract')"
-        @click="deleteContract(contract!.id)"
-      >
-        <template #icon>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6 text-red-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
-        </template>
-      </CircleIconButton>
       <CircleIconButton
         v-if="
           hasContract &&
@@ -296,23 +220,20 @@
         @click="triggerUpload"
       >
         <template #icon>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-6 h-6 text-info"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M16.862 3.487a2.25 2.25 0 113.182 3.182L7.5 19.213 3 21l1.787-4.5 12.075-13.013z"
-            />
-          </svg>
+          <i class="pi pi-upload text-info text-xl"></i>
+        </template>
+      </CircleIconButton>
+
+      <CircleIconButton
+        :label="$t('rentPayments.list')"
+        @click="showList = true"
+      >
+        <template #icon>
+          <i class="pi pi-credit-card text-blue-600 text-xl"></i>
         </template>
       </CircleIconButton>
     </div>
+
     <ContractViewerModal
       v-if="hasContract"
       :visible="showViewer"
@@ -332,38 +253,96 @@
       :current-user-role="currentUserRole!"
     />
   </div>
+  <AddRentPaymentForm
+    v-model:visible="showCreate"
+    v-if="selectedContract"
+    :contract-id="selectedContract"
+    :default-amount="contract!.price / 12"
+    @created="
+      () => paymentsStore.fetchRentPayments({ contract_id: selectedContract })
+    "
+  />
+  <Dialog
+    v-model:visible="showList"
+    :modal="true"
+    :header="$t('rentPayments.listTitle')"
+    style="width: 95%; max-width: 700px"
+  >
+    <div class="overflow-x-auto">
+      <DataTable
+        :value="filteredTablePayments"
+        dataKey="id"
+        :loading="loading"
+        responsiveLayout="stack"
+        breakpoint="640px"
+        class="p-datatable-sm"
+      >
+        <Column field="period" :header="$t('rentPayments.period')">
+          <template #body="{ data }">
+            {{ formatPeriod(data) }}
+          </template>
+        </Column>
+
+        <Column field="due_date" :header="$t('rentPayments.due')">
+          <template #body="{ data }">
+            {{ formatDate(data.due_date) }}
+          </template>
+        </Column>
+
+        <Column
+          field="amount"
+          :header="$t('rentPayments.amount')"
+          class="text-right"
+        >
+          <template #body="{ data }">{{ data.amount.toFixed(2) }} €</template>
+        </Column>
+
+        <Column field="status" :header="$t('rentPayments.status')">
+          <template #body="{ data }">
+            <Tag
+              :value="$t('rentPayments.' + data.status)"
+              :severity="data.status === 'paid' ? 'success' : 'warn'"
+            />
+          </template>
+        </Column>
+
+        <Column field="paid_at" :header="$t('rentPayments.paidAt')">
+          <template #body="{ data }">
+            {{ data.paid_at ? formatDateTime(data.paid_at) : "-" }}
+          </template>
+        </Column>
+      </DataTable>
+    </div>
+  </Dialog>
 </template>
 <script setup lang="ts">
+import { parseISO, format } from "date-fns";
+
 import { useContractsStore } from "~/store/contracts";
+import { usePaymentsStore } from "~/store/payments";
+import { useAuthStore } from "~/store/auth";
 
 import type { Tenant } from "~/types/tenant";
-import defaultAvatar from "~/assets/images/default.jpg";
-import { useMyToast } from "#imports";
 import type { Contract } from "../../types/contract";
-import { useAuthStore } from "~/store/auth";
-const { success, error: errorToast, info } = useMyToast();
+import defaultAvatar from "~/assets/images/default.jpg";
 
-const props = defineProps<{
-  tenant: Tenant;
-}>();
-
-const ContractViewerModal = defineAsyncComponent(
-  () => import("~/components/ui/ContractViewerModal.vue")
-);
-const CircleIconButton = defineAsyncComponent(
-  () => import("~/components/ui/CircleIconButton.vue")
-);
-const UploadSignedDialog = defineAsyncComponent(
-  () => import("~/components/ui/UploadSignedDialog.vue")
-);
-const Alert = defineAsyncComponent(() => import("~/components/ui/Alert.vue"));
-const ChatDialog = defineAsyncComponent(
-  () => import("~/components/ui/ChatDialog.vue")
-);
-
+import { useMyToast } from "#imports";
+const { success, error: errorToast } = useMyToast();
 const { locale, t } = useI18n();
+
+const props = defineProps<{ tenant: Tenant }>();
+
 const contractsStore = useContractsStore();
+const paymentsStore = usePaymentsStore();
 const authStore = useAuthStore();
+
+const showCreate = ref(false);
+const showList = ref(false);
+const showViewer = ref(false);
+const showUpload = ref(false);
+const showChat = ref(false);
+const pdfUrl = ref("");
+const selectedContract = ref<number | null>(null);
 
 const contract = computed(() => props.tenant.contract);
 const hasContract = computed(() => !!contract.value);
@@ -373,15 +352,57 @@ const isOwnerSigned = computed(
 );
 const isActive = computed(() => contract.value?.status === "active");
 
-const showViewer = ref(false);
-const pdfUrl = ref("");
-const showUpload = ref(false);
-const showChat = ref(false);
+const tablePayments = shallowRef<any[]>([]);
+const loading = computed(() => paymentsStore.loading);
 
-const currentUserId = computed(() => authStore.user?.id);
-const currentUserRole = computed(() => authStore.user?.role);
+watch(
+  () => [showList.value, contract.value?.id],
+  async ([visible, id]) => {
+    if (!visible || !id) return;
+    tablePayments.value = [];
+    await paymentsStore.fetchRentPayments({ contract_id: id });
+    tablePayments.value = paymentsStore.rentPayments.map((p) => ({
+      ...toRaw(p),
+      amount: Number(p.amount),
+    }));
+  }
+);
 
-const startContractFlow = () => {
+const formatDate = (d: string) => format(new Date(d), "dd/MM/yyyy");
+const formatDateTime = (d: string) => format(new Date(d), "dd/MM/yyyy HH:mm");
+const formatPeriod = (r: any) =>
+  `${formatDate(r.period_start)} - ${formatDate(r.period_end)}`;
+
+const hasCurrentMonthRentPayment = computed(() => {
+  if (!hasContract.value) return true;
+
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = today.getMonth();
+
+  return paymentsStore.rentPayments
+    .filter((rp) => rp.contract?.id === contract.value!.id)
+    .some((rp) => {
+      const d = parseISO(rp.period_start);
+      return d.getFullYear() === y && d.getMonth() === m;
+    });
+});
+
+const filteredTablePayments = computed(() =>
+  !contract.value
+    ? []
+    : tablePayments.value.filter((p) => p.contract.id === contract.value!.id)
+);
+
+const openCreateRP = (id: number) => {
+  selectedContract.value = id;
+  showCreate.value = true;
+};
+
+const onChat = () => (showChat.value = true);
+const moveTenant = () =>
+  navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
+const startContractFlow = () =>
   navigateTo({
     path: `/${locale.value}/contracts/create`,
     query: {
@@ -390,16 +411,6 @@ const startContractFlow = () => {
       roomId: props.tenant.room_id ?? null,
     },
   });
-};
-
-const onChat = () => {
-  showChat.value = true;
-};
-const onRemove = () => {
-  errorToast("Eliminación de inquilino en progreso", 5000);
-};
-const moveTenant = () =>
-  navigateTo(`/${locale.value}/tenants/${props.tenant.id}/move`);
 
 const viewContract = async (id: number) => {
   try {
@@ -411,25 +422,7 @@ const viewContract = async (id: number) => {
   }
 };
 
-const editContract = async (id: number) => {
-  try {
-    info("Testing", 7500);
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-const deleteContract = async (id: number) => {
-  try {
-    info("Testing", 6700);
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-const triggerUpload = () => {
-  showUpload.value = true;
-};
+const triggerUpload = () => (showUpload.value = true);
 
 const handleUpload = async (file: { file: File; name: string }) => {
   try {
@@ -442,10 +435,37 @@ const handleUpload = async (file: { file: File; name: string }) => {
     } else if (updated.status === "active") {
       success(t("contracts.signedUploadTenant"));
     }
-  } catch (error) {
+  } catch {
     errorToast(t("common.genericError"));
   }
 };
+
+watch(
+  () => contract.value?.id,
+  async (id) => {
+    // 1️⃣ limpias siempre los payments antiguos
+    paymentsStore.rentPayments = [];
+    tablePayments.value = [];
+
+    // 2️⃣ si hay contrato, cargas los suyos
+    if (id) {
+      console.log();
+      await paymentsStore.fetchRentPayments({ contract_id: id });
+      // y aquí, si ya tienes el diálogo abierto, vuelve a rellenar la tabla
+      if (showList.value) {
+        tablePayments.value = paymentsStore.rentPayments.map((p) => ({
+          ...toRaw(p),
+          amount: Number(p.amount),
+        }));
+        console.log("Tabla de pagos: ", tablePayments.value);
+      }
+    }
+  },
+  { immediate: true }
+);
+
+const currentUserId = computed(() => authStore.user?.id);
+const currentUserRole = computed(() => authStore.user?.role);
 </script>
 
 <style scoped></style>

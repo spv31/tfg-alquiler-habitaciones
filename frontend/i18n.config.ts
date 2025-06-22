@@ -36,7 +36,7 @@ export default defineI18nConfig(() => ({
         close: "Cerrar",
       },
       contracts: {
-        view: "Ver contrato",
+        view: "Contrato",
         generate: "Generar contrato",
         alert: {
           noContract: "Este inquilino aún no tiene contrato.",
@@ -78,7 +78,7 @@ export default defineI18nConfig(() => ({
         requiredField: "Campo obligatorio",
         sharedPercent: "Porcentaje que paga el arrendador (%)",
         created: "Contrato creado con éxito.",
-        viewContract: "Ver contrato",
+        viewContract: "Contrato",
         editContract: "Editar contrato",
         deleteContract: "Eliminar contrato",
         confirmDelete: "¿Estás seguro de que quieres eliminar este contrato?",
@@ -97,6 +97,11 @@ export default defineI18nConfig(() => ({
       payments: {
         success_message: "Pago realizado con éxito.",
         cancelled_message: "El pago ha sido cancelado.",
+        status: {
+          pending: "Pendiente",
+          paid: "Pagado",
+          cancelled: "Cancelado",
+        },
       },
       expenses: {
         title: "Gastos",
@@ -156,12 +161,24 @@ export default defineI18nConfig(() => ({
           message: "¿Seguro que deseas eliminar el gasto #{id}?",
         },
       },
-      payments: {
-        status: {
-          pending: "Pendiente",
-          paid: "Pagado",
-          cancelled: "Cancelado",
-        },
+      rentPayments: {
+        create: "Crear mensualidad",
+        list: "Mensualidades",
+        createTitle: "Nueva mensualidad de alquiler",
+        listTitle: "Mensualidades del contrato",
+        periodStart: "Inicio del período",
+        periodEnd: "Fin del período",
+        dueDate: "Vencimiento",
+        amount: "Importe",
+        period: "Periodo",
+        due: "Vencimiento",
+        status: "Estado",
+        paidAt: "Pagado en",
+        paid: "Pagada",
+        pending: "Pendiente",
+        missingCurrentMonth: "Mensualidad pendiente de este mes",
+        currentMonthAlreadyCreated:
+          "Ya existe una mensualidad registrada para este mes.",
       },
       templates: {
         created: "Plantilla creada correctamente",
@@ -678,6 +695,11 @@ export default defineI18nConfig(() => ({
       payments: {
         success_message: "Payment completed successfully.",
         cancelled_message: "The payment was cancelled.",
+        status: {
+          pending: "Pending",
+          paid: "Paid",
+          cancelled: "Cancelled",
+        },
       },
       expenses: {
         title: "Expenses",
@@ -737,12 +759,24 @@ export default defineI18nConfig(() => ({
           message: "Are you sure you want to delete expense #{id}?",
         },
       },
-      payments: {
-        status: {
-          pending: "Pending",
-          paid: "Paid",
-          cancelled: "Cancelled",
-        },
+      rentPayments: {
+        create: "Create payment",
+        list: "Payments",
+        createTitle: "New rent payment",
+        listTitle: "Contract payments",
+        periodStart: "Period start",
+        periodEnd: "Period end",
+        dueDate: "Due date",
+        amount: "Amount",
+        period: "Period",
+        due: "Due",
+        status: "Status",
+        paidAt: "Paid at",
+        paid: "Paid",
+        pending: "Pending",
+        missingCurrentMonth: "Pending rent payment for this month",
+        currentMonthAlreadyCreated:
+          "A rent payment has already been created for this month.",
       },
       templates: {
         created: "Template created successfully",

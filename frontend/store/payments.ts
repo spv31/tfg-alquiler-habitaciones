@@ -43,6 +43,8 @@ export const usePaymentsStore = defineStore(
 
     const tenantBillShares = ref<BillShare[]>([]);
     const tenantBillSharesMeta = reactive(emptyMeta());
+    const tenantRentPayments = ref<RentPayment[]>([]);
+    const tenantRentPaymentsMeta = reactive(emptyMeta());
 
     const movements = computed<PendingItem[]>(() => [
       ...tenantBillShares.value.map<PendingItem>((s) => ({
@@ -54,7 +56,7 @@ export const usePaymentsStore = defineStore(
         due_date: s.utility_bill?.due_date!,
         paid_at: s.paid_at,
       })),
-      ...rentPayments.value.map<PendingItem>((r) => ({
+      ...tenantRentPayments.value.map<PendingItem>((r) => ({
         id: r.id,
         source: "rent",
         concept: "Renta mensual",
@@ -535,21 +537,58 @@ export const usePaymentsStore = defineStore(
       setTenantBillShares(data.data, data.meta);
     };
 
-    // Carga pendientes (solo pendiente, para la tarjeta)
+    const setTenantRentPayments = (
+      list: RentPayment[],
+      meta: Partial<typeof tenantRentPaymentsMeta>
+    ) => {
+      const map = new Map(tenantRentPayments.value.map((p) => [p.id, p]));
+      list.forEach((p) => map.set(p.id, p));
+      tenantRentPayments.value = Array.from(map.values());
+      Object.assign(tenantRentPaymentsMeta, { ...emptyMeta(), ...meta });
+    };
+
+    const fetchTenantRentPayments = async (
+      opts: { status?: "pending" | "paid" } = {},
+      page = tenantRentPaymentsMeta.current_page,
+      per = tenantRentPaymentsMeta.per_page
+    ) => {
+      const params: Record<string, string> = {
+        page: String(page),
+        per_page: String(per),
+      };
+      if (opts.status) params.status = opts.status;
+      const query = new URLSearchParams(params).toString();
+
+      const { data, error } = await tryCatch(async () => {
+        const csrf = await getCsrfToken();
+        if (!csrf) throw new Error("no csrf");
+        return $fetch<{
+          data: RentPayment[];
+          meta: typeof tenantRentPaymentsMeta;
+        }>(`${apiBaseUrl}/tenant/rent-payments?${query}`, {
+          credentials: "include",
+          headers: { "X-XSRF-TOKEN": csrf },
+        });
+      }, loading);
+
+      if (error) throw error;
+      if (!data) throw new Error("No data received");
+
+      setTenantRentPayments(data.data, data.meta);
+    };
+
     const fetchPending = () =>
       Promise.all([
         fetchTenantBillShares({ status: "pending" }),
-        fetchRentPayments({ status: "pending" }),
+        fetchTenantRentPayments({ status: "pending" }),
       ]);
 
-    // Carga completados (solo paid, NO pisa los pending gracias a merge)
     const fetchPaid = () =>
       Promise.all([
         fetchTenantBillShares({ status: "paid" }),
-        fetchRentPayments({ status: "paid" }),
+        fetchTenantRentPayments({ status: "paid" }),
       ]);
 
-    // Carga todo de una: primero pending, luego paid
     const fetchAll = async () => {
       await fetchPending();
       await fetchPaid();
@@ -557,14 +596,14 @@ export const usePaymentsStore = defineStore(
 
     /**
      * Receives stripe session for checkout
-     * 
-     * @param itemId 
-     * @param source 
+     *
+     * @param itemId
+     * @param source
      */
     const startPayment = async (itemId: number, source: "share" | "rent") => {
       const sessionUrl =
         source === "share"
-          ? await payBillShare(itemId) 
+          ? await payBillShare(itemId)
           : await payRentPayment(itemId);
 
       window.location.href = sessionUrl;
@@ -576,7 +615,9 @@ export const usePaymentsStore = defineStore(
       rentPayments.value = [];
       payments.value = [];
       tenantBillShares.value = [];
+      tenantRentPayments.value = [];
       Object.assign(tenantBillSharesMeta, emptyMeta());
+      Object.assign(tenantRentPaymentsMeta, emptyMeta());
     };
 
     return {
@@ -587,8 +628,11 @@ export const usePaymentsStore = defineStore(
       payments,
       tenantBillShares,
       tenantBillSharesMeta,
+      tenantRentPayments,
+      tenantRentPaymentsMeta,
       setTenantBillShares,
       fetchTenantBillShares,
+      fetchTenantRentPayments,
       pending,
       history,
       fetchPending,
@@ -625,6 +669,8 @@ export const usePaymentsStore = defineStore(
         "payments",
         "tenantBillShares",
         "tenantBillSharesMeta",
+        "tenantRentPayments",
+        "tenantRentPaymentsMeta",
       ],
     } satisfies PersistenceOptions,
   }

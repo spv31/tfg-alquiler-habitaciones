@@ -60,13 +60,14 @@
           />
           <ExpensesSection :property-id="propertyId" />
         </template>
-
         <template v-else-if="currentProperty.rental_type === 'full'">
-          <div class="grid gap-8 lg:grid-cols-10">
-            <div class="order-1 col-span-6 space-y-6 min-w-0">
+          +
+          <div class="grid gap-8 grid-cols-12">
+            <div class="col-span-12">
               <ExpensesSection :property-id="propertyId" />
             </div>
-            <div class="order-2 col-span-4">
+
+            <div class="col-span-12">
               <TenantFormSection />
             </div>
           </div>

@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BillShareResource;
 use App\Http\Resources\ContractResource;
 use App\Http\Resources\PropertyResource;
+use App\Http\Resources\RentPaymentResource;
 use App\Http\Resources\RoomResource;
 use App\Models\BillShare;
 use App\Models\Contract;
 use App\Models\Property;
 use App\Models\PropertyTenant;
+use App\Models\RentPayment;
 use App\Models\Room;
 use Exception;
 use Illuminate\Http\Request;
@@ -112,17 +114,25 @@ class TenantController extends Controller
         $contractData = $contract ? new ContractResource($contract) : null;
 
         $perPage = max(1, (int) $request->integer('per_page', 10));
-        $sharesQuery = BillShare::with('utilityBill.property')
-            ->where('tenant_id', $user->id)
-            ->orderByDesc('created_at');
-        $paginator = $sharesQuery->paginate($perPage);
 
-        $sharesRes = BillShareResource::collection($paginator);
+        $sharesPaginator = BillShare::with('utilityBill.property')
+            ->where('tenant_id', $user->id)
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        $rentPaginator = RentPayment::whereHas('contract', function ($q) use ($user) {
+            $q->where('tenant_id', $user->id);
+        })
+            ->orderByDesc('period_start')
+            ->paginate($perPage);
 
         return response()->json([
             'rentable'    => $rentableData,
             'contract'    => $contractData,
-            'bill_shares' => $sharesRes->response()->getData(true),
+            'bill_shares'   => BillShareResource::collection($sharesPaginator)
+                ->response()->getData(true),
+            'rent_payments' => RentPaymentResource::collection($rentPaginator)
+                ->response()->getData(true),
         ]);
     }
 
@@ -148,6 +158,33 @@ class TenantController extends Controller
         }
 
         return BillShareResource::collection(
+            $q->paginate($perPage)->appends($request->query())
+        );
+    }
+
+    /**
+     * Returns rentPayments related to tenant (paid or not)
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function rentPayments(Request $request)
+    {
+        $user   = $request->user();
+        $perPage = max(1, (int)$request->integer('per_page', 10));
+        $status = $request->string('status')->value();
+
+        $q = RentPayment::whereHas(
+            'contract',
+            fn($q) =>
+            $q->where('tenant_id', $user->id)
+        )->orderByDesc('period_start');
+
+        if ($status) {
+            $q->where('status', $status);
+        }
+
+        return RentPaymentResource::collection(
             $q->paginate($perPage)->appends($request->query())
         );
     }

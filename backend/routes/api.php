@@ -176,6 +176,14 @@ Route::middleware('auth:sanctum')->group(function () {
     '/utility-bills/{utilityBill}/attachment',
     [ImageController::class, 'showUtilityBillAttachment']
   )->name('utility-bills.attachment');
+
+  /**
+   * Routes for dashboard
+   */
+  Route::middleware('auth:sanctum')->prefix('owner')->group(function () {
+    Route::get('/statistics', [OwnerStatisticsController::class, 'index']);
+    Route::get('/fiscal', [OwnerStatisticsController::class, 'fiscal']);
+  });
 });
 
 // Webhook de Stripe para sincronizar status
@@ -190,6 +198,7 @@ Route::middleware(['auth:sanctum', 'role:tenant'])
     Route::post('/contract/signed', [TenantController::class, 'uploadSigned']);
     Route::get('/contract/pdf', [TenantController::class, 'previewPdf']);
     Route::get('/bill-shares', [TenantController::class, 'billShares']);
+    Route::get('/rent-payments', [TenantController::class, 'rentPayments']);
   });
 
 // Auth Routes for login, register and logout
