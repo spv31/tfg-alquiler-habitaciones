@@ -17,7 +17,7 @@ class RoomService
 	 */
 	public function createRoom(Property $property, array $validatedData)
 	{
-		$roomNumber = $property->rooms->count() + 1;
+		$roomNumber = $property->rooms()->count() + 1;
 
 		$room = $property->rooms()->create([
 			'room_number' => $roomNumber,

@@ -15,7 +15,7 @@ class PaymentService
 {
 	public function __construct(
 		private StripeClient $stripe,
-		private UserService  $users
+		private UserService $users
 	) {}
 
 	/**

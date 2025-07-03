@@ -2,25 +2,28 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UtilityBill extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'property_id',     
-        'room_id', 
-        'owner_id',      
-        'issue_date',       
-        'due_date',     
+        'property_id',
+        'room_id',
+        'owner_id',
+        'issue_date',
+        'due_date',
         'period_start',
-        'period_end',   
-        'total_amount',   
+        'period_end',
+        'total_amount',
         'category',         // 'utility'|'general'|'tax'
         'remit_to_tenants',
-        'description',      
-        'attachment_path', 
+        'description',
+        'attachment_path',
         'status',           // 'pending'|'split'|'settled'
     ];
 
@@ -47,7 +50,7 @@ class UtilityBill extends Model
      */
     public function room(): BelongsTo
     {
-        return $this->belongsTo(Room::class);   
+        return $this->belongsTo(Room::class);
     }
 
     /**

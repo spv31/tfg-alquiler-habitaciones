@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Arr;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Contract extends Model
 {
+    use HasFactory;
+    
     /**
      * The attributes that are mass assignable.
      * 
@@ -105,7 +108,7 @@ class Contract extends Model
      *
      * @return void
      */
-    public function rentPayments()          
+    public function rentPayments()
     {
         return $this->hasMany(RentPayment::class);
     }

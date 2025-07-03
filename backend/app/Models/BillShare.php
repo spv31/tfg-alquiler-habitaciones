@@ -2,21 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BillShare extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'utility_bill_id',          
-        'tenant_id',               
-        'amount',               
+        'utility_bill_id',
+        'tenant_id',
+        'amount',
         'status',                     // 'pending'|'paid'|'cancelled'
-        'stripe_payment_intent_id', 
-        'stripe_mandate_id', 
+        'stripe_payment_intent_id',
+        'stripe_mandate_id',
         'stripe_checkout_session_id',
-        'paid_at',                    
+        'paid_at',
     ];
 
     protected $casts = [

@@ -38,14 +38,9 @@ class PropertyController extends Controller
   public function index()
   {
     try {
-      Log::info('Inicio de búsqueda de propiedades para el usuario', ['user_id' => Auth::id()]);
-
       $properties = Property::where('user_id', Auth::id())->paginate(10);
-      Log::info('Propiedades obtenidas exitosamente', ['total' => $properties->total()]);
-
       return PropertyResource::collection($properties);
     } catch (Exception $e) {
-      Log::error('Error al obtener propiedades', ['error' => $e->getMessage()]);
       return response()->json([
         'error_key' => 'fetch_properties_failed',
       ], 500);
@@ -58,13 +53,9 @@ class PropertyController extends Controller
   public function store(StorePropertyRequest $request)
   {
     try {
-      Log::info('Usuario autenticado:', ['user' => auth()->user()]);
-
       $property = $this->propertyServices->createProperty($request->validated());
-      Log::info('Propiedad creada exitosamente', ['property_id' => $property->id]);
 
       if ($request->file('main_image')) {
-        Log::info('Se recibió un archivo "main_image" en la petición');
 
         $file = $request->file('main_image');
 
@@ -76,32 +67,15 @@ class PropertyController extends Controller
           ], 400);
         }
 
-        Log::info('Detalles del archivo recibido', [
-          'nombre_original' => $file->getClientOriginalName(),
-          'mime_type' => $file->getMimeType(),
-          'tamaño_kb' => $file->getSize() / 1024 . ' KB',
-          'extensión' => $file->extension(),
-        ]);
-
         $extension = $file->extension();
         $contenidoBase64 = base64_encode(file_get_contents($file->getRealPath()));
 
-        Log::info('Contenido Base64 generado correctamente', [
-          'longitud' => strlen($contenidoBase64)
-        ]);
-
         $rutaGuardada = $this->uploadFilesService->storeFile($contenidoBase64, 'images/properties', $extension);
-
-        Log::info('Imagen principal guardada correctamente', [
-          'path' => $rutaGuardada
-        ]);
 
         // Asociar la imagen a la propiedad
         $property->images()->create([
           'image_path' => $rutaGuardada,
         ]);
-
-        Log::info('Imagen guardada en base de datos correctamente.');
       } else {
         Log::info('No se recibió ninguna imagen en la solicitud.');
       }
@@ -128,13 +102,9 @@ class PropertyController extends Controller
   public function show(string $id)
   {
     try {
-      Log::info('Intentando obtener propiedad', ['property_id' => $id]);
-
       $property = Property::with('details')->findOrFail($id);
-      Log::info('Propiedad encontrada', ['property' => $property]);
-
+      
       $this->authorize('view', $property);
-      Log::info('Autorización concedida para ver propiedad');
 
       return new PropertyResource($property);
     } catch (ModelNotFoundException $e) {
