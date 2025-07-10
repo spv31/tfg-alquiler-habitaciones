@@ -61,7 +61,6 @@
           <ExpensesSection :property-id="propertyId" />
         </template>
         <template v-else-if="currentProperty.rental_type === 'full'">
-          +
           <div class="grid gap-8 grid-cols-12">
             <div class="col-span-12">
               <ExpensesSection :property-id="propertyId" />

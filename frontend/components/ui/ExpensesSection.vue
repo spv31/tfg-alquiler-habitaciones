@@ -111,7 +111,7 @@
                     : $t('expenses.pending')
                 "
                 :severity="
-                  data && data.status === 'settled' ? 'success' : 'warning'
+                  data && data.status === 'settled' ? 'success' : 'warn'
                 "
                 class="justify-center"
               />

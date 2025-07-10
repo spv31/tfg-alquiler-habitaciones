@@ -225,6 +225,10 @@ class UserService
 
         $this->invitationService->acceptInvitation($validatedData['token'], $existingUser);
 
+        if (!$existingUser->hasRole('tenant')) {
+          $existingUser->assignRole('tenant');
+        }
+
         // Tenant already exists
         return [
           'status' => 'user_exists',
