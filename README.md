@@ -76,6 +76,7 @@ REVERB_APP_KEY=local
 REVERB_APP_SECRET=local
 
 # Stripe
+# STRIPE_KEY y STRIPE_SECRET se generan al crear una cuenta de Stripe
 STRIPE_KEY=pk_test_xxxxxxxx
 STRIPE_SECRET=sk_test_xxxxxxxx
 STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxx
