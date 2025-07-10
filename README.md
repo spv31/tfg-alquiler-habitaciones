@@ -80,6 +80,15 @@ REVERB_APP_SECRET=local
 STRIPE_KEY=pk_test_xxxxxxxx
 STRIPE_SECRET=sk_test_xxxxxxxx
 STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxx
+
+# SMTP (Mailtrap u otro servicio de pruebas) - Se debe crear una cuenta y obtener las claves
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_user
+MAIL_PASSWORD=your_mailtrap_pass
+MAIL_FROM_ADDRESS="myrenthub@example.com"
+MAIL_FROM_NAME="MyRentHub"
 ```
 
 #### 2.3. Genera la clave de la aplicación
@@ -88,7 +97,7 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxx
 php artisan key:generate
 ```
 
-#### 2.4. (Opcional) Publica config de Snappy
+#### 2.4. Publica config de Snappy
 
 ```bash
 php artisan vendor:publish --provider="Barryvdh\Snappy\ServiceProvider"
@@ -100,7 +109,7 @@ Luego ajusta `config/snappy.php`:
 'binary' => base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64'),
 ```
 
-#### 2.5. Ejecuta migraciones & seeders
+#### 2.5. Ejecuta migraciones & seeders (para listar las plantillas de contratos estándar)
 
 ```bash
 php artisan migrate --seed
