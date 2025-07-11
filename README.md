@@ -137,43 +137,56 @@ Aquí tienes los pasos reorganizados con un formato uniforme:
 
 ##### macOS
 
-1. Instalar con Homebrew:
+```bash
+brew install stripe/stripe-cli/stripe
+```
+
+##### Linux (sin gestor de paquetes)
+
+1. Descarga el archivo `tar.gz` desde:
+   [https://github.com/stripe/stripe-cli/releases/latest](https://github.com/stripe/stripe-cli/releases/latest)
+
+2. Descomprime:
 
    ```bash
-   brew install stripe/stripe-cli/stripe
+   tar -xvf stripe_X.X.X_linux_x86_64.tar.gz
    ```
 
-##### Linux (Debian/Ubuntu y derivados)
-
-1. Importar la clave GPG:
+3. Mueve el ejecutable:
 
    ```bash
-   sudo apt-key adv --keyserver hkp://pool.sks-keyservers.net:80 \
-     --recv-keys 379CE192D401AB61
+   sudo mv stripe /usr/local/bin/
+   sudo chmod +x /usr/local/bin/stripe
    ```
-2. Añadir el repositorio de Stripe CLI:
+
+4. Verifica:
 
    ```bash
-   echo "deb https://dl.bintray.com/stripe/stripe-cli-deb stable main" \
-     | sudo tee -a /etc/apt/sources.list
-   ```
-3. Actualizar lista de paquetes e instalar:
-
-   ```bash
-   sudo apt-get update
-   sudo apt-get install stripe
+   stripe version
    ```
 
 ##### Windows
 
-1. Descargar la última versión desde GitHub Releases:
+1. Descarga el ZIP desde:
    [https://github.com/stripe/stripe-cli/releases/latest](https://github.com/stripe/stripe-cli/releases/latest)
-2. Descomprimir el ZIP (`stripe_X.Y.Z_windows_x86_64.zip`) y colocar `stripe.exe` en una carpeta incluida en el `PATH` (por ejemplo, `C:\Program Files\Stripe CLI`).
-3. Verificar la instalación en PowerShell o CMD:
+
+2. Extrae `stripe.exe` en una carpeta como `C:\stripe-cli\`.
+
+3. Añádela al `Path` de tu usuario. En PowerShell:
+
+   ```powershell
+   [Environment]::SetEnvironmentVariable("Path", $Env:Path + ";C:\stripe-cli", "User")
+   ```
+
+4. Cierra la terminal, vuelve a abrirla y ejecuta:
 
    ```powershell
    stripe version
    ```
+
+> Más información en la documentación oficial:
+> [https://docs.stripe.com/stripe-cli](https://docs.stripe.com/stripe-cli)
+
 
 ---
 
