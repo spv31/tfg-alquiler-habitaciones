@@ -91,7 +91,7 @@ MAIL_FROM_ADDRESS="myrenthub@example.com"
 MAIL_FROM_NAME="MyRentHub"
 
 # Snappy (wkhtmltopdf)
-# Opción A – usando los binarios que instala Composer:
+# Opción A – usando los binarios que instala Composer (ruta ):
 # WKHTML_PDF_BINARY=vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64
 # WKHTML_IMG_BINARY=vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64
 #
@@ -105,12 +105,65 @@ MAIL_FROM_NAME="MyRentHub"
 php artisan key:generate
 ```
 
-#### 2.4. Publica config de Snappy (en caso de querer modificar la ruta sin variables de entorno)
+#### 2.4. Publica config de Snappy 
 
-```bash
-php artisan vendor:publish --provider="Barryvdh\Snappy\ServiceProvider"
-# ahora puedes editar el fichero config/snappy.php
-```
+Laravel Snappy trae por defecto en `config/snappy.php` la ruta  
+`/usr/local/bin/wkhtmltopdf`.  
+Si vas a usar los binarios instalados con composer (`h4cc/...`) debes cambiarlo o indicarlo
+en el `.env` como se explica a continuación.
+
+1. Publicar la configuración (solo la primera vez):
+
+   ```bash
+   php artisan vendor:publish \
+     --provider="Barryvdh\Snappy\ServiceProvider" --tag=config
+    ````
+
+2. Abrir `config/snappy.php` y **sustituir** las entradas `binary`:
+
+   ```php
+   'pdf' => [
+       'enabled' => true,
+       'binary'  => env(
+           'WKHTML_PDF_BINARY',
+           base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64')
+       ),
+       // …
+   ],
+
+   'image' => [
+       'enabled' => true,
+       'binary'  => env(
+           'WKHTML_IMG_BINARY',
+           base_path('vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64')
+       ),
+       // …
+   ],
+   ```
+
+3. Opcionalmente, en `.env` puedes **sobrescribir** esas rutas:
+
+   ```dotenv
+   # Usar los binarios globales instalados en el sistema
+   WKHTML_PDF_BINARY=/usr/local/bin/wkhtmltopdf
+   WKHTML_IMG_BINARY=/usr/local/bin/wkhtmltoimage
+
+   # —o bien—
+
+   # Dejar las variables vacías y Snappy usará los vendorizados
+   # WKHTML_PDF_BINARY=
+   # WKHTML_IMG_BINARY=
+   ```
+
+4. Limpiar caché de configuración:
+
+   ```bash
+   php artisan config:clear
+   ```
+
+Ahora Snappy utilizará la ruta correcta sin necesidad de rutas absolutas en el
+repositorio, y podrás cambiarla fácilmente mediante variables de entorno cuando
+sea necesario.
 
 #### 2.5. Ejecuta migraciones & seeders (para listar las plantillas de contratos estándar)
 
