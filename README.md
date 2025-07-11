@@ -251,6 +251,22 @@ Copia el **Webhook signing secret** que te muestre Stripe CLI y pégalo en `back
 
 ## Arrancar en local
 
+### Importante antes de arrancar
+
+Antes de ejecutar la aplicación asegúrate de configurar correctamente en el archivo `.env`:
+
+* **Credenciales de correo (MAIL\_...)**: necesarias para enviar correos de registro, recuperación de contraseña y invitaciones.
+
+* **Credenciales de Stripe**:
+
+  * `STRIPE_KEY`
+  * `STRIPE_SECRET`
+  * `STRIPE_WEBHOOK_SECRET` (se obtiene al ejecutar `stripe listen`)
+
+> Si no configuras estas variables, el sistema **puede lanzar errores 500** o no completar acciones como el registro de usuarios propietarios, envío de emails o creación de cuentas de Stripe Connect necesarias para el buen funcionamiento de la aplicación.
+
+---
+
 > Abre **cuatro** terminales:
 
 | Terminal | Comando                                                               | Carpeta     |
