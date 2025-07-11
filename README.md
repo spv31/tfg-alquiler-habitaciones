@@ -117,7 +117,7 @@ Si prefieres usar los binarios incluidos por Composer (`h4cc/...`), sigue estos 
      --provider="Barryvdh\Snappy\ServiceProvider" --tag=config
     ````
 
-2. Abre `config/snappy.php` y reemplaza las claves `binary`:
+2. Abre `config/snappy.php` y reemplaza las claves `binary` en caso de que no sean las siguientes:
 
    ```php
    'pdf' => [
@@ -138,7 +138,7 @@ Si prefieres usar los binarios incluidos por Composer (`h4cc/...`), sigue estos 
    ```
 
 3. En el `.env` **comenta o elimina** las rutas si usas los binarios de Composer
-   (Snappy tomará las de arriba).
+   (Snappy utilizará las de arriba).
    Solo define rutas si vas a emplear los binarios globales del sistema:
 
    ```dotenv
