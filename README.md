@@ -13,9 +13,6 @@
 | **wkhtmltopdf** / **wkhtmltoimage** | `0.12.x`          | PDFs (Laravel Snappy)                |
 | **Stripe CLI**                      | `1.28` o superior | Reenvío de webhooks en local         |
 
-> **Tip (macOS / Linux)**
-> `brew install wkhtmltopdf` instala rápidamente los binarios de *wkhtmltopdf*.
-
 ---
 
 ## Instalación
@@ -35,7 +32,8 @@ composer install
 cp .env.example .env
 ```
 
-#### 2.1. Crea la base de datos MySQL y el usuario
+#### 2.1. Crea la base de datos MySQL y el usuario (Linux y Mac)
+En caso de utilizar Windows, es recomendable utilizar XAMPP para instalar PHP y MySQL, además de poder utilizar el panel de administrador incluido para MySQL.
 
 ```bash
 # Entra al cliente de MySQL
@@ -91,13 +89,14 @@ MAIL_FROM_ADDRESS="myrenthub@example.com"
 MAIL_FROM_NAME="MyRentHub"
 
 # Snappy (wkhtmltopdf)
-# Opción A – utilizar binarios instalados con composer, para ello comentar las dos variables de entorno
+# Opción A – utilizar binarios instalados con composer, para ello comentar las dos variables de entorno (Linux y Mac)
 # WKHTML_PDF_BINARY=vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64
 # WKHTML_IMG_BINARY=vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64
 #
-# Opción B – utilizar los binarios instalados globalmente y escribir ruta absoluta
-WKHTML_PDF_BINARY=/usr/local/bin/wkhtmltopdf
-WKHTML_IMG_BINARY=/usr/local/bin/wkhtmltoimage
+# Opción B – utilizar los binarios instalados globalmente y escribir ruta absoluta (Para Windows)
+# Windows ejemplo (rutas con espacios: **doble escape + comillas dobles**)
+# WKHTML_PDF_BINARY="\"\"C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe\"\""
+# WKHTML_IMG_BINARY="\"\"C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe\"\""
 ```
 
 #### 2.3. Genera la clave de la aplicación
@@ -144,8 +143,8 @@ Si prefieres usar los binarios incluidos por Composer (`h4cc/...`), sigue estos 
 
    ```dotenv
    # Para binarios globales (ejemplo)
-   # WKHTML_PDF_BINARY=/usr/local/bin/wkhtmltopdf
-   # WKHTML_IMG_BINARY=/usr/local/bin/wkhtmltoimage
+   # WKHTML_PDF_BINARY="\"\"C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe\"\""
+   # WKHTML_IMG_BINARY="\"\"C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe\"\""
    ```
 
 4. Limpia la caché de configuración:
