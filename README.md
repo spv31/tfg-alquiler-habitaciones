@@ -91,12 +91,13 @@ MAIL_FROM_ADDRESS="myrenthub@example.com"
 MAIL_FROM_NAME="MyRentHub"
 
 # Snappy (wkhtmltopdf)
-# Opción A – usando los binarios que instala Composer:
+# Opción A – utilizar binarios instalados con composer, para ello comentar las dos variables de entorno
 # WKHTML_PDF_BINARY=vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64
 # WKHTML_IMG_BINARY=vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64
 #
-# Opción B – dejarlos vacíos y usar los binarios globales instalados
-# Por ejemplo: /usr/local/bin/wkhtmltopdf
+# Opción B – utilizar los binarios instalados globalmente y escribir ruta absoluta
+WKHTML_PDF_BINARY=/usr/local/bin/wkhtmltopdf
+WKHTML_IMG_BINARY=/usr/local/bin/wkhtmltoimage
 ```
 
 #### 2.3. Genera la clave de la aplicación
@@ -105,12 +106,53 @@ MAIL_FROM_NAME="MyRentHub"
 php artisan key:generate
 ```
 
-#### 2.4. Publica config de Snappy (en caso de querer modificar la ruta sin variables de entorno)
+#### 2.4. Publica config de Snappy (en caso de utilizar los binarios instalados con composer)
 
-```bash
-php artisan vendor:publish --provider="Barryvdh\Snappy\ServiceProvider"
-# ahora puedes editar el fichero config/snappy.php
-```
+Laravel Snappy apunta por defecto a `/usr/local/bin/wkhtmltopdf`.  
+Si prefieres usar los binarios incluidos por Composer (`h4cc/...`), sigue estos pasos:
+
+1. Publica la configuración (solo la primera vez):
+
+   ```bash
+   php artisan vendor:publish \
+     --provider="Barryvdh\Snappy\ServiceProvider" --tag=config
+    ````
+
+2. Abre `config/snappy.php` y reemplaza las claves `binary`:
+
+   ```php
+   'pdf' => [
+       'enabled' => true,
+       'binary'  => env(
+           'WKHTML_PDF_BINARY',
+           base_path('vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64')
+       ),
+   ],
+
+   'image' => [
+       'enabled' => true,
+       'binary'  => env(
+           'WKHTML_IMG_BINARY',
+           base_path('vendor/h4cc/wkhtmltoimage-amd64/bin/wkhtmltoimage-amd64')
+       ),
+   ],
+   ```
+
+3. En el `.env` **comenta o elimina** las rutas si usas los binarios de Composer
+   (Snappy tomará las de arriba).
+   Solo define rutas si vas a emplear los binarios globales del sistema:
+
+   ```dotenv
+   # Para binarios globales (ejemplo)
+   # WKHTML_PDF_BINARY=/usr/local/bin/wkhtmltopdf
+   # WKHTML_IMG_BINARY=/usr/local/bin/wkhtmltoimage
+   ```
+
+4. Limpia la caché de configuración:
+
+   ```bash
+   php artisan config:clear
+   ```
 
 #### 2.5. Ejecuta migraciones & seeders (para listar las plantillas de contratos estándar)
 
